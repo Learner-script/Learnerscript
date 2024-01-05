@@ -1,0 +1,163 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/** A Moodle block for creating customizable reports
+ * @package   block_learnerscript
+ * @copyright 2023 Moodle India
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+require_once("../../config.php");
+require_once($CFG->libdir.'/adminlib.php');
+use block_learnerscript_license_setting;
+use html_writer;
+
+$import = optional_param('import', 0, PARAM_INT);
+$reset = optional_param('reset', 0, PARAM_INT);
+
+require_login();
+
+$context = context_system::instance();
+
+$PAGE->requires->jquery_plugin('ui');
+$PAGE->requires->jquery_plugin('ui-css');
+$PAGE->requires->css('/blocks/learnerscript/css/slideshow.css');
+
+
+$lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
+$PAGE->set_url($CFG->wwwroot . '/blocks/learnerscript/import.php');
+$PAGE->set_context($context);
+$PAGE->set_pagelayout('maintenance');
+$PAGE->set_title(get_string('importreports', 'block_learnerscript'));
+$PAGE->set_heading(get_string('learnerscriptreportconfiguration', 'block_learnerscript'));
+
+$lsreportconfigimport = get_config('block_learnerscript', 'lsreportconfigimport');
+if ($lsreportconfigimport) {
+    throw new moodle_exception(get_string('alreadyimportstarted', 'block_learnerscript'));
+}
+
+$path = $CFG->dirroot . '/blocks/learnerscript/backup/';
+$learnerscriptreports = glob($path . '*.xml');
+$lsreportscount = $DB->count_records('block_learnerscript');
+$lsimportlogs = [];
+$lastreport = 0;
+foreach ($lsimportlogs as $lsimportlog) {
+    $lslog = unserialize($lsimportlog);
+    if ($lslog['status'] == false) {
+        $errorreportsposition[$lslog['position']] = $lslog['position'];
+    }
+
+    if ($lslog['status'] == true) {
+        $lastreportposition = $lslog['position'];
+    }
+}
+
+$importstatus = false;
+if (empty($lsimportlogs) || $lsreportscount < 1) {
+    $total = count($learnerscriptreports);
+
+    $current = 1;
+    $percentwidth = $current / $total * 100;
+    $importstatus = true;
+    $errorreportsposition = [];
+    $lastreportposition = 0;
+} else {
+    $total = 0;
+    foreach ($learnerscriptreports as $position => $learnerscriptreport) {
+        if ((!empty($errorreportsposition) && in_array($position, $errorreportsposition)) || $position >= $lastreportposition) {
+            $total++;
+        }
+    }
+    if (empty($errorreportsposition)) {
+        $current = $lastreportposition + 1;
+        $errorreportsposition = [];
+    } else {
+        $occuredpositions = array_merge($errorreportsposition, [$lastreportposition]);
+        $current = min($occuredpositions);
+    }
+    if ($total > 0) {
+        $importstatus = true;
+    }
+}
+$errorreportspositiondata = serialize($errorreportsposition);
+
+echo $OUTPUT->header();
+$slideshowimagespath = '/blocks/learnerscript/images/slideshow/';
+$slideshowimages = scandir($CFG->dirroot . $slideshowimagespath, SCANDIR_SORT_ASCENDING);
+$slideshowcount = 0;
+echo html_writer::start_tag('div', ['class' => 'lsoverviewimageslider']);
+if (!empty($slideshowimages)) {
+    foreach ($slideshowimages as $slideshowimage) {
+        if (exif_imagetype($CFG->wwwroot . $slideshowimagespath . $slideshowimage)) {
+            $slideshowcount++;
+            echo html_writer::div(html_writer::div(html_writer::empty_tag('img',
+            ['src' => $CFG->wwwroot . $slideshowimagespath . $slideshowimage, 'class' => "lsoverviewimages",
+            'style' => "width:100%;height:100%"]), "",
+            ['styles' => "width:500px; height:350px;"]), "mySlides");
+        }
+    }
+}
+
+$reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
+if ($reportdashboardblockexists) {
+    $redirecturl = $CFG->wwwroot . '/blocks/reportdashboard/dashboard.php';
+} else {
+    $redirecturl = $CFG->wwwroot . '/blocks/learnerscript/managereport.php';
+}
+
+if ($importstatus && !$lsreportconfigstatus) {
+    $pluginsettings = new block_learnerscript_license_setting('block_learnerscript/lsreportconfigimport',
+                'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);
+    $pluginsettings->config_write('lsreportconfigimport', 1);
+
+    echo html_writer::div('', "", ['id' => 'progressbar']);
+    echo '<center style="display:none">' . html_writer::div(html_writer::link(new moodle_url($redirecturl),
+    '<button>Continue</button>'),
+    "", ['id' => 'reportdashboardnav']) . '</center>';
+    $usertours = $CFG->dirroot . '/blocks/learnerscript/usertours/';
+    $totalusertours = count(glob($usertours . '*.json'));
+    $usertoursjson = glob($usertours . '*.json');
+    $pluginmanager = new \tool_usertours\manager();
+    for ($i = 0; $i < $totalusertours; $i++) {
+        $importurl = $usertoursjson[$i];
+        if (file_exists($usertoursjson[$i])
+                && pathinfo($usertoursjson[$i], PATHINFO_EXTENSION) == 'json') {
+            $data = file_get_contents($importurl);
+            $tourconfig = json_decode($data);
+            $tourexists = $DB->record_exists('tool_usertours_tours', ['name' => $tourconfig->name]);
+            if (!$tourexists) {
+                $tour = $pluginmanager->import_tour_from_json($data);
+            }
+        }
+    }
+} else {
+    echo html_writer::div(get_string('lsreportsconfigdone', 'block_learnerscript') .
+    html_writer::link(new moodle_url($redirecturl),
+    get_string('clickhere', 'block_learnerscript')) .get_string('tocontinue', 'block_learnerscript'),
+    "alert alert-info");
+}
+echo "</center>".html_writer::end_tag('div');
+
+if ($importstatus && !$lsreportconfigstatus) {
+    $PAGE->requires->js_call_amd('block_learnerscript/lsreportconfig', 'init',
+                                    [['total' => $total,
+                                                'current' => $current,
+                                                'errorreportspositiondata' => $errorreportspositiondata,
+                                                'lastreportposition' => $lastreportposition,
+                                            ],
+                                    ]);
+
+}
+echo $OUTPUT->footer();

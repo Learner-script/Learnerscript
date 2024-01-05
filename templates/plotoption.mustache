@@ -1,0 +1,18 @@
+<div class="plotdata">
+    <div class="ls-plotdata_container">
+        {{# searchenable}}
+        <span id='custom_jumpto' class='editreport {{searchreport}}'>
+
+            {{# str}} jumpto, block_learnerscript {{/ str}} <select name="reportsearch" value="" id="reportsearch" placeholder="Search Report" data-select2=1>
+            {{# reports }}
+                <option value={{id}}>{{name}}</option>
+            {{/ reports}}
+            }
+            }
+            </select>
+
+        </span>
+        {{/ searchenable}}
+
+    </div>
+</div>
