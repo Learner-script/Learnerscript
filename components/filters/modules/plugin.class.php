@@ -80,31 +80,9 @@ class plugin_modules extends pluginbase {
             get_string('filter_module', 'block_learnerscript') :
             get_string('select') .' '. get_string('modules', 'block_learnerscript');
         }
-        if ($this->report->type == 'gradedactivity') {
-            $modules = $DB->get_records_sql('SELECT DISTINCT m.id, m.name FROM {modules} m
-                                               JOIN {grade_items} gi ON gi.itemmodule = m.name
-                                              WHERE m.visible = :visible ', ['visible' => 1]);
-        } else if ($this->report->type == 'resources_accessed') {
-            $modules = $DB->get_records_sql("SELECT id, name
-            FROM {modules}
-            WHERE visible = :visible", ['visible' => 1]);
-            $resources = [];
-            foreach ($modules as $module) {
-                $resourcearchetype = plugin_supports('mod', $module->name, FEATURE_MOD_ARCHETYPE);
-                if ($resourcearchetype) {
-                    $resources[] = $module->id;
-                }
-            }
-            list($rsql, $params) = $DB->get_in_or_equal($resources, SQL_PARAMS_NAMED);
-            $params['visible'] = 1;
-            $modules = $DB->get_records_sql("SELECT id, name
-            FROM {modules}
-            WHERE visible = :visible AND id $rsql", $params);
-        } else {
-            $modules = $DB->get_records_sql('SELECT id, name
+        $modules = $DB->get_records_sql('SELECT id, name
             FROM {modules}
             WHERE visible = :visible', ['visible' => 1]);
-        }
         if (!empty($modules)) {
             foreach ($modules as $module) {
                 $modulesoptions[$module->id] = get_string('pluginname', $module->name);

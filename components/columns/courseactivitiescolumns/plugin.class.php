@@ -59,15 +59,11 @@ class plugin_courseactivitiescolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
      * @param object $reporttype Report type
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $reporttype, $starttime = 0, $endtime = 0) {
-        global $CFG, $DB, $OUTPUT, $USER, $CFG;
+    public function execute($data, $row, $reporttype) {
+        global $DB, $OUTPUT, $USER, $CFG;
         $context = context_system::instance();
         $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
         $module = $DB->get_field('modules', 'name', ['id' => $row->moduleid]);
@@ -117,7 +113,7 @@ class plugin_courseactivitiescolumns extends pluginbase {
                 }
                 $row->{$data->column} = html_writer::div($progress . '%', "spark-report",
                         ['id' => "spark-report$row->id",
-                        'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress']);
+                        'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress', ]);
             break;
             case 'grades';
                 $gradesreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'grades'], IGNORE_MULTIPLE);

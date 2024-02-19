@@ -63,14 +63,10 @@ class plugin_useractivitiescolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
      * @param string $reporttype Report type
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $reporttype, $starttime=0, $endtime=0) {
+    public function execute($data, $row, $reporttype) {
         global $DB, $OUTPUT;
         switch($data->column) {
             case 'finalgrade':

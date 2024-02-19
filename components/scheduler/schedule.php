@@ -125,7 +125,7 @@ $frequencyselect = $scheduling->get_options();
 if (!empty($scheduledreport)) {
     $schedulelist = $scheduling->getschedule($scheduledreport->frequency);
 } else {
-    $schedulelist = [null => '--SELECT--'];
+    $schedulelist = [null => get_string('selectschedule', 'block_learnerscript')];
 }
 
 $schrecords = $DB->get_records("block_ls_schedule",  ['reportid' => $reportid]);

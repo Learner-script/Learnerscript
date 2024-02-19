@@ -61,13 +61,9 @@ class plugin_userfield extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row) {
         global $DB, $CFG, $OUTPUT, $USER, $SESSION;
         $context = context_system::instance();
         $row->id = isset($row->userid) ? $row->userid : $row->id;
@@ -91,15 +87,14 @@ class plugin_userfield extends pluginbase {
         $userrecord = $DB->get_record('user', ['id' => $row->id]);
         $userrecord->fullname = html_writer::start_span('userdp_name', []);
         $userrecord->fullname .= $OUTPUT->user_picture($userrecord);
-        $checkpermissions = empty($userprofilereport) ? false :
         (new reportbase($userprofilereport))->check_permissions($context, $USER->id);
         if (is_siteadmin()) {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
             ['href' => $CFG->wwwroot.'/blocks/reportdashboard/profilepage.php?filter_users='.$row->id]);
         } else {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
-        ['href' => $CFG->wwwroot.'/blocks/reportdashboard/profilepage.php?filter_users='.$row->id.
-        '&role='.$SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel]);
+            ['href' => $CFG->wwwroot.'/blocks/reportdashboard/profilepage.php?filter_users='.$row->id.
+            '&role='.$SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, ]);
         }
         $userrecord->fullname .= html_writer::end_span();
         $userfullname = $userrecord->fullname;
@@ -108,7 +103,7 @@ class plugin_userfield extends pluginbase {
             $userrecord->fullname .= html_writer::start_span('ls icon sendsms',
             ['id' => "sendsms_" . $this->reportinstance . "_" . $row->id,
             'onclick' => '(function(e) {require("block_learnerscript/helper").sendmessage({userid: '.$row->id.',
-                reportinstance: ' . $this->reportinstance . '}, \''.$userfullname.'\');e.stopImmediatePropagation(); }) (event)']);
+            reportinstance: ' . $this->reportinstance . '}, \''.$userfullname.'\');e.stopImmediatePropagation(); }) (event)', ]);
             $userrecord->fullname .= html_writer::end_span();
             $userrecord->fullname .= '</sup>';
         }

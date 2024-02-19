@@ -155,7 +155,16 @@ class plugin_courses extends pluginbase {
         } else {
             $selectoption = true;
         }
-        $request = array_merge($_POST, $_GET);
+        $ftcourses = optional_param('filter_courses', 0, PARAM_INT);
+        $ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+        $ftusers = optional_param('filter_users', 0, PARAM_INT);
+        $ftmodules = optional_param('filter_modules', 0, PARAM_INT);
+        $ftactivities = optional_param('filter_activities', 0, PARAM_INT);
+        $ftstatus = optional_param('filter_status', '', PARAM_TEXT);
+        $urlparams = ['filter_courses' => $ftcourses, 'filter_coursecategories' => $ftcoursecategories,
+                    'filter_users' => $ftusers, 'filter_modules' => $ftmodules,
+                    'filter_activities' => $ftactivities, 'filter_status' => $ftstatus, ];
+        $request = array_filter($urlparams);
         $courseoptions = $this->filter_data(true, $request);
         if ((!$this->placeholder || $this->filtertype == 'basic')
         && count($courseoptions) > 1) {

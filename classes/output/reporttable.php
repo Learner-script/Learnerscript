@@ -31,6 +31,10 @@ use stdClass;
 class reporttable implements renderable, templatable {
 
     /**
+     * @var $reportclass
+     */
+    public $reportclass;
+    /**
      * @var $tableproperties
      */
     public $tableproperties;
@@ -72,6 +76,7 @@ class reporttable implements renderable, templatable {
     public $reporttype;
     /**
      * Construct
+     * @param  array $reportclass Report data
      * @param  array $tabledetails  Report table details
      * @param  int $tableid       Report table id
      * @param  array $exports       Export options
@@ -82,9 +87,10 @@ class reporttable implements renderable, templatable {
      * @param  boolean $includeexport Export include option
      * @param  int $instanceid    Report instance id
      */
-    public function __construct($tabledetails, $tableid, $exports, $reportid,
+    public function __construct($reportclass, $tabledetails, $tableid, $exports, $reportid,
     $reportsql, $reporttype, $debugsql = false, $includeexport = false, $instanceid = null) {
         isset($tabledetails['tablehead']) ? $this->tablehead = $tabledetails['tablehead'] : null;
+        $this->reportclass = $reportclass;
         $this->tableproperties = $tabledetails['tableproperties'];
         $this->tableid = $tableid;
         $this->exports = $exports;
@@ -104,6 +110,7 @@ class reporttable implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $OUTPUT;
         $data = new stdClass();
+        $data->reportclass = $this->reportclass;
         $data->tablehead = $this->tablehead;
         $data->tableid = $this->tableid;
         $data->loading = $OUTPUT->image_url('loading', 'block_learnerscript');
@@ -116,15 +123,14 @@ class reporttable implements renderable, templatable {
         $data->reportinstance = $this->instanceid ? $this->instanceid : $this->reportid;
         $data->reporttype = $this->reporttype;
         $exportparams = '';
-        unset($_GET['id']);
-        if (!empty($_GET)) {
-            foreach ($_GET as $key => $val) {
-                $exportparams .= "&$key=$val";
-            }
+        if (!empty($this->reportclass->basicparams)) {
+            $exportfilters = array_merge($this->reportclass->params, $this->reportclass->basicparams);
+        } else {
+            $exportfilters = $this->reportclass->params;
         }
-        if (!empty($_POST)) {
-            foreach ($_POST as $key => $val) {
-                if (strpos($key, 'filter_') !== false) {
+        if (!empty($exportfilters)) {
+            foreach ($exportfilters as $key => $val) {
+                if (strpos($key, 'date') !== false) {
                     $exportparams .= "&$key=$val";
                 }
             }

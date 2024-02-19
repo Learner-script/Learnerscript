@@ -21,9 +21,12 @@
  */
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
+use block_learnerscript\local\ls as ls;
+use stdClass;
 
 /**
  * Sum plugin class
+ * @package block_learnerscript
  */
 class plugin_sum extends pluginbase {
     /**
@@ -45,7 +48,7 @@ class plugin_sum extends pluginbase {
      * @return string
      */
     public function summary($data) {
-        global $DB, $CFG;
+        global $CFG;
         if ($this->report->type != 'sql') {
             $components = (new ls)->cr_unserialize($this->report->components);
             if (!is_array($components) || empty($components['columns']['elements'])) {
@@ -67,7 +70,7 @@ class plugin_sum extends pluginbase {
             $reportclass = new $reportclassname($this->report);
 
             $components = (new ls)->cr_unserialize($this->report->components);
-            $config = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : new stdclass;
+            $config = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : new stdClass;
 
             if (isset($config->querysql)) {
 

@@ -271,9 +271,9 @@ class report_useractivities extends reportbase implements report {
             $fields2 = ['m.name', 'c.fullname'];
             $this->searchable = array_merge($fields1, $fields2);
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -329,10 +329,10 @@ class report_useractivities extends reportbase implements report {
         $where = " AND %placeholder% = $cmid";
         $filteruserid = isset($this->params['filter_users']) ? $this->params['filter_users'] : 0;
         $query = " ";
-        $identy = " ";
+        $identity = " ";
         switch ($columnname) {
             case 'finalgrade':
-                $identy = 'cm1.id';
+                $identity = 'cm1.id';
                 $query = "SELECT SUM(gg.finalgrade)  AS finalgrade
                             FROM {grade_grades} gg
                             JOIN {grade_items} gi ON gg.itemid = gi.id
@@ -341,7 +341,7 @@ class report_useractivities extends reportbase implements report {
                            WHERE 1 = 1 AND gi.itemtype = 'mod' AND gi.itemmodule = m.name AND gg.userid = $filteruserid $where ";
             break;
             case 'highestgrade':
-                $identy = 'cm.id';
+                $identity = 'cm.id';
                 $query = "SELECT MAX(gg.finalgrade) AS highestgrade
                             FROM {grade_grades} gg
                             JOIN {grade_items} gi ON gg.itemid = gi.id
@@ -350,7 +350,7 @@ class report_useractivities extends reportbase implements report {
                            WHERE 1 = 1 AND gi.itemtype = 'mod' AND gi.itemmodule = m.name $where ";
             break;
             case 'lowestgrade':
-                $identy = 'cm.id';
+                $identity = 'cm.id';
                 $query = "SELECT MIN(gg.finalgrade) AS lowestgrade
                             FROM {grade_grades} gg
                             JOIN {grade_items} gi ON gg.itemid = gi.id
@@ -359,19 +359,19 @@ class report_useractivities extends reportbase implements report {
                            WHERE 1 = 1 AND gi.itemtype = 'mod' AND gi.itemmodule = m.name $where ";
             break;
             case 'totaltimespent':
-                $identy = 'mt.activityid';
+                $identity = 'mt.activityid';
                 $query = "SELECT SUM(mt.timespent) AS totaltimespent FROM {block_ls_modtimestats} mt
                         WHERE mt.userid = $filteruserid $where ";
             break;
             case 'numviews':
-                $identy = 'lsl.contextinstanceid';
+                $identity = 'lsl.contextinstanceid';
                 $query = "SELECT COUNT(lsl.id) AS numviews
                               FROM {logstore_standard_log} lsl
                          WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND
                            lsl.userid = $filteruserid $where";
             break;
         }
-        $query = str_replace('%placeholder%', $identy, $query);
+        $query = str_replace('%placeholder%', $identity, $query);
         return $query;
     }
 }

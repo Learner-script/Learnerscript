@@ -17,8 +17,8 @@
  * TODO describe module dataTables.bootstrap
  *
  * @module     block_learnerscript/dataTables.bootstrap
- * @copyright  2023 YOUR NAME <your@email.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  ©2011-2015 SpryMedia Ltd
+ * @license    datatables.net/license
  */
 /* ! DataTables Bootstrap 3 integration
  * ©2011-2015 SpryMedia Ltd - datatables.net/license

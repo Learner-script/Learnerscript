@@ -30,8 +30,6 @@ class timeline_form extends moodleform {
 
     /** From defination */
     public function definition() {
-        global $DB, $CFG;
-
         $mform = & $this->_form;
 
         $options = ['previous' => get_string('previousdays', 'block_learnerscript'),

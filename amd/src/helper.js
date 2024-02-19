@@ -17,7 +17,7 @@
  * TODO describe module helper
  *
  * @module     block_learnerscript/helper
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -202,7 +202,7 @@ define(['jquery',
                         args.courses = $('[name="filter_courses"]').val();
                     }
                     if (args.action === 'userlist') {
-                        args.setminimumInputLength = 2;
+                        args.setminimuminputlength = 2;
                         args.courses = $('[name="filter_courses"]').val();
                     }
                     if (!$(this).hasClass('select2-hidden-accessible')) {
@@ -278,8 +278,8 @@ define(['jquery',
                             escapeMarkup: function(markup) {
                                 return markup;
                             }, // Let our custom formatter work
-                            minimumInputLength: args.setminimumInputLength || 1,
-                            maximumSelectionLength: args.maximumSelectionLength,
+                            minimumInputLength: args.setminimuminputlength || 1,
+                            maximumselectionlength: args.maximumselectionlength,
                             language: {
                                 // You can find all of the options in the language files provided in the
                                 // build. They all must be functions that return the string that should be
@@ -381,12 +381,14 @@ define(['jquery',
                     var dialogid;
                     promise.done(function(response) {
                         var reporttypes = response;
-                        reportwidget.CreateDashboardwidget({
-                            reportid: reportid,
-                            reporttype: response,
-                            basicparams: JSON.stringify(filter),
-                            lsfstartdate: 0,
-                            lsfenddate: $.now()
+                        require(['block_learnerscript/reportwidget'], function(reportwidget) {
+                            reportwidget.CreateDashboardwidget({
+                                reportid: reportid,
+                                reporttype: response,
+                                basicparams: JSON.stringify(filter),
+                                lsfstartdate: 0,
+                                lsfenddate: $.now()
+                            });
                         });
                         chart.SparkLineReport();
                         if (reporttypes == 'table') {

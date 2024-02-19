@@ -82,10 +82,10 @@ class report_coursecompetency extends reportbase implements report {
      * Select SQL
      */
     public function select() {
-        $courseid = $this->params['filter_courses'];
         $this->sql = "SELECT DISTINCT com.id, com.shortname AS competency, comf.shortname AS framework,
                         ccom.courseid, (SELECT COUNT(u.id) FROM {user} u
-                                WHERE u.id = ucom.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0) AS completedusers ";
+                                WHERE u.id = ucom.userid AND u.confirmed = 1
+                                AND u.deleted = 0 AND u.suspended = 0) AS completedusers ";
         parent::select();
     }
 
@@ -131,9 +131,9 @@ class report_coursecompetency extends reportbase implements report {
             $this->searchable = ["CONCAT(u.firstname, ' ', u.lastname)", "u.email", "com.shortname",
                                 "comf.shortname", ];
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";

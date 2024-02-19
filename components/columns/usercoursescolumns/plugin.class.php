@@ -64,14 +64,10 @@ class plugin_usercoursescolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
      * @param string $reporttype Report type
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $reporttype, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row, $reporttype) {
         global $DB, $CFG;
         $course = $DB->get_record('course', ['id' => $row->courseid]);
         switch($data->column) {
@@ -84,7 +80,7 @@ class plugin_usercoursescolumns extends pluginbase {
                 $progressbar = !empty($progressbar) ? floor($progressbar) : 0;
                 $row->{$data->column} = html_writer::div($progressbar . '%', "spark-report",
                 ['id' => html_writer::random_id(),
-                'data-sparkline' => "$progressbar; progressbar", 'data-labels' => 'progress']);
+                'data-sparkline' => "$progressbar; progressbar", 'data-labels' => 'progress', ]);
                 break;
             case 'status':
                 require_once("{$CFG->libdir}/completionlib.php");

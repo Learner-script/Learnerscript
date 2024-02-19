@@ -151,9 +151,9 @@ class report_coursesoverview extends reportbase implements report {
         if (isset($this->search) && $this->search) {
             $this->searchable = ["c.fullname"];
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -216,26 +216,26 @@ class report_coursesoverview extends reportbase implements report {
             $concatsql = " AND cm.module = $filtermoduleid";
         }
         $query = " ";
-        $identy = " ";
+        $identity = " ";
         switch ($columnname) {
             case 'totalactivities' :
-                $identy = 'cm.course';
+                $identity = 'cm.course';
                 $query = "SELECT COUNT(cm.id) AS totalactivities
-                              FROM {course_modules} AS cm
+                              FROM {course_modules} cm
                              WHERE cm.visible = 1 AND cm.deletioninprogress = 0
                              $concatsql $where ";
             break;
             case 'completedactivities' :
-                $identy = 'cm.course';
+                $identity = 'cm.course';
                 $query = "SELECT COUNT(DISTINCT cmc.coursemoduleid) AS completedactivities
-                               FROM {course_modules_completion} AS cmc
-                               JOIN {course_modules} AS cm ON cm.id = cmc.coursemoduleid
+                               FROM {course_modules_completion} cmc
+                               JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
                               WHERE cm.visible = 1  AND cmc.userid = $filteruserid AND cmc.completionstate > 0
                               AND cm.deletioninprogress = 0 $concatsql $where ";
 
             break;
             case 'inprogressactivities' :
-                $identy = 'cm.course';
+                $identity = 'cm.course';
                 $query = "SELECT COUNT(DISTINCT cm.id) AS inprogressactivities
                                FROM {course_modules} cm
                               WHERE  cm.visible = 1  AND cm.deletioninprogress = 0
@@ -245,7 +245,7 @@ class report_coursesoverview extends reportbase implements report {
                                                     $concatsql $where ";
             break;
             case 'grades' :
-                $identy = 'gi.courseid';
+                $identity = 'gi.courseid';
                 $modulename = $DB->get_field('modules', 'name', ['id' => $filtermoduleid]);
                 if ($CFG->dbtype == 'sqlsrv') {
                     $gradesql = "SELECT CASE WHEN SUM(gi.grademax) > 0
@@ -274,11 +274,11 @@ class report_coursesoverview extends reportbase implements report {
                 $query = $gradesql;
             break;
             case 'totaltimespent' :
-                $identy = 'blc.courseid';
+                $identity = 'blc.courseid';
                 if (!empty($filtermoduleid)) {
                     $query = " SELECT SUM(blc.timespent) AS totaltimespent
                             FROM {block_ls_modtimestats} blc
-                            JOIN {course_modules} AS cm ON cm.id = blc.activityid
+                            JOIN {course_modules} cm ON cm.id = blc.activityid
                             WHERE blc.userid > 2 AND cm.deletioninprogress = 0
                             AND cm.visible = 1
                             AND blc.userid = $filteruserid  $where $concatsql ";
@@ -289,7 +289,7 @@ class report_coursesoverview extends reportbase implements report {
                 }
                 break;
         }
-        $query = str_replace('%placeholder%', $identy, $query);
+        $query = str_replace('%placeholder%', $identity, $query);
         return $query;
     }
 }

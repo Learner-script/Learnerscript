@@ -125,7 +125,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
         if (!empty($ajaxformdata['frequency']) && $ajaxformdata['frequency']) {
             $schedulelist = (new schedule)->getschedule($ajaxformdata['frequency']);
         } else {
-            $schedulelist = [null => '--SELECT--'];
+            $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
         }
         $scheduleurl = $CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php';
         $scheduleform = new scheduled_reports_form($scheduleurl, ['id' => $reportid,
@@ -232,7 +232,8 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
         has_capability('block/learnerscript:manageownreports', $context) ||
         is_siteadmin()) && !empty($reportid)) {
         require_once($CFG->dirroot . '/blocks/reportdashboard/email_form.php');
-        $emailform = new analytics_emailform($CFG->wwwroot . '/blocks/reportdashboard/dashboard.php', ['reportid' => $reportid,
+        $emailform = new block_reportdashboard_emailform($CFG->wwwroot . '/blocks/reportdashboard/dashboard.php',
+        ['reportid' => $reportid,
         'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '', null, true, $ajaxformdata, );
 
         if (!empty($ajaxformdata) && $emailform->is_validated()) {
@@ -302,10 +303,12 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
 function get_roles_in_context($contextlevel, $excludedroles = null) {
     global $DB;
     if ($contextlevel == 10) {
+        $contextroles = $DB->get_records_sql("SELECT DISTINCT roleid FROM {role_context_levels}");
+        list($contextsql, $params) = $DB->get_in_or_equal($contextroles, SQL_PARAMS_NAMED, 'param', false);
         $systemroles = array_values(get_roles_for_contextlevels($contextlevel));
         $iomadroles = $DB->get_records_sql_menu("SELECT id, shortname
         FROM {role}
-        WHERE id NOT IN (SELECT DISTINCT roleid FROM {role_context_levels})");
+        WHERE 1 = 1 AND id $contextsql", $params);
         $allroles = array_merge($systemroles, array_keys($iomadroles));
     } else {
         $allroles = array_values(get_roles_for_contextlevels($contextlevel));
@@ -334,4 +337,11 @@ function get_roles_in_context($contextlevel, $excludedroles = null) {
         $userroles[$r->id] = role_get_name($r);
     }
     return $userroles;
+}
+/**
+ * Get page variables
+ */
+function get_pagevariables() {
+    global $PAGE;
+    return $PAGE;
 }

@@ -35,10 +35,6 @@ class report_usercourses extends reportbase implements report {
      */
     private $relatedctxsql;
     /**
-     * @var $datefiltersql
-     */
-    private $datefiltersql;
-    /**
      * @var $relatedctxparams
      */
     private $relatedctxparams;
@@ -117,7 +113,7 @@ class report_usercourses extends reportbase implements report {
      * Select SQL
      */
     public function select() {
-        $this->sql = "SELECT  u.id AS userid,CONCAT(u.firstname,' ',u.lastname) AS fullname, u.email,
+        $this->sql = "SELECT  u.id AS userid, CONCAT(u.firstname,' ',u.lastname) AS fullname, u.email,
                               cc.timestarted AS timestarted,
                               u.timezone,cc.timecompleted AS timecompleted, $this->courseid AS courseid ";
         if (!empty($this->selectedcolumns)) {
@@ -147,7 +143,7 @@ class report_usercourses extends reportbase implements report {
                                AND ej1_ue.timestart < :ej1_now1 AND (ej1_ue.timeend = 0 OR ej1_ue.timeend > :ej1_now2)
                                AND eu1_u.deleted = 0) e ON e.id = u.id
                              LEFT JOIN {context} ctx ON (ctx.instanceid = u.id AND ctx.contextlevel = :contextlevel)
-                 LEFT JOIN {course_completions} as cc ON cc.userid = u.id AND cc.course = $this->courseid
+                 LEFT JOIN {course_completions} cc ON cc.userid = u.id AND cc.course = $this->courseid
                  LEFT JOIN {course} c ON c.id = cc.course";
 
         parent::joins();
@@ -179,9 +175,9 @@ class report_usercourses extends reportbase implements report {
         if (isset($this->search) && $this->search) {
             $this->searchable = ["CONCAT(u.firstname, ' ', u.lastname)", "u.email"];
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                        $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                        true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -228,10 +224,10 @@ class report_usercourses extends reportbase implements report {
         $where = " AND %placeholder% = $usercourseid";
         $filtercourseid = isset($this->params['filter_courses']) ? $this->params['filter_courses'] : SITEID;
         $query = " ";
-        $identy = " ";
+        $identity = " ";
         switch ($columnname) {
             case 'grade':
-                $identy = 'gg.userid';
+                $identity = 'gg.userid';
                 $query = "SELECT ((gg.finalgrade/gi.grademax)*100) AS grade
                                         FROM {grade_items} gi
                                         JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
@@ -239,12 +235,12 @@ class report_usercourses extends reportbase implements report {
 
             break;
             case 'totaltimespent':
-                $identy = 'bt.userid';
+                $identity = 'bt.userid';
                 $query = "SELECT SUM(bt.timespent) AS totaltimespent FROM {block_ls_coursetimestats} AS bt
                         WHERE bt.courseid = $filtercourseid $where ";
             break;
             case 'completedassignments':
-                $identy = 'cmc.userid';
+                $identity = 'cmc.userid';
                 $query = "SELECT COUNT(cm.id) AS completedassignments
                                         FROM {course_modules} AS cm
                                         JOIN {modules} AS m ON m.id = cm.module
@@ -253,47 +249,47 @@ class report_usercourses extends reportbase implements report {
                                          AND cm.course = $filtercourseid AND cmc.completionstate != 0 $where";
             break;
             case 'completedquizzes':
-                $identy = 'cmc.userid';
+                $identity = 'cmc.userid';
                 $query = "SELECT COUNT(cm.id) AS completedquizzes
-                                        FROM {course_modules} AS cm
-                                        JOIN {modules} AS m ON m.id = cm.module
-                                        JOIN {course_modules_completion} as cmc ON cmc.coursemoduleid = cm.id
+                                        FROM {course_modules} cm
+                                        JOIN {modules} m ON m.id = cm.module
+                                        JOIN {course_modules_completion} cmc ON cmc.coursemoduleid = cm.id
                                        WHERE m.name = 'quiz' AND cm.visible = 1 AND cm.deletioninprogress = 0
                                          AND cm.course = $filtercourseid AND cmc.completionstate != 0 $where";
             break;
             case 'completedscorms':
-                $identy = 'cmc.userid';
+                $identity = 'cmc.userid';
                 $query = "SELECT COUNT(cm.id) AS completedscorms
-                                        FROM {course_modules} AS cm
-                                        JOIN {modules} AS m ON m.id = cm.module
-                                        JOIN {course_modules_completion} as cmc ON cmc.coursemoduleid = cm.id
+                                        FROM {course_modules} cm
+                                        JOIN {modules} m ON m.id = cm.module
+                                        JOIN {course_modules_completion} cmc ON cmc.coursemoduleid = cm.id
                                        WHERE m.name = 'scorm' AND cm.visible = 1 AND cm.deletioninprogress = 0
                                         AND cm.course = $filtercourseid AND cmc.completionstate != 0 $where";
             break;
             case 'marks':
-                $identy = 'gg.userid';
+                $identity = 'gg.userid';
                 $query = "SELECT gg.finalgrade AS marks FROM {grade_items} gi
                                          JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
                                         WHERE gi.courseid = $filtercourseid $where";
             break;
             case 'badgesissued':
-                $identy = 'bi.userid';
-                $query = "SELECT COUNT(bi.id) AS badgesissued FROM {badge_issued} as bi
-                                        JOIN {badge} as b ON b.id = bi.badgeid
+                $identity = 'bi.userid';
+                $query = "SELECT COUNT(bi.id) AS badgesissued FROM {badge_issued} bi
+                                        JOIN {badge} b ON b.id = bi.badgeid
                                        WHERE  bi.visible = 1 AND b.status != 0
                                          AND b.status != 2 AND b.courseid = $filtercourseid $where";
             break;
             case 'completedactivities':
-                $identy = 'cmc.userid';
+                $identity = 'cmc.userid';
                 $query = "SELECT COUNT(cm.id) AS completedactivities
-                                        FROM {course_modules} AS cm
-                                        JOIN {modules} AS m ON m.id = cm.module
-                                        JOIN {course_modules_completion} as cmc ON cmc.coursemoduleid = cm.id
+                                        FROM {course_modules} cm
+                                        JOIN {modules} m ON m.id = cm.module
+                                        JOIN {course_modules_completion} cmc ON cmc.coursemoduleid = cm.id
                                        WHERE  cm.visible = 1 AND cm.deletioninprogress = 0 AND cm.course = $filtercourseid
                                          AND cmc.completionstate != 0 $where";
             break;
         }
-        $query = str_replace('%placeholder%', $identy, $query);
+        $query = str_replace('%placeholder%', $identity, $query);
         return $query;
     }
 }

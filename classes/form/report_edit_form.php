@@ -116,7 +116,7 @@ class report_edit_form extends moodleform {
      * @return array
      */
     public function validation_high_security($data, $files) {
-        global $DB, $CFG, $db, $USER;
+        global $CFG;
 
         $errors = parent::validation($data, $files);
         if ($data['type'] === 'sql' || $data['type'] === 'statistics') {

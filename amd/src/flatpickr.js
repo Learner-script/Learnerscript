@@ -16,8 +16,8 @@
  * TODO describe module flatpickr
  *
  * @module     block_learnerscript/flatpickr
- * @copyright  2023 YOUR NAME <your@email.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  ©2011-2015 SpryMedia Ltd
+ * @license    MIT
  */
 /* Flatpickr v4.0.7, @license MIT */
 (function(global, factory) {

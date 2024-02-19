@@ -23,10 +23,14 @@
     {
     }
 }}
-<li class='ls-plotgraphs_listitem' data-cid='{{chartid}}'>
-    <a href="javascript:void(0);" class='ls-plotgraph_link cpointer' id='{{chartid}}'
-        onclick ='(function(e){ require("block_learnerscript/reportwidget").CreateDashboardwidget({reportid:{{reportid}}, reporttype: "{{chartid}}" }); })(event)'>
+<ul>
+<li class="ls-plotgraphs_listitem" data-cid="{{chartid}}">
+    {{#reportid}}
+    <a href="javascript:void(0);" class="ls-plotgraph_link cpointer" id="{{chartid}}"
+        onclick ="(function(e){ require('block_learnerscript/reportwidget').CreateDashboardwidget({reportid:{{reportid}}, reporttype: '{{chartid}}' }); })(event)">
         <span class="ls-plotgraphs-chartname">
             <span class='ls {{pluginname}}'></span><span id="lschartname{{chartid}}">{{chartname}}</span></span>
     </a>
+    {{/reportid}}
 </li>
+</ul>

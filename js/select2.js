@@ -3963,7 +3963,7 @@ S2.define('select2/data/maximumInputLength', [
   return MaximumInputLength;
 });
 
-S2.define('select2/data/maximumSelectionLength', [
+S2.define('select2/data/maximumselectionlength', [
 
 ], function() {
   /**
@@ -3972,7 +3972,7 @@ S2.define('select2/data/maximumSelectionLength', [
    * @param options
    */
   function MaximumSelectionLength(decorated, $e, options) {
-    this.maximumSelectionLength = options.get('maximumSelectionLength');
+    this.maximumselectionlength = options.get('maximumselectionlength');
 
     decorated.call(this, $e, options);
   }
@@ -3983,12 +3983,12 @@ S2.define('select2/data/maximumSelectionLength', [
 
       this.current(function(currentData) {
         var count = currentData != null ? currentData.length : 0;
-        if (self.maximumSelectionLength > 0 &&
-          count >= self.maximumSelectionLength) {
+        if (self.maximumselectionlength > 0 &&
+          count >= self.maximumselectionlength) {
           self.trigger('results:message', {
             message: 'maximumSelected',
             args: {
-              maximum: self.maximumSelectionLength
+              maximum: self.maximumselectionlength
             }
           });
           return;
@@ -4736,7 +4736,7 @@ S2.define('select2/defaults', [
   './data/tokenizer',
   './data/minimumInputLength',
   './data/maximumInputLength',
-  './data/maximumSelectionLength',
+  './data/maximumselectionlength',
 
   './dropdown',
   './dropdown/search',
@@ -4797,7 +4797,7 @@ S2.define('select2/defaults', [
         );
       }
 
-      if (options.maximumSelectionLength > 0) {
+      if (options.maximumselectionlength > 0) {
         options.dataAdapter = Utils.Decorate(
           options.dataAdapter,
           MaximumSelectionLength
@@ -5089,7 +5089,7 @@ S2.define('select2/defaults', [
       matcher: matcher,
       minimumInputLength: 0,
       maximumInputLength: 0,
-      maximumSelectionLength: 0,
+      maximumselectionlength: 0,
       minimumResultsForSearch: 0,
       selectOnClose: false,
       sorter: function(data) {

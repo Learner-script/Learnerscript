@@ -46,16 +46,18 @@ function export_report($reportclass, $id) {
     $filter = ['Filters'];
     $filterrow = Row::fromValues($filter);
     $writer->addRow($filterrow);
-    foreach ($reportclass->selectedfilters as $k => $filter) {
-        $filterrow = Row::fromValues([$k, $filter]);
-        $writer->addRow($filterrow);
+    $finalfilterdata = '';
+    if (!empty($reportclass->selectedfilters)) {
+        foreach ($reportclass->selectedfilters as $k => $filter) {
+            $filterrow = Row::fromValues([$k, $filter]);
+            $writer->addRow($filterrow);
+        }
     }
     $head = [];
     $reporttype = $DB->get_field('block_learnerscript',  'type',  ['id' => $id]);
     if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
         if (!empty($table->head)) {
             $keys = array_keys($table->head);
-            $lastkey = end($keys);
             foreach ($table->head as $key => $heading) {
                 $head[] = $heading;
             }

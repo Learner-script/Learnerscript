@@ -173,27 +173,27 @@ if ($elements) {
             $editcell = '';
             if ($pluginclass->form) {
                 $editcell .= html_writer::link(new moodle_url('editplugin.php', ['id' => $id,
-                'comp' => $comp, 'pname' => $e['pluginname'], 'cid' => $e['id']]),
+                'comp' => $comp, 'pname' => $e['pluginname'], 'cid' => $e['id'], ]),
                 html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/edit')]),
                 ['class' => "iconsmall", 'title' => "Edit"]);
             }
             $editcell .= html_writer::link(new moodle_url('editplugin.php', ['id' => $id,
                     'comp' => $comp, 'pname' => $e['pluginname'], 'cid' => $e['id'],
-                    'delete' => 1, 'sesskey' => sesskey()]),
+                    'delete' => 1, 'sesskey' => sesskey(), ]),
                     html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/delete')]),
                     ['class' => "iconsmall", 'title' => "Delete"]);
 
             if ($compclass->ordering && $i != 0 && count($elements) > 1) {
                 $editcell .= html_writer::link(new moodle_url('editplugin.php', ['id' => $id,
                             'comp' => $comp, 'pname' => $e['pluginname'], 'cid' => $e['id'],
-                            'moveup' => 1, 'sesskey' => sesskey()]),
+                            'moveup' => 1, 'sesskey' => sesskey(), ]),
                             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/up')]),
                             ['class' => "iconsmall", 'title' => "Up"]);
             }
             if ($compclass->ordering && $i != count($elements) - 1) {
                 $editcell .= html_writer::link(new moodle_url('editplugin.php', ['id' => $id,
                             'comp' => $comp, 'pname' => $e['pluginname'], 'cid' => $e['id'],
-                            'movedown' => 1, 'sesskey' => sesskey()]),
+                            'movedown' => 1, 'sesskey' => sesskey(), ]),
                             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/down')]),
                             ['class' => "iconsmall", 'title' => "Down"]);
             }
@@ -215,7 +215,7 @@ if ($elements) {
 
 if ($compclass->plugins) {
     echo html_writer::start_div("boxaligncenter", []);
-    echo html_writer::start_tag('p', array('class' => 'centerpara'));
+    echo html_writer::start_tag('p', ['class' => 'centerpara']);
     print_string('add');
     echo ': &nbsp;';
     $attributes = ['id' => 'menuplugin'];
@@ -238,7 +238,7 @@ if ($compclass->form) {
 
 if ($compclass->help) {
     echo html_writer::start_div("boxaligncenter", []);
-    echo html_writer::start_tag('p', array('class' => 'centerpara'));
+    echo html_writer::start_tag('p', ['class' => 'centerpara']);
     echo $OUTPUT->help_icon('comp_' . $comp, 'block_learnerscript', get_string('comp_' . $comp, 'block_learnerscript'));
     echo html_writer::end_tag('p');
     echo html_writer::end_div();

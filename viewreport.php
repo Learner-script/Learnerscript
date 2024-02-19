@@ -88,11 +88,26 @@ $filterrequests = [];
 $datefilterrequests = [];
 $datefilterrequests['lsfstartdate'] = 0;
 $datefilterrequests['lsfenddate'] = time();
-foreach ($_REQUEST as $key => $val) {
+
+$paramcourses = optional_param('filter_courses', 0, PARAM_INT);
+$paramcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+$paramusers = optional_param('filter_users', 0, PARAM_INT);
+$parammodules = optional_param('filter_modules', 0, PARAM_INT);
+$paramactivities = optional_param('filter_activities', 0, PARAM_INT);
+$paramstatus = optional_param('filter_status', '', PARAM_TEXT);
+$paramstartdate = optional_param('lsfstartdate', 0, PARAM_INT);
+$paramenddate = optional_param('lsfenddate', 0, PARAM_INT);
+$urlfilterparams = ['filter_courses' => $paramcourses,
+            'filter_coursecategories' => $paramcoursecategories,
+            'filter_users' => $paramusers, 'filter_modules' => $parammodules,
+            'filter_activities' => $paramactivities, 'filter_status' => $paramstatus,
+            'lsfstartdate' => $paramstartdate, 'lsfenddate' => $paramenddate, ];
+$urlrequests = array_filter($urlfilterparams);
+foreach ($urlrequests as $key => $val) {
     if (strpos($key, 'filter_') !== false) {
         $filterrequests[$key] = optional_param($key, $val, PARAM_RAW);
     }
-    if (strpos($key, 'ls_') !== false) {
+    if (strpos($key, 'date') !== false) {
         $datefilterrequests[$key] = optional_param($key, $val, PARAM_RAW);
     }
 }
@@ -172,7 +187,16 @@ if (!is_siteadmin() && !$reportclass->check_permissions($context, $USER->id)) {
     throw new moodle_exception("badpermissions", 'block_learnerscript');
 }
 $basicparamdata = new stdclass;
-$request = array_merge($_POST, $_GET);
+$ftcourses = optional_param('filter_courses', 0, PARAM_INT);
+$ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+$ftusers = optional_param('filter_users', 0, PARAM_INT);
+$ftmodules = optional_param('filter_modules', 0, PARAM_INT);
+$ftactivities = optional_param('filter_activities', 0, PARAM_INT);
+$ftstatus = optional_param('filter_status', '', PARAM_TEXT);
+$urlparams = ['filter_courses' => $ftcourses, 'filter_coursecategories' => $ftcoursecategories,
+            'filter_users' => $ftusers, 'filter_modules' => $ftmodules,
+            'filter_activities' => $ftactivities, 'filter_status' => $ftstatus, ];
+$request = array_filter($urlparams);
 if ($request) {
     foreach ($request as $key => $val) {
         if (strpos($key, 'filter_') !== false) {
@@ -201,6 +225,7 @@ $PAGE->requires->css('/blocks/reportdashboard/css/radios-to-slider.min.css');
 $PAGE->requires->css('/blocks/reportdashboard/css/flatpickr.min.css');
 $PAGE->requires->css('/blocks/learnerscript/css/fixedHeader.dataTables.min.css');
 $PAGE->requires->css('/blocks/learnerscript/css/responsive.dataTables.min.css');
+$PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('ui-css');
 $PAGE->requires->css('/blocks/learnerscript/css/select2.min.css');
 $PAGE->requires->css('/blocks/learnerscript/css/jquery.dataTables.min.css');
@@ -259,7 +284,7 @@ if (!$download) {
         echo $OUTPUT->heading($report->name."  ".
         html_writer::empty_tag('img', ['src' => "$CFG->wwwroot/pix/help.png", 'id' => 'helpimg',
         'title' => 'Help with ' . $report->name, 'alt' => 'help', 'href' => "javascript:void(0)",
-        'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)"]));
+        'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
 
     } else {
         echo $OUTPUT->heading($report->name.$OUTPUT->help_icon('report_' . $report->type,
@@ -273,13 +298,13 @@ if (!$download) {
     $disabletable = !empty($report->disabletable) ? $report->disabletable : 0;
     $renderer->viewreport($report, $context, $reportclass);
     echo html_writer::tag('input', '', ['type' => 'hidden', 'name' => 'lsfstartdate',
-            'id' => 'lsfstartdate', 'value' => 0]) .
+            'id' => 'lsfstartdate', 'value' => 0, ]) .
         html_writer::tag('input', '', ['type' => 'hidden', 'name' => 'lsfenddate',
-            'id' => 'lsfenddate', 'value' => time()]) .
+            'id' => 'lsfenddate', 'value' => time(), ]) .
         html_writer::tag('input', '', ['type' => 'hidden', 'name' => 'reportid',
-            'value' => $report->id]) .
+            'value' => $report->id, ]) .
         html_writer::tag('input', '', ['type' => 'hidden', 'name' => 'disabletable',
-            'id' => 'disabletable', 'value' => $disabletable]);
+            'id' => 'disabletable', 'value' => $disabletable, ]);
     echo html_writer::end_tag('div');
     echo $OUTPUT->footer();
 } else {

@@ -44,7 +44,7 @@ class plugin_min extends pluginbase {
      * @return string
      */
     public function summary($data) {
-        global $DB, $CFG;
+        global $CFG;
 
         if ($this->report->type != 'sql') {
             $components = (new ls)->cr_unserialize($this->report->components);

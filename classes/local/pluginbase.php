@@ -108,7 +108,7 @@ class pluginbase {
         $this->init();
 
         // Use a custom $DB (and not current system's $DB)
-        // TODO: major security issue.
+        // TODO: MDL-2345 major security issue.
         $remotedbhost = get_config('block_learnerscript', 'dbhost');
         $remotedbname = get_config('block_learnerscript', 'dbname');
         $remotedbuser = get_config('block_learnerscript', 'dbuser');

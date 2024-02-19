@@ -21,6 +21,10 @@
  * @copyright 2023 Moodle India
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
+
+/** Learnerscript block installation class */
 class block_learnerscript_license_setting extends admin_setting_configtext {
     /**
      * Constructor.
@@ -72,21 +76,21 @@ class block_learnerscript_license_setting extends admin_setting_configtext {
      * @return string
      */
     public function output_html($data, $query='') {
-        global $CFG, $PAGE;
+        global $CFG;
         $default = $this->get_defaultsetting();
-
+        $pagevariables = get_pagevariables();
         $pluginman = core_plugin_manager::instance();
         $reportdashboardpluginfo = $pluginman->get_plugin_info('block_reportdashboard');
         $reporttilespluginfo = $pluginman->get_plugin_info('block_reporttiles');
         $error = false;
         $errordata = [];
-        $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
+        $reportdashboardblockexists = $pagevariables->blocks->is_known_block_type('reportdashboard', false);
         // Make sure we know the plugin.
         if (is_null($reportdashboardpluginfo) || !$reportdashboardblockexists) {
             $error = true;
             $errordata[] = get_string('learnerscriptwidget', 'block_learnerscript');
         }
-        $reporttilesblockexists = $PAGE->blocks->is_known_block_type('reporttiles', false);
+        $reporttilesblockexists = $pagevariables->blocks->is_known_block_type('reporttiles', false);
         // Make sure we know the plugin.
         if (is_null($reporttilespluginfo) || !$reporttilesblockexists) {
             $error = true;
@@ -107,7 +111,7 @@ class block_learnerscript_license_setting extends admin_setting_configtext {
         $return .= format_admin_setting($this, $this->visiblename,
         html_writer::div(html_writer::tag('input', '', ['type' => "text", 'size' => "' . $this->size . '",
         'id' => $this->get_id(), 'name' => "'"
-        . $this->get_full_name() . "'", 'value' => "'" . s($data) . "'" . $disabled]), "form-text defaultsnext"),
+        . $this->get_full_name() . "'", 'value' => "'" . s($data) . "'" . $disabled, ]), "form-text defaultsnext"),
         $this->description, true, '', $default, $query);
         return $return;
     }

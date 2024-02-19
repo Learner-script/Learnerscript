@@ -32,7 +32,7 @@ $movedown = optional_param('movedown', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
 
 if (!$pname) {
-    redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $com])));
+    redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $com]));
     exit;
 }
 

@@ -36,7 +36,7 @@ class plugin_roleincourse extends pluginbase {
         $this->form = true;
         $this->unique = false;
         $this->fullname = get_string('roleincourse', 'block_learnerscript');
-        $this->reporttypes = array( 'courses', 'sql', 'users', 'statistics', 'timeline', 'categories', 'activitystatus',
+        $this->reporttypes = ['courses', 'sql', 'users', 'statistics', 'timeline', 'categories', 'activitystatus',
         'listofactivities', 'coursesoverview', 'usercourses', 'grades', 'scorm_activities_course',
         'competencycompletion', 'myassignments', 'useractivities',
         'assignments', 'userassignments', 'resources', 'myscorm', 'quizzes', 'userquizzes',
@@ -47,7 +47,7 @@ class plugin_roleincourse extends pluginbase {
         'courseprofile', 'userattendance', 'attendanceoverview', 'courseactivities', 'courseviews',
         'coursesoverview', 'quizzparticipation', 'assignmentparticipation', 'weeklysessions',
         'monthlysessions', 'dailysessions', 'upcomingactivities', 'pendingactivities', 'needgrading',
-        'scormparticipation', 'cohortusers', 'bigbluebutton', 'activestudents');
+        'scormparticipation', 'cohortusers', 'bigbluebutton', 'activestudents', ];
     }
 
     /** Summary
@@ -56,7 +56,7 @@ class plugin_roleincourse extends pluginbase {
      */
     public function summary($data) {
         global $DB;
-        $rolename = $DB->get_field('role', 'shortname', array('id' => $data->roleid));
+        $rolename = $DB->get_field('role', 'shortname', ['id' => $data->roleid]);
         $contextname = context_helper::get_level_name($data->contextlevel);
         return $rolename . ' at ' . $contextname .' level';
     }
@@ -68,12 +68,11 @@ class plugin_roleincourse extends pluginbase {
      * @return boolean
      */
     public function execute($userid, $context, $data) {
-        global $CFG, $DB;
+        global $DB;
         $permissions = (isset($this->reportclass->componentdata['permissions']))
-        ? $this->reportclass->componentdata['permissions'] : array();
+        ? $this->reportclass->componentdata['permissions'] : [];
         if (!empty($this->role)) {
-            $currentroleid = $DB->get_field('role', 'id', array('shortname' => $this->role));
-            $rolepermissions = array();
+            $currentroleid = $DB->get_field('role', 'id', ['shortname' => $this->role]);
             $return = [];
             foreach ($permissions['elements'] as $p) {
                 $currentroleid = $DB->get_field('role', 'id', ['shortname' => $this->role]);

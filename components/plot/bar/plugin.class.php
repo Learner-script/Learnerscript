@@ -59,7 +59,7 @@ class plugin_bar extends pluginbase {
      * @return string
      */
     public function execute($id, $data, $finalreport) {
-        global $DB, $CFG;
+        global $CFG;
         $series = [];
         $data->yaxis--;
         $data->serieid--;
@@ -89,20 +89,4 @@ class plugin_bar extends pluginbase {
         $this->report->id . '&id=' . $id . $params .
         '&amp;min=' . $minvalue . '&amp;max=' . $maxvalue;
     }
-
-    /** Graph series data
-     * @return array
-     */
-    public function get_series() {
-        $series = [];
-        foreach ($_GET as $key => $val) {
-            if (strpos($key, 'serie') !== false) {
-                $id = (int) str_replace('serie', '', $key);
-                list($name, $values) = explode('||', base64_decode($val));
-                $series[$id] = ['serie' => explode(',', $values), 'name' => $name];
-            }
-        }
-        return $series;
-    }
-
 }

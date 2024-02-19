@@ -131,28 +131,28 @@ if ($reports) {
         $editcell .= html_writer::link(new \moodle_url($CFG->wwwroot .
         '/blocks/learnerscript/editreport.php', ['id' => $r->id]),
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/edit'), 'class' => "iconsmall",
-        'alt' => $stredit ]), ['title' => $stredit]);
+        'alt' => $stredit, ]), ['title' => $stredit]);
 
         if (!empty($r->visible)) {
             $editcell .= html_writer::link(new \moodle_url('editreport.php',
             ['id' => $r->id, 'hide' => 1, 'sesskey' => $USER->sesskey]),
             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/hide'), 'class' => "iconsmall",
-            'alt' => $strhide ]), ['title' => $strhide]);
+            'alt' => $strhide, ]), ['title' => $strhide]);
         } else {
             $editcell .= html_writer::link(new moodle_url('editreport.php',
             ['id' => $r->id, 'show' => 1, 'sesskey' => $USER->sesskey]),
             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/show'), 'class' => "iconsmall",
-            'alt' => $strshow]), ['class' => 'iconsmall', 'title' => $strshow]);
+            'alt' => $strshow, ]), ['class' => 'iconsmall', 'title' => $strshow]);
         }
         $editcell .= html_writer::link(new moodle_url('editreport.php',
         ['id' => $r->id, 'sesskey' => $USER->sesskey]),
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/copy'), 'class' => "iconsmall",
-        'alt' => $strcopy]),
+        'alt' => $strcopy, ]),
         ['class' => 'iconsmall', 'title' => $strcopy]);
         $editcell .= html_writer::link(new moodle_url('export.php',
         ['id' => $r->id, 'sesskey' => $USER->sesskey]),
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/backup'), 'class' => "iconsmall",
-        'alt' => $strexport]),
+        'alt' => $strexport, ]),
         ['class' => 'iconsmall', 'title' => $strexport]);
         $properties = new stdClass();
         $properties->courseid = $courseid;
@@ -161,7 +161,7 @@ if ($reports) {
             $editcell .= html_writer::link(new moodle_url('components/scheduler/schedule.php',
             ['id' => $r->id, 'courseid' => $r->courseid, 'sesskey' => $USER->sesskey]),
             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/i/calendar'), 'class' => "iconsmall",
-            'alt' => $strschedule]),
+            'alt' => $strschedule, ]),
             ['class' => 'iconsmall', 'title' => $strschedule]);;
         }
         $download = '';
@@ -172,7 +172,7 @@ if ($reports) {
                     $download .= html_writer::link(new moodle_url('viewreport.php',
                     ['id' => $r->id, 'download' => 1, 'format' => $e]),
                     html_writer::empty_tag('img', ['src' => $CFG->wwwroot . '/blocks/learnerscript/export/' . $e . '/pix.gif',
-                    'alt' => $e]) . (strtoupper($e)), ['title' => (strtoupper($e))]);
+                    'alt' => $e, ]) . (strtoupper($e)), ['title' => (strtoupper($e))]);
                 } else {
                     $download .= '--';
                 }

@@ -115,8 +115,7 @@ class provider implements \core_privacy\local\metadata\provider,
         $context = $userlist->get_context();
 
         $allowedcontexts = [
-            CONTEXT_SYSTEM
-        ];
+            CONTEXT_SYSTEM, ];
 
         if (!in_array($context->contextlevel, $allowedcontexts)) {
             return;

@@ -37,12 +37,12 @@ define(['jquery',
                 args.instanceid = args.reportid;
                 args.filters = args.filters || smartfilter.FilterData(args.instanceid);
                 args.basicparams = JSON.stringify(smartfilter.BasicparamsData(args.instanceid));
-                args.filters.lsfstartdate = $('#lsfstartdate').val();
-                args.filters.lsfenddate = $('#lsfenddate').val();
-                if (typeof args.filters.filter_courses == 'undefined') {
+                args.filters['lsfstartdate'] = $('#lsfstartdate').val();
+                args.filters['lsfenddate'] = $('#lsfenddate').val();
+                if (typeof args.filters['filter_courses'] == 'undefined') {
                     var filter_courses = $('.dashboardcourses').val();
                     if (filter_courses != 1) {
-                        args.filters.filter_courses = filter_courses;
+                        args.filters['filter_courses'] = filter_courses;
                     }
                 }
                 args.filters = JSON.stringify(args.filters);

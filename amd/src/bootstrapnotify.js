@@ -17,16 +17,10 @@
  * TODO describe module bootstrapnotify
  *
  * @module     block_learnerscript/bootstrapnotify
- * @copyright  2023 YOUR NAME <your@email.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  Mouse0270 aka Robert McIntosh
+ * @license    MIT Licens
  */
-/*
-* Project: Bootstrap Notify = v3.1.3
-* Description: Turns standard Bootstrap alerts into "Growl-like" notifications.
-* Author: Mouse0270 aka Robert McIntosh
-* License: MIT License
-* Website: https://github.com/mouse0270/bootstrap-growl
-*/
+
 (function(factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.

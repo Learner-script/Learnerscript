@@ -329,7 +329,7 @@ class reportbase {
             $this->contextlevel = isset($SESSION->ls_contextlevel) ? $SESSION->ls_contextlevel :
             (isset($properties->contextlevel) ? $properties->contextlevel : '');
         }
-        $this->lsstartdate = isset($properties->lsstartdate) ? $properties->lsstartdate : 0;
+        $this->lsstartdate = isset($properties->lsfstartdate) ? $properties->lsfstartdate : 0;
         $this->lsenddate = isset($properties->lsenddate) ? $properties->lsenddate : time();
         $this->componentdata = (new ls)->cr_unserialize($this->config->components);
         $this->rolewisecourses = $this->rolewisecourses();
@@ -529,7 +529,16 @@ class reportbase {
 
         if (!empty($filters['elements'])) {
             $formdata = new stdclass;
-            $request = array_merge($_POST, $_GET);
+            $ftcourses = optional_param('filter_courses', 0, PARAM_INT);
+            $ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+            $ftusers = optional_param('filter_users', 0, PARAM_INT);
+            $ftmodules = optional_param('filter_modules', 0, PARAM_INT);
+            $ftactivities = optional_param('filter_activities', 0, PARAM_INT);
+            $ftstatus = optional_param('filter_status', '', PARAM_TEXT);
+            $urlparams = ['filter_courses' => $ftcourses, 'filter_coursecategories' => $ftcoursecategories,
+                        'filter_users' => $ftusers, 'filter_modules' => $ftmodules,
+                        'filter_activities' => $ftactivities, 'filter_status' => $ftstatus, ];
+            $request = array_filter($urlparams);
             if ($request) {
                 foreach ($request as $key => $val) {
                     if (strpos($key, 'filter_') !== false) {

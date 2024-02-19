@@ -116,14 +116,6 @@ class renderer extends plugin_renderer_base {
         $plotdata = (new ls)->cr_listof_reporttypes($report->id, false, false);
         if (!empty($plotdata)) {
             $params = '';
-            unset($_GET['id']);
-            foreach ($_GET as $k => $param) {
-                if (is_numeric($param)) {
-                    $params .= ", $k: $param";
-                } else {
-                    $params .= ", $k: '$param'";
-                }
-            }
             if (empty($reportclass->basicparams) || !empty($reportclass->params)) {
                 $enableplots = 0;
             } else {
@@ -175,10 +167,8 @@ class renderer extends plugin_renderer_base {
      *                     if  records not found, dispalying info message.
      */
     public function schedulereportsdata($reportid, $courseid = 1, $table = true, $start = 0, $length = 5, $search = '') {
-        global $DB, $CFG;
 
         $scheduledreports = (new schedule)->schedulereports($reportid, $table, $start, $length, $search);
-        $frequencyselect = (new schedule)->get_options();
         if ($table) {
             if (!$scheduledreports['totalschreports']) {
                 $return = html_writer::tag('center', get_string('noschedule', 'block_learnerscript'),
@@ -203,7 +193,7 @@ class renderer extends plugin_renderer_base {
 
                 switch ($sreport->role) {
                     case 'admin':
-                        $originalrole = 'Admin';
+                        $originalrole = get_string('admin', 'block_learnerscript');
                         break;
                     case 'manager':
                         $originalrole = get_string('manager', 'role');
@@ -247,7 +237,7 @@ class renderer extends plugin_renderer_base {
                 ['id' => $reportid, 'courseid' => $courseid,
                 'scheduleid' => $sreport->id, 'sesskey' => sesskey(), 'delete' => 1, ]),
                 html_writer::empty_tag('img', ['src' => $this->output->image_url('t/delete'),
-                'alt' => get_string('delete'), 'class' => 'iconsmall', 'title' => 'Delete', ]));
+                'alt' => get_string('delete'), 'class' => 'iconsmall', 'title' => get_string('delete'), ]));
                 $line[] = implode(' ', $buttons);
                 $data[] = $line;
             }

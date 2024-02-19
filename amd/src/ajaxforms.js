@@ -28,6 +28,7 @@ define(['jquery',
         'core/fragment',
         'block_learnerscript/ajax',
         'block_learnerscript/schedule',
+        'block_learnerscript/config',
         'block_learnerscript/select2',
         'core/yui',
         'core/templates',
@@ -35,7 +36,7 @@ define(['jquery',
         'block_learnerscript/helper',
         'jqueryui'
         ],
-    function($, Str, ModalFactory, ModalEvents, Fragment, Ajax, schedule, select2, Y, Templates, Modal, helper) {
+    function($, Str, ModalFactory, ModalEvents, Fragment, Ajax, schedule, cfgs, select2, Y, Templates, Modal, helper) {
 
         /**
          * Constructor
@@ -142,7 +143,7 @@ define(['jquery',
                     helper.Select2Ajax({
                         'action': 'userlist',
                         'reportid': args.reportid,
-                        'maximumSelectionLength': 0
+                        'maximumselectionlength': 0
                     });
                 }
                 $('.' + self.nodeContent + ' .mform').bind('submit', function(e) {
@@ -235,7 +236,7 @@ define(['jquery',
                     helper.Select2Ajax({
                         'action': 'userlist',
                         'reportid': this.args.reportid,
-                        'maximumSelectionLength': 0
+                        'maximumselectionlength': 0
                     });
                 } else {
                     $("." + self.nodeContent + " select[data-select2='1']").select2({

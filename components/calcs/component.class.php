@@ -40,7 +40,7 @@ class component_calcs extends componentbase {
      * @param  string  $components [description]
      */
     public function add_form_elements(&$mform, $components) {
-        global $DB, $CFG;
+        global $CFG;
 
         $components = (new ls)->cr_unserialize($components);
         $options = [];

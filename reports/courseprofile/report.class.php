@@ -131,9 +131,9 @@ class report_courseprofile extends reportbase implements report {
         if (isset($this->search) && $this->search) {
             $this->searchable = ['c.fullname'];
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -193,10 +193,10 @@ class report_courseprofile extends reportbase implements report {
         }
         $where = " AND %placeholder% = $courseid";
         $query = " ";
-        $identy = " ";
+        $identity = " ";
         switch ($columnname) {
             case 'progress':
-                $identy = 'ct.instanceid';
+                $identity = 'ct.instanceid';
                 $query  = " SELECT CASE WHEN (SELECT COUNT(DISTINCT ue.userid)
                              FROM {user_enrolments} ue
                              JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
@@ -218,12 +218,12 @@ class report_courseprofile extends reportbase implements report {
                             WHERE 1 = 1 $where) END ";
                 break;
             case 'activities':
-                $identy = 'course';
+                $identity = 'course';
                 $query  = "SELECT COUNT(id) AS activities  FROM {course_modules} WHERE 1 = 1  AND visible = 1
                 AND deletioninprogress = 0 $where ";
             break;
             case 'enrolments':
-                $identy = 'ct.instanceid';
+                $identity = 'ct.instanceid';
                 $query  = "SELECT COUNT(DISTINCT ue.userid) AS enrolled
                                      FROM {user_enrolments} ue
                                      JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
@@ -235,7 +235,7 @@ class report_courseprofile extends reportbase implements report {
                                     where 1=1 $where ";
             break;
             case 'completed':
-                $identy = 'ct.instanceid';
+                $identity = 'ct.instanceid';
                 $query = "SELECT COUNT(DISTINCT cc.userid) AS completed
                                      FROM {user_enrolments} ue
                                      JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
@@ -249,45 +249,45 @@ class report_courseprofile extends reportbase implements report {
                                     where 1 = 1 AND cc.course = e.courseid $where ";
             break;
             case 'enrolmethods':
-                $identy = 'courseid';
+                $identity = 'courseid';
                 $query = "SELECT COUNT(id) AS enrolmethods FROM {enrol} WHERE status = 0 $where ";
             break;
             case 'highgrade':
-                $identy = 'gi.courseid';
+                $identity = 'gi.courseid';
                 $query = "SELECT  MAX(finalgrade) AS highgrade
                           FROM {grade_grades} g
                           JOIN {grade_items} gi ON gi.itemtype = 'course' AND g.itemid = gi.id
                          WHERE g.finalgrade IS NOT NULL AND g.userid IN ($learnersql) $where ";
             break;
             case 'lowgrade':
-                $identy = 'gi.courseid';
+                $identity = 'gi.courseid';
                 $query = "SELECT MIN(finalgrade) AS lowgrade
                           FROM {grade_grades} g
                           JOIN {grade_items} gi ON gi.itemtype = 'course' AND g.itemid = gi.id
                          WHERE g.finalgrade IS NOT NULL AND g.userid IN ($learnersql) $where ";
             break;
             case 'avggrade':
-                $identy = 'gi.courseid';
+                $identity = 'gi.courseid';
                 $query = "SELECT AVG(finalgrade) AS avggrade
                           FROM {grade_grades} g
                           JOIN {grade_items} gi ON gi.itemtype = 'course' AND g.itemid = gi.id
                          WHERE g.finalgrade IS NOT NULL AND g.userid IN ($learnersql) $where ";
             break;
             case 'badges':
-                $identy = 'b.courseid';
+                $identity = 'b.courseid';
                 $query = "SELECT COUNT(b.id) AS badges  FROM {badge} b WHERE b.status != 0  AND b.status != 2 $where ";
             break;
             case 'totaltimespent':
-                $identy = 'bt.courseid';
+                $identity = 'bt.courseid';
                 $courses = 'bt.courseid';
-                $query = "SELECT SUM(bt.timespent) AS totaltimespent  from {block_ls_coursetimestats} AS bt WHERE 1 = 1
+                $query = "SELECT SUM(bt.timespent) AS totaltimespent  FROM {block_ls_coursetimestats} AS bt WHERE 1 = 1
                 AND bt.userid IN ($learnersql) $where ";
             break;
 
             default:
             return false;
         }
-        $query = str_replace('%placeholder%', $identy, $query);
+        $query = str_replace('%placeholder%', $identity, $query);
         $query = str_replace('%courseid%', $courses, $query);
         return $query;
     }

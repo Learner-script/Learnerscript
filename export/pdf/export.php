@@ -33,7 +33,11 @@ use block_learnerscript\local\ls;
 function export_report($reportclass, $id) {
     global $DB, $CFG;
     $reportdata = $reportclass->finalreport;
-    $requestdata = $_REQUEST;
+    if (!empty($reportclass->basicparams)) {
+        $requestdata = array_merge($reportclass->params, $reportclass->basicparams);
+    } else {
+        $requestdata = $reportclass->params;
+    }
     require_once($CFG->libdir . '/pdflib.php');
     $reportname = $DB->get_record('block_learnerscript', ['id' => $id]);
     $table = $reportdata->table;
@@ -58,13 +62,15 @@ function export_report($reportclass, $id) {
         $keys = array_keys($table->head);
         $lastkey = end($keys);
         foreach ($table->head as $key => $heading) {
-            $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading))));
+            $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
         }
     }
     if (!empty($table->data)) {
         foreach ($table->data as $rkey => $row) {
             foreach ($row as $key => $item) {
-                $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item))));
+                $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
             }
         }
     }
@@ -115,9 +121,7 @@ function export_report($reportclass, $id) {
          * PDF page footer
          */
         public function footer() {
-            global $DB, $CFG;
-            $requestdata = $_REQUEST;
-            $reportname = $DB->get_record('block_learnerscript', ['id' => $requestdata['id']]);
+            global $DB;
             // Position at 15 mm from bottom.
             // Set font.
             $this->SetFont('helvetica', 'I', 10);

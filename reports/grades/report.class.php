@@ -141,14 +141,14 @@ class report_grades extends reportbase implements report {
             $activitysql = ' AND cm.id IN ('.$this->params['filter_activities'].') ';
         }
         $this->sql .= " WHERE 1 = 1 AND u.id IN (SELECT u.id
-                        FROM {course} AS c
-                        JOIN {enrol} AS e ON c.id = e.courseid AND e.status = 0
-                        JOIN {user_enrolments} AS ue ON ue.enrolid = e.id AND ue.status = 0
-                        JOIN {role_assignments} AS ra ON ra.userid = ue.userid
+                        FROM {course} c
+                        JOIN {enrol} e ON c.id = e.courseid AND e.status = 0
+                        JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
+                        JOIN {role_assignments} ra ON ra.userid = ue.userid
                         JOIN {context} con ON c.id = con.instanceid
-                        JOIN {role} AS rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                        JOIN {course_modules} AS cm ON cm.course = c.id
-                        JOIN {user} AS u ON u.id = ue.userid
+                        JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
+                        JOIN {course_modules} cm ON cm.course = c.id
+                        JOIN {user} u ON u.id = ue.userid
                         WHERE c.visible = 1 AND ra.roleid = :roleid AND ra.contextid = con.id
                         AND u.confirmed = 1 AND u.deleted = 0  AND u.suspended = 0
                         AND cm.visible = 1 AND c.id = :ej1_courseid
@@ -170,9 +170,9 @@ class report_grades extends reportbase implements report {
         if (isset($this->search) && $this->search) {
             $this->searchable = ["CONCAT(u.firstname, ' ', u.lastname)", "u.email"];
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -239,16 +239,16 @@ class report_grades extends reportbase implements report {
                 $completion = $completioninfo->get_data($cm, false, $user->id);
                 switch($completion->completionstate) {
                     case COMPLETION_INCOMPLETE :
-                            $completionstatus = 'Not Completed';
+                            $completionstatus = get_string('notcompleted', 'block_learnerscript');
                     break;
                     case COMPLETION_COMPLETE :
-                            $completionstatus = 'Completed';
+                            $completionstatus = get_string('completed', 'block_learnerscript');
                     break;
                     case COMPLETION_COMPLETE_PASS :
-                            $completionstatus = 'Completed (achieved pass grade)';
+                            $completionstatus = get_string('achieved', 'block_learnerscript');
                     break;
                     case COMPLETION_COMPLETE_FAIL :
-                            $completionstatus = 'Fail';
+                            $completionstatus = get_string('fail', 'block_learnerscript');
                     break;
                 }
                 $user->status = $completionstatus;

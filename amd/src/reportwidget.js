@@ -17,7 +17,7 @@
  * TODO describe module reportwidget
  *
  * @module     block_learnerscript/reportwidget
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -180,12 +180,12 @@ define(['jquery',
             var reportinstance = args.instanceid || args.reportid;
             args.filters = args.filters || smartfilter.FilterData(reportinstance);
             args.columnDefs = '';
-            args.filters.lsfstartdate = $('#lsfstartdate' + args.instanceid).val();
-            args.filters.lsfenddate = $('#lsfenddate' + args.instanceid).val();
-            if (typeof args.filters.filter_courses == 'undefined') {
+            args.filters['lsfstartdate'] = $('#lsfstartdate' + args.instanceid).val();
+            args.filters['lsfenddate'] = $('#lsfenddate' + args.instanceid).val();
+            if (typeof args.filters['filter_courses'] == 'undefined') {
                 var filter_courses = $('.report_courses').val();
                 if (filter_courses != 1) {
-                    args.filters.filter_courses = filter_courses;
+                    args.filters['filter_courses'] = filter_courses;
                 }
             }
             if (args.reporttype == 'table') {
@@ -215,9 +215,6 @@ define(['jquery',
                     var filters = JSON.parse(args.filters);
                     $.each(filters, function(key, value) {
                         if (key.indexOf('filter_') == 0) {
-                            link += '&' + key + '=' + value;
-                        }
-                        if (key.indexOf('ls_') == 0) {
                             link += '&' + key + '=' + value;
                         }
                     });

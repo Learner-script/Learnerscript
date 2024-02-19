@@ -17,17 +17,18 @@
  * TODO describe module schedule
  *
  * @module     block_learnerscript/schedule
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
     'core/ajax',
     'block_learnerscript/ajax',
     'core/event',
+    'block_learnerscript/config',
     'block_learnerscript/select2',
     'block_learnerscript/report',
     'core/str'
-], function($, Ajax, ajax, Event, select2, report,Str) {
+], function($, Ajax, ajax, Event, cfgs, select2, report, Str) {
 
     var schedule = {
         /**
@@ -42,9 +43,11 @@ define(['jquery',
             var promise = Ajax.call([{
                 methodname: 'block_learnerscript_schreportform',
                 args: {
+                    // action: 'schreportform',
                     reportid: args.reportid,
                     instance: args.instanceid
                 },
+                // url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php"
             }]);
             promise[0].done(function(response) {
                 response = $.parseJSON(response);
@@ -542,7 +545,7 @@ define(['jquery',
                 helper.Select2Ajax({
                     reportid: reportid,
                     action: 'rolewiseusers',
-                    maximumSelectionLength: 10
+                    maximumselectionlength: 10
                 });
             });
         },

@@ -59,7 +59,7 @@ class plugin_pie extends pluginbase {
      * @return string
      */
     public function execute($id, $data, $finalreport) {
-        global $DB, $CFG;
+        global $CFG;
         $series = [];
         if ($finalreport) {
             foreach ($finalreport as $r) {
@@ -93,15 +93,4 @@ class plugin_pie extends pluginbase {
         return $CFG->wwwroot . '/blocks/learnerscript/components/plot/pie/graph.php?reportid=' . $this->report->id .
         '&id=' . $id . '&serie0=' . $serie0 . '&serie1=' . $serie1;
     }
-
-    /** Graph series data
-     * @return array
-     */
-    public function get_series() {
-        $serie0 = required_param('serie0', PARAM_RAW);
-        $serie1 = required_param('serie1', PARAM_BASE64);
-
-        return [explode(',', base64_decode($serie0)), explode(',', base64_decode($serie1))];
-    }
-
 }

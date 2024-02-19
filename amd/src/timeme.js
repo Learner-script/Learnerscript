@@ -17,7 +17,7 @@
  * TODO describe module timeme
  *
  * @module     block_learnerscript/timeme
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2017 Jason Zissman
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 /* Copyright (c) 2017 Jason Zissman

@@ -54,7 +54,7 @@ class plugin_userfieldorder extends pluginbase {
      * @return string
      */
     public function execute($data) {
-        global $DB, $CFG;
+        global $DB;
         if (isset($data->direction)) {
             if ($data->direction == 'asc' || $data->direction == 'desc') {
                 $direction = strtoupper($data->direction);

@@ -39,8 +39,7 @@
     }
 }}
 
-<div>
-    <center class='lsoverviewimageslider'>
+<div class="lsoverviewimageslider">
         {{# slideshowimages }}
             <div class="mySlides">
                 <div>
@@ -52,19 +51,18 @@
         {{# configurestatus }}
         <div id="progressbar"></div>
         <div>
-            <center style="display:none;" id="reportdashboardnav">
+            <p style="display:none;text-align:center" id="reportdashboardnav">
                 {{# importstatus }}
                     <a href="{{ redirecturl }}" >
                         <button>{{# str}} continue {{/ str}}</button>
                     </a>
                 {{/ importstatus }}
-            </center>
+            </p>
         </div>
         {{/ configurestatus }}
         {{^ configurestatus }}
-        <div class='alert alert-info'>{{# str }} lsreportsconfigdone, block_learnerscript{{/ str }}
-            <a href='{{ redirecturl }}' >{{# str }} clickhere, block_learnerscript {{/ str}}</a> {{# str}} continue {{/ str}}
+        <div class="alert alert-info">{{# str }} lsreportsconfigdone, block_learnerscript{{/ str }}
+            <a href="{{ redirecturl }}" >{{# str }} clickhere, block_learnerscript {{/ str}}</a> {{# str}} continue {{/ str}}
         </div>
         {{/ configurestatus }}
-    </center>
 </div>

@@ -58,13 +58,9 @@ class plugin_coursefield extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row) {
         global $DB, $CFG, $SESSION;
         $courserecord = $DB->get_record('course', ['id' => $row->id]);
         $coursereportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'courseprofile'], IGNORE_MULTIPLE);
@@ -111,7 +107,7 @@ class plugin_coursefield extends pluginbase {
                                                     '/blocks/reportdashboard/courseprofile.php',
                                 ['filter_courses' => $courserecord->id,
                                 'role' => $SESSION->role,
-                                'contextlevel' => $SESSION->ls_contextlevel]), $courserecord->{$data->column});
+                                'contextlevel' => $SESSION->ls_contextlevel, ]), $courserecord->{$data->column});
                     }
                 break;
                 case 'category':

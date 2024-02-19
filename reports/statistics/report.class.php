@@ -221,15 +221,9 @@ class report_statistics extends reportbase {
                         $arrayrow[$ii] = str_replace('[[QUESTIONMARK]]', '?', $cell);
                     }
                     $totalrecords++;
-                    if ($this->config->name == 'Maximum time spent on LMS' || $this->config->name == 'Average time spent on LMS'
-                        || $this->config->name == 'Total timespent') {
+                    if ($this->config->name == 'Total timespent') {
                         if ($arrayrow[0] > 0) {
                             $arrayrow[0] = (new ls)->strtime($arrayrow[0]);
-                        }
-                    } else if ($this->config->name == 'Maximum time spent in course'
-                        || $this->config->name == 'Maximum time spent in activity level') {
-                        if ($arrayrow[1] > 0) {
-                            $arrayrow[1] = (new ls)->strtime($arrayrow[1]);
                         }
                     }
                     $finaltable[] = $arrayrow;

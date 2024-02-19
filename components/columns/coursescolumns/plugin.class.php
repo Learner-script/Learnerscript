@@ -57,14 +57,10 @@ class plugin_coursescolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
      * @param string $reporttype Report type
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object|string
      */
-    public function execute($data, $row, $user, $courseid, $reporttype = 'table', $starttime=0, $endtime=0) {
+    public function execute($data, $row, $reporttype = 'table') {
         global $DB, $CFG, $USER;
         $context = context_system::instance();
         $usercoursesreportid = $DB->get_field('block_learnerscript', 'id',
@@ -93,7 +89,7 @@ class plugin_coursescolumns extends pluginbase {
                 $row->{$data->column} = html_writer::div($avgcompletedlink . '%', "spark-report",
                                 ['id' => html_writer::random_id(),
                                 'data-sparkline' => "$progress; progressbar",
-                                'data-labels' => 'inprogress, completed']);
+                                'data-labels' => 'inprogress, completed', ]);
                 break;
             case 'activities':
                 if (!isset($row->activities) && isset($data->subquery)) {

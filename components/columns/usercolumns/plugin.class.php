@@ -63,13 +63,9 @@ class plugin_usercolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row) {
         global $DB, $USER, $CFG;
         $context = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursesoverview'], IGNORE_MULTIPLE);
@@ -102,7 +98,7 @@ class plugin_usercolumns extends pluginbase {
                 }
                 $inprogressurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_users' => $row->id,
-                    'filter_status' => 'inprogress']);
+                    'filter_status' => 'inprogress', ]);
                 if (empty($courseoverviewpermissions) || empty($reportid)) {
                     $row->{$data->column} = $inprogress;
                 } else {
@@ -118,7 +114,7 @@ class plugin_usercolumns extends pluginbase {
                 }
                 $completedurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_users' => $row->id,
-                    'filter_status' => 'completed']);
+                    'filter_status' => 'completed', ]);
                 if (empty($courseoverviewpermissions) || empty($reportid)) {
                     $row->{$data->column} = $completed;
                 } else {
@@ -185,7 +181,7 @@ class plugin_usercolumns extends pluginbase {
                 $progress = empty($progress) ? 0 : $progress;
                 $row->{$data->column} = html_writer::div($progress . '%', "spark-report",
                 ['id' => html_writer::random_id(),
-                'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress']);
+                'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress', ]);
             break;
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted

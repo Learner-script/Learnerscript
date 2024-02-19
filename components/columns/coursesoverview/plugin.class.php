@@ -58,14 +58,10 @@ class plugin_coursesoverview extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
      * @param string $reporttype Report type
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $reporttype, $starttime=0, $endtime=0) {
+    public function execute($data, $row, $reporttype) {
         global $DB, $USER, $CFG;
         $systemcontext = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'courseprofile'], IGNORE_MULTIPLE);
@@ -84,15 +80,15 @@ class plugin_coursesoverview extends pluginbase {
         $allactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id,
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
-                'filter_users' => $this->reportfilterparams['filter_users']]);
+                'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $inprogressactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id, 'filter_status' => 'notcompleted',
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
-                'filter_users' => $this->reportfilterparams['filter_users']]);
+                'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $completedactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id, 'filter_status' => 'completed',
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
-                'filter_users' => $this->reportfilterparams['filter_users']]);
+                'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
         switch ($data->column) {
             case 'coursename':

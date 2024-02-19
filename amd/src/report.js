@@ -21,7 +21,9 @@
  * @copyright  2017 Naveen kumar <naveen@eabyas.in>
  * @since      3.3
  */
-define(['block_learnerscript/select2',
+define(['jquery',
+    'block_learnerscript/config',
+    'block_learnerscript/select2',
     'block_learnerscript/responsive.bootstrap',
     'block_learnerscript/reportwidget',
     'block_learnerscript/chart',
@@ -30,13 +32,12 @@ define(['block_learnerscript/select2',
     'block_learnerscript/helper',
     'block_learnerscript/ajaxforms',
     'block_learnerscript/ajax',
-    'jquery',
     'block_learnerscript/radioslider',
     'block_learnerscript/flatpickr',
     'core/templates',
     'jqueryui'
-], function(select2, DataTable, reportwidget, chart, smartfilter, schedule, helper, AjaxForms, ajax,
-    $, RadiosToSlider, flatpickr, templates) {
+], function($, cfgs, select2, DataTable, reportwidget, chart, smartfilter, schedule, helper, AjaxForms, ajax,
+    RadiosToSlider, flatpickr, templates) {
     var BasicparamCourse = $('.basicparamsform #id_filter_courses');
     var BasicparamUser = $('.basicparamsform #id_filter_users');
     var BasicparamActivity = $('.basicparamsform #id_filter_activities');
@@ -69,8 +70,8 @@ define(['block_learnerscript/select2',
             $("select[data-select2='1']").select2({
                 theme: "classic"
             }).on("select2:selecting", function(e) {
-                if ($(this).val() && $(this).data('maximumSelectionLength') &&
-                    $(this).val().length >= $(this).data('maximumSelectionLength')) {
+                if ($(this).val() && $(this).data('maximumselectionlength') &&
+                    $(this).val().length >= $(this).data('maximumselectionlength')) {
                     e.preventDefault();
                     $(this).select2('close');
                 }
@@ -102,8 +103,8 @@ define(['block_learnerscript/select2',
                 },
                 onClose: function(selectedDates) {
                     if (selectedDates.length !== 0) {
-                        $('#ls_fstartdate').val(selectedDates[0].getTime() / 1000);
-                        $('#ls_fenddate').val((selectedDates[1].getTime() / 1000) + (60 * 60 * 24));
+                        $('#lsfstartdate').val(selectedDates[0].getTime() / 1000);
+                        $('#lsfenddate').val((selectedDates[1].getTime() / 1000) + (60 * 60 * 24));
                         require(['block_learnerscript/report'], function(report) {
                             report.CreateReportPage({reportid: args.reportid, instanceid: args.reportid, reportdashboard: false});
                         });
@@ -464,7 +465,7 @@ define(['block_learnerscript/select2',
                                 if (key.indexOf('filter_') == 0) {
                                     link += '&' + key + '=' + value;
                                 }
-                                if (key.indexOf('ls_') == 0) {
+                                if (key.indexOf('lsf') == 0) {
                                     link += '&' + key + '=' + value;
                                 }
                             });

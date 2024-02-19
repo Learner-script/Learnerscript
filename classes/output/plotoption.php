@@ -86,7 +86,6 @@ class plotoption implements renderable, templatable {
      * @return stdClass
      */
     public function export_for_template(renderer_base $output) {
-        global $OUTPUT;
         $data = new stdClass();
         $ls = new ls();
         if ($this->active == 'viewreport') {

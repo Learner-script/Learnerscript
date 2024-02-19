@@ -17,7 +17,7 @@
  * TODO describe module smartfilter
  *
  * @module     block_learnerscript/smartfilter
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -25,9 +25,10 @@ define(['jquery',
         'block_learnerscript/reportwidget',
         'block_learnerscript/report',
         'block_learnerscript/flatpickr',
-        'core/str',
-        'block_learnerscript/serialize'],
-    function($, ajax, reportwidget, report, flatpickr, str) {
+        'block_learnerscript/config',
+        'block_learnerscript/serialize',
+        'core/str'],
+    function($, ajax, reportwidget, report, flatpickr, cfgs, serialize, str) {
         var BasicparamUser = $('.basicparamsform #id_filter_users');
         var BasicparamActivity = $('.basicparamsform #id_filter_activities');
 
@@ -83,7 +84,7 @@ define(['jquery',
                     instanceid = '';
                 }
                 if (value !== 'clear') {
-                    $('#ls_fenddate'+instanceid).val(today.getTime() / 1000);
+                    $('#lsfenddate'+instanceid).val(today.getTime() / 1000);
                     switch (value) {
                         case 'week':
                             start_duration = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
@@ -106,8 +107,8 @@ define(['jquery',
                                     instance.clear();
                                 },
                                 onClose: function(selectedDates, dateStr) {
-                                    $('#ls_fstartdate'+instanceid).val(selectedDates[0].getTime() / 1000);
-                                    $('#ls_fenddate'+instanceid).val((selectedDates[1].getTime() / 1000) + (60 * 60 * 24));
+                                    $('#lsfstartdate'+instanceid).val(selectedDates[0].getTime() / 1000);
+                                    $('#lsfenddate'+instanceid).val((selectedDates[1].getTime() / 1000) + (60 * 60 * 24));
                                     if (reportdashboard == false) {
                                         require(['block_learnerscript/report'], function(report) {
                                             report.CreateReportPage({ reportid: reportid, instanceid: instanceid,
@@ -126,15 +127,15 @@ define(['jquery',
                         });
                             break;
                         default:
-                            $('#ls_fstartdate'+instanceid).val(0);
+                            $('#lsfstartdate'+instanceid).val(0);
                             break;
                     }
                     if (start_duration != '') {
-                        $('#ls_fstartdate'+instanceid).val(start_duration.getTime() / 1000);
+                        $('#lsfstartdate'+instanceid).val(start_duration.getTime() / 1000);
                     }
                 } else {
-                    $('#ls_fenddate'+instanceid).val("");
-                    $('#ls_fstartdate'+instanceid).val("");
+                    $('#lsfenddate'+instanceid).val("");
+                    $('#lsfstartdate'+instanceid).val("");
                 }
                 if (value !== 'custom') {
                     if (reportdashboard != false) {

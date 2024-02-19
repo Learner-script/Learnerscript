@@ -464,14 +464,16 @@ class ls {
         require_once($CFG->dirroot . '/lib/excellib.class.php');
         if (!empty($table->head)) {
             foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading))));
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
             }
         }
 
         if (!empty($table->data)) {
             foreach ($table->data as $rkey => $row) {
                 foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item))));
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ',
+                                    htmlspecialchars_decode(strip_tags(nl2br($item)), ENT_QUOTES));
                 }
             }
         }
@@ -1229,7 +1231,7 @@ class ls {
         }
         foreach ($scormdetails as $scormdetail) {
             $coursemoduleid = $DB->get_field('course_modules', 'id', ['module' => $moduleid,
-            'instance' => $scormdetail->scormid, 'visible' => 1, 'deletioninprogress' => 0]);
+            'instance' => $scormdetail->scormid, 'visible' => 1, 'deletioninprogress' => 0, ]);
             $courseid = $DB->get_field('scorm', 'course', ['id' => $scormdetail->scormid]);
             $insertdata = new stdClass();
             $insertdata->userid = $scormdetail->userid;
@@ -1316,7 +1318,7 @@ class ls {
             WHERE qa.preview = 0 AND q.course = e.courseid AND qa.state = (:finished)
             AND qa.timemodified > :quizcrontime AND qa.userid > 2
             GROUP BY qa.userid, qa.quiz, q.course, qa.id", ['finished' => 'finished',
-            'quizcrontime' => $quizcrontime]);
+            'quizcrontime' => $quizcrontime, ]);
             $time = time();
             set_config('userquiztimespent', $time, 'block_learnerscript');
         }
@@ -1326,7 +1328,7 @@ class ls {
         foreach ($quizdetails as $quizdetail) {
             $coursemoduleid = $DB->get_field('course_modules', 'id',
             ['module' => $moduleid, 'instance' => $quizdetail->quizid, 'visible' => 1,
-            'deletioninprogress' => 0]);
+            'deletioninprogress' => 0, ]);
             $courseid = $DB->get_field('quiz', 'course', ['id' => $quizdetail->quizid]);
             $insertdata = new stdClass();
             $insertdata->userid = $quizdetail->userid;
@@ -1394,24 +1396,25 @@ class ls {
         $values -= $minutes * 60;
         $dateimage = '<img class="dateicon" src="'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/date.png" />';
         if (!empty($hours)) {
-            $hrs = ($hours == 1) ? $hours. 'hr ' : $hours. 'hrs ';
+            $hrs = ($hours == 1) ? $hours. get_string('hr', 'block_learnerscript').' ' :
+                            $hours. get_string('hrs', 'block_learnerscript').' ';
         } else {
             $hrs = '';
         }
         if (!empty($minutes)) {
-            $min = $minutes. 'min ';
+            $min = $minutes. get_string('min', 'block_learnerscript').' ';
         } else {
             $min = '';
         }
         if (!empty($values)) {
-            $sec = $values. 'sec';
+            $sec = $values. get_string('sec', 'block_learnerscript');
         } else {
             $sec = '';
         }
         if ($day == 1) {
-            $days = $dateimage . $day. 'day  ';
+            $days = $dateimage . $day. get_string('day', 'block_learnerscript').' ';
         } else if ($day > 1) {
-            $days = $dateimage . $day. 'days  ';
+            $days = $dateimage . $day. get_string('days', 'block_learnerscript').' ';
         } else {
             $days = '';
         }
@@ -1435,7 +1438,7 @@ class ls {
             $data['dashboardrole'] = $SESSION->role;
             $data['dashboardcontextlevel'] = $SESSION->ls_contextlevel;
         } else {
-            $data['currentrole'] = 'Switch Role';
+            $data['currentrole'] = get_string('switchrole', 'block_learnerscript');
             $data['dashboardrole'] = '';
         }
         if (!is_siteadmin()) {
@@ -1577,7 +1580,7 @@ class ls {
         }
         $timingslist = ['09-10Am', '10-11Am', '11-12Pm', '02-03Pm', '03-04Pm', '04-05Pm', '05-06Pm', '06-07Pm'];
         $timings = ['09-10', '10:00:01-11', '11:00:01-12', '14:00:01-15', '15:00:01-16',
-                        '16:00:01-17', '17:00:01-18', '18:00:01-19'];
+                        '16:00:01-17', '17:00:01-18', '18:00:01-19', ];
         $users = $DB->get_records_sql("SELECT DISTINCT ue.userid AS id
                         FROM {course} c
                         JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
@@ -1589,7 +1592,7 @@ class ls {
                         WHERE ra.contextid = ctx.id AND ctx.contextlevel = 50 AND c.visible = 1");
 
         foreach ($users as $user) {
-            $timestampdiff = array();
+            $timestampdiff = [];
             foreach ($weekdaysdate as $key => $weekdate) {
                 for ($i = 0; $i <= 7; $i++) {
                     $currenttime = explode('-', $timings[$i]);
@@ -1601,8 +1604,8 @@ class ls {
                     $endtime = strtotime($weekdate . ' ' . $currenttime[1] . ':00:00');
                     $accesscount = $DB->get_records_sql("SELECT id FROM {logstore_standard_log} WHERE action = :action
                                 AND userid = :userid AND timecreated BETWEEN :starttime AND :endtime",
-                                    array('action' => 'loggedin', 'userid' => $user->id, 'starttime' => $starttime,
-                                    'endtime' => $endtime));
+                                    ['action' => 'loggedin', 'userid' => $user->id, 'starttime' => $starttime,
+                                    'endtime' => $endtime, ]);
                     $timestampdiff[] = [$key, $i, count($accesscount)];
                 }
             }
@@ -1615,7 +1618,7 @@ class ls {
             $logindata = json_encode($options, JSON_NUMERIC_CHECK);
             $insertdata = new stdClass();
             $record = $DB->get_field_sql("SELECT id FROM {block_ls_userlmsaccess} WHERE userid = :userid",
-                                        array('userid' => $user->id));
+                                        ['userid' => $user->id]);
             if (empty($record)) {
                 $insertdata->userid = $user->id;
                 $insertdata->logindata = $logindata;

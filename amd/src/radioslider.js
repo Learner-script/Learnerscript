@@ -17,7 +17,7 @@
  * TODO describe module radioslider
  *
  * @module     block_learnerscript/radioslider
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 /**

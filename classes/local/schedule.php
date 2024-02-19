@@ -123,7 +123,7 @@ class schedule {
         return [0 => get_string('select', 'block_learnerscript'),
             self::DAILY => get_string('daily', 'block_learnerscript'),
             self::WEEKLY => get_string('weekly', 'block_learnerscript'),
-            self::MONTHLY => get_string('monthly', 'block_learnerscript')];
+            self::MONTHLY => get_string('monthly', 'block_learnerscript'), ];
     }
 
     /**
@@ -323,7 +323,7 @@ class schedule {
 
     /**
      * Get clean timezone
-     * @todo Gets a clean timezone attempting to compensate for some Moodle 'special' timezones
+     * @todo MDL-5678 Gets a clean timezone attempting to compensate for some Moodle 'special' timezones
      *       where the returned zone is compatible with PHP DateTime, DateTimeZone etc functions
      * @param string/float $tz either a location identifier string or, in some Moodle special cases, a number
      * @return string a clean timezone that can be used safely
@@ -426,7 +426,7 @@ class schedule {
                 if (empty($attachment)) {
                     $messagedetails->nodata = html_writer::div(get_string('nodataavailable', 'block_learnerscript'), '',
                     ['style' => "background-color:#fcf8e3;color:#8a6d3b;border-color:#faebcc;width: 30%;
-                    text-align: center;padding: 5px;"]);
+                    text-align: center;padding: 5px;", ]);
                 }
 
                 $message = get_string('scheduledreportmessage', 'block_learnerscript',
@@ -620,7 +620,7 @@ class schedule {
 
     /**
      * Get report URL
-     * @todo URL to view report
+     * @todo MDL-7890 URL to view report
      * @param integer $reportid Report ID
      * @return string URL of the report provided or false
      */
@@ -648,7 +648,8 @@ class schedule {
         $col = 'A';
         foreach ($table->head as $key => $heading) {
             $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-            str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)))));
+            str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                        ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
             $col++;
         }
         // Loop through the result set.
@@ -658,7 +659,8 @@ class schedule {
                 $col = 'A';
                 foreach ($row as $key => $item) {
                     $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-                    str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)))));
+                    str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
                     $col++;
                 }
                 $rownumber++;
@@ -691,14 +693,16 @@ class schedule {
             $keys = array_keys($table->head);
             $lastkey = end($keys);
             foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading))));
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
             }
         }
 
         if (!empty($table->data)) {
             foreach ($table->data as $rkey => $row) {
                 foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item))));
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
                 }
             }
         }
@@ -738,14 +742,16 @@ class schedule {
             $keys = array_keys($table->head);
             $lastkey = end($keys);
             foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading))));
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
             }
         }
 
         if (!empty($table->data)) {
             foreach ($table->data as $rkey => $row) {
                 foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item))));
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
                 }
             }
         }
@@ -803,14 +809,16 @@ class schedule {
             $keys = array_keys($table->head);
             $lastkey = end($keys);
             foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading))));
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
             }
         }
 
         if (!empty($table->data)) {
             foreach ($table->data as $rkey => $row) {
                 foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item))));
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
                 }
             }
         }
@@ -842,10 +850,10 @@ class schedule {
     public function rolewiseusers($roleid, $search = '', $page = 0, $reportid = 0, $contextlevel = 10) {
         global $DB;
         if (empty($roleid)) {
-            throw new moodle_exception('Missing Role values.');
+            throw new moodle_exception(get_string('missingrolevalues', 'block_learnerscript'));
         }
         if ($search) {
-            $searchsql = " AND CONCAT(u.firstname, ' ', u.lastname) LIKE '%$search%'";
+            $searchsql = " AND " . $DB->sql_like("CONCAT(u.firstname, ' ', u.lastname)", ':search', false);;
         } else {
             $searchsql = " ";
         }
@@ -855,7 +863,7 @@ class schedule {
                                JOIN {context} as ctx on ctx.id = ra.contextid AND ctx.contextlevel= $contextlevel
                                WHERE  ra.roleid = :roleid $searchsql AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
 
-        $rolewiseusers = $DB->get_records_sql($rolewiseuserssql, ['roleid' => $roleid]);
+        $rolewiseusers = $DB->get_records_sql($rolewiseuserssql, ['roleid' => $roleid, 'search' => '%' . $search . '%']);
         $reportclass = (new ls)->create_reportclass($reportid);
         $reportclass->role = $DB->get_field('role', 'shortname', ['id' => $roleid]);
         $reportclass->courseid = $reportclass->config->courseid;
@@ -891,19 +899,19 @@ class schedule {
         global $DB;
 
         if (!$reportid) {
-            throw new moodle_exception('Missing Report ID.');
+            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
         }
 
         if (!$type) {
-            throw new moodle_exception('Missing Type.');
+            throw new moodle_exception(get_string('missingtype', 'block_learnerscript'));
         }
 
         if (empty($roleid)) {
-            throw new moodle_exception('Missing Role.');
+            throw new moodle_exception(get_string('missingrole', 'block_learnerscript'));
         }
 
         if ($search) {
-            $searchsql = " AND CONCAT(u.firstname, ' ', u.lastname) LIKE '%$search%'";
+            $searchsql = " AND " . $DB->sql_like("CONCAT(u.firstname, ' ', u.lastname)", ':search', false);
         } else {
             $searchsql = " ";
         }
@@ -924,7 +932,8 @@ class schedule {
                         JOIN {context} as ctx ON ctx.id = ra.contextid AND ctx.contextlevel =:contextlevel
                         WHERE u.id = ra.userid  AND ra.roleid = :roleid $searchsql $escselsql
                         AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-                $users = $DB->get_records_sql($sql, ['contextlevel' => $contextlevel, 'roleid' => $roleid]);
+                $users = $DB->get_records_sql($sql, ['contextlevel' => $contextlevel, 'roleid' => $roleid,
+                            'search' => '%' . $search . '%', ]);
                 break;
 
             case 'remove':
@@ -934,7 +943,8 @@ class schedule {
                         WHERE bcs.reportid = :reportid $searchsql  AND u.confirmed = 1
                         AND u.suspended = 0 AND u.deleted = 0 ";
 
-                $users = $DB->get_records_sql($userslistsql, ['reportid' => $reportid]);
+                $users = $DB->get_records_sql($userslistsql, ['reportid' => $reportid,
+                            'search' => '%' . $search . '%', ]);
 
                 break;
         }
@@ -1167,35 +1177,35 @@ class schedule {
 
         if ($scheduledreportid > 0) {
             $schuserscountsql = "SELECT COUNT(u.id) as count
-                                          FROM {user} as u
-                                              JOIN {block_ls_schedule} as bcs ON u.id = :userid
+                                          FROM {user} u
+                                              JOIN {block_ls_schedule} bcs ON u.id = :userid
                                               WHERE u.confirmed = 1 AND u.suspended = 0
                                               AND u.deleted = 0 AND bcs.reportid = :reportid
                                           AND bcs.id = :scheduledreportid";
             $schuserscount = $DB->count_records_sql($schuserscountsql, ['userid' => $userslist,
                                 'reportid' => $reportid,
-                                'scheduledreportid' => $scheduledreportid]);
+                                'scheduledreportid' => $scheduledreportid, ]);
 
             $schuserssql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
-                                          FROM {user} as u
-                                          JOIN {block_ls_schedule} as bcs ON u.id = :userid
+                                          FROM {user} u
+                                          JOIN {block_ls_schedule} bcs ON u.id = :userid
                                           WHERE u.confirmed = 1 AND u.suspended = 0
                                           AND u.deleted = 0 AND bcs.reportid = :reportid
                                           AND bcs.id = :scheduledreportid";
             $schusers = $DB->get_records_sql_menu($schuserssql, ['userid' => $userslist,
                                 'reportid' => $reportid,
-                                'scheduledreportid' => $scheduledreportid], 0, 10);
+                                'scheduledreportid' => $scheduledreportid, ], 0, 10);
             if ($schuserscount > 10) {
                 $schusers = $schusers + [-1 => get_string('viewmore', 'block_learnerscript')];
             }
             $schusersidssql = "SELECT u.id
-                                    FROM {user} as u
-                                  JOIN {block_ls_schedule} as bcs ON u.id = :userid
+                                    FROM {user} u
+                                  JOIN {block_ls_schedule} bcs ON u.id = :userid
                                  WHERE u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0
                                  AND bcs.reportid = :reportid AND bcs.id = :scheduledreportid ";
             $schusersids = $DB->get_fieldset_sql($schusersidssql, ['userid' => $userslist,
                                     'reportid' => $reportid,
-                                    'scheduledreportid' => $scheduledreportid]);
+                                    'scheduledreportid' => $scheduledreportid, ]);
             $schusersids = implode(',', $schusersids);
 
         } else {
@@ -1262,7 +1272,7 @@ class schedule {
             $weeks = [get_string('sun', 'block_learnerscript'), get_string('mon', 'block_learnerscript'),
             get_string('tue', 'block_learnerscript'), get_string('wed', 'block_learnerscript'),
             get_string('thu', 'block_learnerscript'), get_string('fri', 'block_learnerscript'),
-            get_string('sat', 'block_learnerscript')];
+            get_string('sat', 'block_learnerscript'), ];
             $schedule = $weeks;
         } else if ($frequency == 3) {
             $i = 0;

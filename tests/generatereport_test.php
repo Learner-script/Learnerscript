@@ -140,7 +140,6 @@ class generatereport_test extends \advanced_testcase {
         $report->type = 'courses';
         $report->courseid = SITEID;
         $report->ownerid = $USER->id;
-        $recordid = (new ls)->add_report($report, $context);
         $this->assertEquals(1, $DB->count_records('block_learnerscript'));
 
         (new ls)->delete_report($report, $context);

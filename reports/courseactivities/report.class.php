@@ -102,7 +102,7 @@ class report_courseactivities extends reportbase implements report {
             $aliases[] = $modulename;
         }
         foreach ($aliases as $alias) {
-            $this->sql .= " LEFT JOIN {".$alias."} AS $alias ON $alias.id = main.instance AND m.name = '$alias'";
+            $this->sql .= " LEFT JOIN {".$alias."} $alias ON $alias.id = main.instance AND m.name = '$alias'";
         }
          $this->sql .= " LEFT JOIN {grade_items} gi ON gi.itemmodule = m.name
                        AND gi.courseid = main.course AND gi.iteminstance = main.instance ";
@@ -142,9 +142,9 @@ class report_courseactivities extends reportbase implements report {
             $fields2 = ['m.name'];
             $this->searchable = array_merge($fields1, $fields2);
             $statsql = [];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
@@ -205,13 +205,13 @@ class report_courseactivities extends reportbase implements report {
         $where = " AND %placeholder% = $activityid";
         $limit = "";
         $query = " ";
-        $identy = " ";
+        $identity = " ";
         switch ($column) {
             case 'grademax':
-                $identy = 'cm1.id';
+                $identity = 'cm1.id';
                 $query = "SELECT $limit gi.grademax AS grademax
-                            FROM {grade_grades} as gg
-                            JOIN {grade_items} as gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
+                            FROM {grade_grades} gg
+                            JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
@@ -220,10 +220,10 @@ class report_courseactivities extends reportbase implements report {
                             ";
                 break;
             case 'gradepass':
-                $identy = 'cm1.id';
+                $identity = 'cm1.id';
                 $query = "SELECT $limit gi.gradepass AS gradepass
-                            FROM {grade_grades} as gg
-                            JOIN {grade_items} as gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
+                            FROM {grade_grades} gg
+                            JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
@@ -231,19 +231,19 @@ class report_courseactivities extends reportbase implements report {
                             $where GROUP BY cm1.id, gi.gradepass $limit";
                 break;
             case 'learnerscompleted':
-                $identy = 'cm.id';
+                $identity = 'cm.id';
                 $courses = 'cm.course';
                 $query = " SELECT COUNT(cmc.id) AS learnerscompleted
-                            FROM {course_modules_completion} as cmc
+                            FROM {course_modules_completion} cmc
                             JOIN {course_modules} cm ON cmc.coursemoduleid = cm.id
                            WHERE cmc.completionstate > 0 AND cmc.userid > 2 AND cmc.userid IN ($learnersql)
                                  $where ";
                 break;
             case 'highestgrade':
-                $identy = 'cm1.id';
+                $identity = 'cm1.id';
                 $query = "SELECT MAX(finalgrade) AS highestgrade
-                            FROM {grade_grades} as gg
-                            JOIN {grade_items} as gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
+                            FROM {grade_grades} gg
+                            JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
@@ -251,31 +251,31 @@ class report_courseactivities extends reportbase implements report {
                             $where ";
                 break;
             case 'averagegrade':
-                 $identy = 'cm1.id';
+                 $identity = 'cm1.id';
                  $query = "SELECT AVG(finalgrade) AS averagegrade
-                            FROM {grade_grades} as gg
-                            JOIN {grade_items} as gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
+                            FROM {grade_grades} gg
+                            JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
                             WHERE cm1.course = $courseid AND m.name = gi.itemmodule $where ";
                 break;
             case 'lowestgrade':
-                 $identy = 'cm1.id';
+                 $identity = 'cm1.id';
                  $query = "SELECT MIN(finalgrade) AS lowestgrade
-                            FROM {grade_grades} as gg
-                            JOIN {grade_items} as gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
+                            FROM {grade_grades} gg
+                            JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
                            WHERE cm1.course = $courseid AND m.name = gi.itemmodule $where ";
                 break;
             case 'progress':
-                 $identy = 'cm.id';
+                 $identity = 'cm.id';
                  $courses = 'cm.course';
                   $query = "SELECT ((completed / total )* 100) AS progress
                             FROM (SELECT COUNT(cmc.id) as completed
-                            FROM {course_modules_completion} AS cmc
+                            FROM {course_modules_completion} cmc
                             JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
                             WHERE cmc.completionstate > 0 AND cmc.userid IN ($learnersql) $where ) AS completed,
                             (SELECT count(DISTINCT u.id) as total FROM {user} u
@@ -287,14 +287,14 @@ class report_courseactivities extends reportbase implements report {
                            WHERE ra.userid IN ($learnersql) $where ) as total";
                 break;
             case 'totaltimespent':
-                $identy = 'mt.activityid';
+                $identity = 'mt.activityid';
                 $courses = 'mt.courseid';
                 $query = "SELECT SUM(mt.timespent) AS totaltimespent
                           FROM {block_ls_modtimestats} mt
                          WHERE mt.courseid = $courseid AND mt.userid IN ($learnersql) $where ";
             break;
             case 'numviews':
-                $identy = 'lsl.contextinstanceid';
+                $identity = 'lsl.contextinstanceid';
                 $courses = 'lsl.courseid';
                 if ($this->reporttype == 'table') {
                     $query = "SELECT COUNT(DISTINCT lsl.userid)  AS distinctusers, COUNT('X') AS numviews
@@ -319,7 +319,7 @@ class report_courseactivities extends reportbase implements report {
         } else {
             $limit = str_replace('%%LIMIT%%', 'LIMIT 1', $query);
         }
-        $query = str_replace('%placeholder%', $identy, $query);
+        $query = str_replace('%placeholder%', $identity, $query);
         $query = str_replace('%courseid%', $courses, $query);
         return $query;
     }

@@ -127,9 +127,9 @@ class report_noofviews extends reportbase implements report {
         if (isset($this->search) && $this->search) {
             $statsql = [];
             $this->searchable = ["CONCAT(u.firstname, ' ' , u.lastname)"];
-            foreach ($this->searchable as $key => $value) {
-                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", $casesensitive = false,
-                            $accentsensitive = true, $notlike = false);
+            foreach ($this->searchable as $value) {
+                $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
+                            true, false);
             }
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";

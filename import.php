@@ -104,7 +104,7 @@ if (!empty($slideshowimages)) {
             $slideshowcount++;
             echo html_writer::div(html_writer::div(html_writer::empty_tag('img',
             ['src' => $CFG->wwwroot . $slideshowimagespath . $slideshowimage, 'class' => "lsoverviewimages",
-            'style' => "width:100%;height:100%"]), "",
+            'style' => "width:100%;height:100%", ]), "",
             ['styles' => "width:500px; height:350px;"]), "mySlides");
         }
     }

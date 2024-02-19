@@ -32,7 +32,7 @@ class plugin_coursecompetency extends pluginbase {
         $this->fullname = get_string('coursecompetency', 'block_learnerscript');
         $this->type = 'undefined';
         $this->form = true;
-        $this->reporttypes = array('coursecompetency');
+        $this->reporttypes = ['coursecompetency'];
     }
     /**
      * Course competency column summary
@@ -49,21 +49,16 @@ class plugin_coursecompetency extends pluginbase {
         $align = (isset($data->align)) ? $data->align : '';
         $size = (isset($data->size)) ? $data->size : '';
         $wrap = (isset($data->wrap)) ? $data->wrap : '';
-        return array($align, $size, $wrap);
+        return [$align, $size, $wrap];
     }
     /**
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row) {
         global $DB, $OUTPUT, $CFG;
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
         switch($data->column) {
             case 'competency':
                 $compurl = html_writer::link(new moodle_url($CFG->wwwroot . '/admin/tool/lp/user_competency_in_course.php',
@@ -72,7 +67,7 @@ class plugin_coursecompetency extends pluginbase {
                 $row->{$data->column} = !empty($competency) ? $competency : '--';
             break;
             case 'activity':
-                $modules = $DB->get_fieldset_select('modules', 'name', '', array('visible' => 1));
+                $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
                 foreach ($modules as $modulename) {
                     $aliases[] = $modulename;
                     $activities[] = "'$modulename'";
@@ -91,12 +86,12 @@ class plugin_coursecompetency extends pluginbase {
                         AND cm.course = :courseid";
                 $activitieslist = $DB->get_records_sql($sql, ['visible' => 1, 'rowid' => $row->id,
                                     'cmvisible' => 1, 'deletioninprogress' => 0,
-                                    'courseid' => $row->courseid]);
+                                    'courseid' => $row->courseid, ]);
                 foreach ($activitieslist as $activity) {
-                    $module = $DB->get_field('modules', 'name', array('id' => $activity->moduleid));
-                    $activityicon = $OUTPUT->pix_icon('icon', ucfirst($module), $module, array('class' => 'icon'));
-                    $url = new moodle_url('/mod/'.$module.'/view.php', array('id' => $activity->id));
-                    $activityname = $activityicon . html_writer::tag('a', $activity->activityname, array('href' => $url));
+                    $module = $DB->get_field('modules', 'name', ['id' => $activity->moduleid]);
+                    $activityicon = $OUTPUT->pix_icon('icon', ucfirst($module), $module, ['class' => 'icon']);
+                    $url = new moodle_url('/mod/'.$module.'/view.php', ['id' => $activity->id]);
+                    $activityname = $activityicon . html_writer::tag('a', $activity->activityname, ['href' => $url]);
                     $data1[] = $activityname;
                 }
                 $activitiesd = !empty($data1) ? implode(', ', $data1) : [];

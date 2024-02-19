@@ -45,9 +45,12 @@ function export_report($reportclass) {
     $filter = ['Filters'];
     $filterrow = Row::fromValues($filter);
     $writer->addRow($filterrow);
-    foreach ($reportclass->selectedfilters as $k => $filter) {
-        $filterrow = Row::fromValues([$k, $filter]);
-        $writer->addRow($filterrow);
+    $finalfilterdata = '';
+    if (!empty($reportclass->selectedfilters)) {
+        foreach ($reportclass->selectedfilters as $k => $filter) {
+            $filterrow = Row::fromValues([$k, $filter]);
+            $writer->addRow($filterrow);
+        }
     }
     $head = [];
     if (!empty($table->head)) {

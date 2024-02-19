@@ -42,7 +42,7 @@ class plugin_competencycolumns extends pluginbase {
     public function summary($data) {
         return format_string($data->columname);
     }
-     /**
+    /**
      * This function return field column format
      * @param object $data Field data
      */
@@ -56,13 +56,9 @@ class plugin_competencycolumns extends pluginbase {
      * This function executes the columns data
      * @param object $data Columns data
      * @param object $row Row data
-     * @param object $user User data
-     * @param int $courseid Course id
-     * @param int $starttime Start time
-     * @param int $endtime End time
      * @return object
      */
-    public function execute($data, $row, $user, $courseid, $starttime = 0, $endtime = 0) {
+    public function execute($data, $row) {
         global $DB, $CFG, $USER;
         $context = context_system::instance();
         $coursereportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursecompetency'], IGNORE_MULTIPLE);
@@ -76,7 +72,7 @@ class plugin_competencycolumns extends pluginbase {
                 WHERE c.visible = :visible AND comc.competencyid = :rowid
                     AND c.id = :couresid";
                 $courseslist = $DB->get_records_sql($sql, ['visible' => 1, 'rowid' => $row->id,
-                                'courseid' => $row->courseid]);
+                                'courseid' => $row->courseid, ]);
                 foreach ($courseslist as $course) {
                     if ($this->report->type == 'courseprofile' || empty($coursereportid) || empty($checkpermissions)) {
                         $row->{$data->column} .= '<li>' . html_writer::link(new \moodle_url($CFG->wwwroot . '/course/view.php',

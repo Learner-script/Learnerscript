@@ -426,7 +426,8 @@ switch ($action) {
             }
             if (!empty($reportclass->finalreport->table->head)) {
                 $tablehead = $ls->report_tabledata($reportclass->finalreport->table);
-                $reporttable = new \block_learnerscript\output\reporttable($tablehead,
+                $reporttable = new \block_learnerscript\output\reporttable($reportclass,
+                    $tablehead,
                     $reportclass->finalreport->table->id,
                     '',
                     $reportid,
@@ -632,9 +633,9 @@ switch ($action) {
             FROM {course}
             WHERE category = :categoryid AND visible = :visible",
             ['categoryid' => $categoryid, 'visible' => 1]);
-            $return = [0 => 'Select Course'] + $courses;
+            $return = [0 => get_string('selectcourse', 'block_learnerscript')] + $courses;
         } else {
-            $return = ['' => 'Select Course'];
+            $return = ['' => get_string('selectcourse', 'block_learnerscript')];
         }
         break;
     case 'sendreportemail':
@@ -673,7 +674,7 @@ switch ($action) {
         $return = get_roles_in_context($contextlevel, $excludedroles);
         break;
     case 'disablecolumnstatus':
-        $reportname = $DB->get_field('block_learnerscript', 'disabletable', array('id' => $reportid));
+        $reportname = $DB->get_field('block_learnerscript', 'disabletable', ['id' => $reportid]);
         if ($reportname == 1) {
             $plotdata = (new ls)->cr_listof_reporttypes($reportid, false, false);
             $return = $plotdata[0]['chartid'];
@@ -699,17 +700,17 @@ switch ($action) {
         while (strpos($reportclass->config->components, $uniqueid) !== false) {
             $uniqueid = random_string(15);
         }
-        $plot[id] = $uniqueid;
-        $plot[formdata] = new stdClass();
-        $plot[formdata]->chartname = '';
-        $plot[formdata]->serieid = '';
-        $plot[formdata]->yaxis[] = ['name' => '', 'operator' => '', 'value' => ''];
-        $plot[formdata]->showlegend = 0;
-        $plot[formdata]->datalabels = 0;
-        $plot[formdata]->calcs = null;
-        $plot[formdata]->columnsort = null;
-        $plot[formdata]->sorting = null;
-        $plot[formdata]->limit = null;
+        $plot['id'] = $uniqueid;
+        $plot['formdata'] = new stdClass();
+        $plot['formdata']->chartname = '';
+        $plot['formdata']->serieid = '';
+        $plot['formdata']->yaxis[] = ['name' => '', 'operator' => '', 'value' => ''];
+        $plot['formdata']->showlegend = 0;
+        $plot['formdata']->datalabels = 0;
+        $plot['formdata']->calcs = null;
+        $plot['formdata']->columnsort = null;
+        $plot['formdata']->sorting = null;
+        $plot['formdata']->limit = null;
 
         $return['plot'] = $plot;
         break;

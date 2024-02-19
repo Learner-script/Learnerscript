@@ -119,7 +119,8 @@ class querylib {
         $courseoptions = [];
         if ($search) {
             $searchvalue .= $search;
-            $searchsql = " AND fullname LIKE '%$search%' ";
+            $params['search'] = '%' . $search . '%';
+            $searchsql = " AND " . $DB->sql_like('fullname', ":search", false);
             $limitnum = 0;
         }
         if ($selectoption) {
@@ -162,15 +163,17 @@ class querylib {
                     }
                     $courseids = implode(',', $courselist);
                     $courses = $DB->get_records_select('course', "id > :siteid AND visible=:visible
-                    AND fullname LIKE '%$searchvalue%' AND id IN ($courseids)" . $concatsql,
-                    ['siteid' => SITEID, 'visible' => 1], '', 'id, fullname', 0, $limitnum);
+                    AND " . $DB->sql_like('fullname', ":searchvalue", false). " AND id IN ($courseids)" . $concatsql,
+                    ['siteid' => SITEID, 'visible' => 1, 'searchvalue' => '%' . $searchvalue . '%'],
+                    '', 'id, fullname', 0, $limitnum);
                 } else {
                     $courses = [];
                 }
             } else {
                 $courses = $DB->get_records_select('course', "id > :siteid
-                AND visible=:visible AND fullname LIKE '%$searchvalue%' " . $concatsql,
-                ['siteid' => SITEID, 'visible' => 1], '', 'id, fullname', 0, $limitnum);
+                AND visible=:visible AND " . $DB->sql_like('fullname', ":searchvalue", false) . $concatsql,
+                ['siteid' => SITEID, 'visible' => 1, 'searchvalue' => '%' . $searchvalue . '%'],
+                '', 'id, fullname', 0, $limitnum);
             }
         } else {
             if (empty($pluginclass->reportclass->rolewisecourses)) {
@@ -215,8 +218,10 @@ class querylib {
         $concatsql = "";
         $concatsql1 = "";
         $limitnum = 1;
+        $params = [];
         if ($search) {
-            $searchsql = " AND CONCAT(u.firstname, ' ', u.lastname) LIKE '%$search%' ";
+            $params['search'] = '%' . $search . '%';
+            $searchsql = " AND " . $DB->sql_like("CONCAT(u.firstname, ' ', u.lastname)", ":search", false);
             $concatsql .= $searchsql;
             $limitnum = 0;
         }
@@ -263,7 +268,7 @@ class querylib {
                               JOIN {context} ctx ON ctx.instanceid = c.id
                               JOIN {user} u ON u.id = ue.userid AND u.deleted = 0
                               WHERE 1 = 1 $concatsql $concatsql1";
-                    $userslist = $DB->get_records_sql($sql, [], 0, $limitnum);
+                    $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
                 } else {
                     if (empty($pluginclass->reportclass->rolewisecourses)) {
                         if ($SESSION->role == 'coursecreator'
@@ -275,7 +280,8 @@ class querylib {
                             foreach ($courses as $key => $course) {
                                 $courselists[] = $course->id;
                             }
-                                $courselist = join(',', $courselists);
+                            list($ccsql, $params) = $DB->get_in_or_equal($courselists);
+                            $courselist = join(',', $courselists);
                             if (!empty($courselist)) {
                                 $sql = "SELECT DISTINCT u.*
                                             FROM {course} AS c
@@ -285,9 +291,9 @@ class querylib {
                                             JOIN {role} AS r ON r.id = ra.roleid AND r.shortname = 'student'
                                             JOIN {context} ctx ON ctx.instanceid = c.id
                                             JOIN {user} AS u ON u.id = ue.userid
-                                            WHERE c.id in($courselist) AND u.deleted = 0
+                                            WHERE 1 = 1 AND c.id $ccsql AND u.deleted = 0
                                             AND ra.contextid = ctx.id  $concatsql $concatsql1";
-                                            $userslist = $DB->get_records_sql($sql, [], 0, $limitnum);
+                                            $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
                             } else {
                                 $userslist = [];
                             }
@@ -304,10 +310,10 @@ class querylib {
                                     JOIN {role} as r ON r.id = ra.roleid AND r.shortname = 'student'
                                     JOIN {context} ctx ON ctx.instanceid = c.id
                                     JOIN {user} AS u ON u.id = ue.userid
-                                    WHERE c.id in($courselist)
+                                    WHERE c.id in ($courselist)
                                     AND u.deleted = 0 AND ra.contextid = ctx.id
                                     AND ctx.contextlevel = 50 $concatsql $concatsql1";
-                        $userslist = $DB->get_records_sql($sql, [], 0, $limitnum);
+                        $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
                     }
                 }
 
