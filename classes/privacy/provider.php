@@ -39,7 +39,7 @@ class provider implements \core_privacy\local\metadata\provider,
      * @param  collection $collection An object for storing metadata.
      * @return collection The metadata.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
 
         $scheduletasks = [
             'reportid' => 'privacy:metadata:reportid',
@@ -96,7 +96,7 @@ class provider implements \core_privacy\local\metadata\provider,
      * @param   int $userid The user to search.
      * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         $params = ['userid' => $userid, 'contextuser' => CONTEXT_USER];
         $sql = "SELECT id
                   FROM {context}

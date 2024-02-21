@@ -326,6 +326,18 @@
         <customised/>
     </library>
     <library>
+        <location>css/select2.min.css</location>
+        <name>select2</name>
+        <description>Select2 css</description>
+        <version>4.0.3</version>
+        <license>MIT https://github.com/select2/select2/blob/master/LICENSE.md</license>
+        <repository></repository>
+        <copyrights>
+            <copyright>2007-2023 SpryMedia Ltd</copyright>
+        </copyrights>
+        <customised/>
+    </library>
+    <library>
         <location>amd/src/dataTables.bootstrap.js</location>
         <name>dataTables.bootstrap</name>
         <description>DataTables Bootstrap 3 integration</description>

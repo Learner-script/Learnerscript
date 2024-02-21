@@ -23,7 +23,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2021051707; // Plugin version.
+$plugin->version = 2021051712; // Plugin version.
 $plugin->component = 'block_learnerscript'; // Full name of the plugin (used for diagnostics).
 $plugin->release = 'v3.0';
 $plugin->requires = '2023041800'; // Requires this Moodle version.
