@@ -33,6 +33,15 @@ class report_courseactivities extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report constructor
      * @param object $report           Report data
@@ -46,7 +55,7 @@ class report_courseactivities extends reportbase implements report {
                                'numviews', 'grades', ], ];
         $this->parent = false;
         $this->basicparams = [['name' => 'courses']];
-        $this->components = ['columns', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $this->courselevel = true;
         $this->orderable = ['activityname', 'learnerscompleted', 'grademax', 'gradepass', 'averagegrade', 'highestgrade',
                             'lowestgrade', 'totaltimespent', ];
@@ -175,7 +184,7 @@ class report_courseactivities extends reportbase implements report {
      * Concat groupby to SQL
      */
     public function groupby() {
-        $this->sql .= " GROUP BY main.id";
+
     }
 
     /**
@@ -203,32 +212,31 @@ class report_courseactivities extends reportbase implements report {
         }
         $courseid = isset($this->params['filter_courses']) ? $this->params['filter_courses'] : SITEID;
         $where = " AND %placeholder% = $activityid";
-        $limit = "";
         $query = " ";
         $identity = " ";
         switch ($column) {
             case 'grademax':
                 $identity = 'cm1.id';
-                $query = "SELECT $limit gi.grademax AS grademax
+                $query = "SELECT gi.grademax AS grademax
                             FROM {grade_grades} gg
                             JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
                            WHERE cm1.course = $courseid AND m.name = gi.itemmodule
-                            $where GROUP BY cm1.id, gi.grademax $limit
+                            $where GROUP BY cm1.id, gi.grademax LIMIT 1
                             ";
                 break;
             case 'gradepass':
                 $identity = 'cm1.id';
-                $query = "SELECT $limit gi.gradepass AS gradepass
+                $query = "SELECT gi.gradepass AS gradepass
                             FROM {grade_grades} gg
                             JOIN {grade_items} gi ON gg.itemid = gi.id AND gi.itemtype = 'mod'
                             JOIN {course_modules} cm1 ON cm1.instance = gi.iteminstance
                             JOIN {modules} m ON m.id = cm1.module
                             JOIN {course_sections} csc ON csc.id = cm1.section
                            WHERE cm1.course = $courseid AND m.name = gi.itemmodule
-                            $where GROUP BY cm1.id, gi.gradepass $limit";
+                            $where GROUP BY cm1.id, gi.gradepass LIMIT 1";
                 break;
             case 'learnerscompleted':
                 $identity = 'cm.id';
@@ -273,7 +281,7 @@ class report_courseactivities extends reportbase implements report {
             case 'progress':
                  $identity = 'cm.id';
                  $courses = 'cm.course';
-                  $query = "SELECT ((completed / total )* 100) AS progress
+                  $query = "SELECT CASE WHEN total = 0 THEN 0 ELSE ((completed / total )* 100) END AS progress
                             FROM (SELECT COUNT(cmc.id) as completed
                             FROM {course_modules_completion} cmc
                             JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
@@ -313,12 +321,6 @@ class report_courseactivities extends reportbase implements report {
             break;
         }
 
-        // TOP & LIMIT.
-        if ($CFG->dbtype == 'sqlsrv') {
-            $limit = str_replace('%%TOP%%', 'TOP 1', $query);
-        } else {
-            $limit = str_replace('%%LIMIT%%', 'LIMIT 1', $query);
-        }
         $query = str_replace('%placeholder%', $identity, $query);
         $query = str_replace('%courseid%', $courses, $query);
         return $query;

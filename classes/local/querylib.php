@@ -120,7 +120,7 @@ class querylib {
         if ($search) {
             $searchvalue .= $search;
             $params['search'] = '%' . $search . '%';
-            $searchsql = " AND " . $DB->sql_like('fullname', ":search", false);
+            $searchsql .= " AND " . $DB->sql_like('fullname', ":search", false);
             $limitnum = 0;
         }
         if ($selectoption) {
@@ -182,7 +182,13 @@ class querylib {
             } else {
                 $rolewisecourses = explode(',', $pluginclass->reportclass->rolewisecourses);
                 list($usql, $params) = $DB->get_in_or_equal($rolewisecourses, SQL_PARAMS_NAMED);
-                $usql .= " AND visible=1 $searchsql $concatsql";
+                $usql .= " AND visible=1 $concatsql $searchsql";
+                if ($search) {
+                    $searchvalue .= $search;
+                    $params['search'] = '%' . $search . '%';
+                    $searchsql .= " AND " . $DB->sql_like('fullname', ":search", false);
+                    $limitnum = 0;
+                }
                 $courses = $DB->get_records_select('course', "id $usql", $params);
             }
         }

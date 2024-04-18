@@ -35,13 +35,8 @@ class plugin_bar extends pluginbase {
         $this->fullname = get_string('bar', 'block_learnerscript');
         $this->form = true;
         $this->ordering = true;
-        $this->reporttypes = ['timeline', 'sql', 'assignment',
-        'courseactivities', 'courseparticipation',  'courses', 'coursesoverview',
-        'gradedactivity', 'myassignments', 'myquizs', 'myresources',
-        'quizzes', 'scorm', 'student_overall_performance',
-        'student_performance', 'useractivities', 'userassignments',
-        'usercourses', 'userquizzes', 'users', 'usersresources', 'usersscorm',
-        'forum', 'myforums', 'assignstatus', 'bigbluebutton', ];
+        $this->reporttypes = ['sql', 'courseactivities', 'courses', 'coursesoverview',
+                                'useractivities', 'usercourses', 'users', ];
     }
 
     /** Graph summary

@@ -55,9 +55,7 @@ class plugin_users extends pluginbase {
             }
         }
         $this->fullname = get_string('filterusers', 'block_learnerscript');
-        $this->reporttypes = ['sql', 'userassignments', 'usercourses',
-            'student_performance', 'uniquelogins', 'userquizzes', 'users',
-            'student_overall_performance', 'topic_wise_performance', 'usersscorm', ];
+        $this->reporttypes = ['sql', 'users'];
     }
 
     /**

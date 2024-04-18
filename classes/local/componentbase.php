@@ -24,12 +24,11 @@
 
 namespace block_learnerscript\local;
 
-defined('MOODLE_INTERNAL') || die();
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
-
-/** Compenent base */
+/** Component base */
 class componentbase {
+
+    /** @var stdClass $config  */
+    public $config;
 
     /**
      * Constructor.

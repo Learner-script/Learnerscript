@@ -37,6 +37,12 @@ class report_courseprofile extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report constructor
      * @param object $report           Report data
@@ -48,8 +54,7 @@ class report_courseprofile extends reportbase implements report {
                     'enrolmethods', 'highgrade', 'lowgrade', 'badges', 'totaltimespent', ];
         $this->columns = ['coursefield' => ['coursefield'] ,
                           'coursescolumns' => $columns, ];
-        $this->components = ['columns', 'conditions', 'ordering', 'filters',
-                                    'permissions', 'plot', ];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $this->courselevel = true;
         $this->basicparams = [['name' => 'courses', 'singleselection' => false, 'placeholder' => false,
                                 'maxlength' => 5, ], ];
@@ -205,7 +210,9 @@ class report_courseprofile extends reportbase implements report {
                              JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
                              JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
                              AND u.suspended = 0 WHERE 1 = 1 $where) = 0 THEN 0 ELSE
-                            (SELECT ((COUNT(DISTINCT cc.userid) / COUNT(DISTINCT ue.userid)) * 100) AS progress
+                            (SELECT
+                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ue.userid) AS DECIMAL)) * 100, 2)
+                            AS progress
                              FROM {user_enrolments} ue
                              JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
                              JOIN {role_assignments} ra ON ra.userid = ue.userid
@@ -320,17 +327,6 @@ class report_courseprofile extends reportbase implements report {
 
         if ($this->ordercolumn) {
             $this->sqlorder = $this->selectedcolumns[$this->ordercolumn['column']] . " " . $this->ordercolumn['dir'];
-        } else if (!empty($ordering)) {
-            foreach ($ordering as $o) {
-                require_once($CFG->dirroot.'/blocks/learnerscript/components/ordering/'.$o['pluginname'].'/
-                                plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_'.$o['pluginname'];
-                $classorder = new $classname($this->config);
-                if ($classorder->sql) {
-                    $orderingdata = $o['formdata'];
-                    $this->sqlorder = $classorder->execute($orderingdata);
-                }
-            }
         }
         $this->params['siteid'] = SITEID;
         $this->build_query(true);

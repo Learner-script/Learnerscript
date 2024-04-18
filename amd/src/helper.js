@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module helper
+ * Define the function with a clear and descriptive name, and then call it from other functions or code blocks as needed
  *
  * @module     block_learnerscript/helper
  * @copyright  2023 Moodle India
@@ -135,12 +135,6 @@ define(['jquery',
                     component: 'block_learnerscript'
                 }, {
                     key: 'deleteallconfirm',
-                    component: 'block_learnerscript'
-                }, {
-                    key: 'graphdeleted',
-                    component: 'block_learnerscript'
-                }, {
-                    key: 'graphcannotbedeleted',
                     component: 'block_learnerscript'
                 }]).then(function(s) {
                     ModalFactory.create({

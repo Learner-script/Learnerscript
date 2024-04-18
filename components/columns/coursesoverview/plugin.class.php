@@ -62,7 +62,7 @@ class plugin_coursesoverview extends pluginbase {
      * @return object
      */
     public function execute($data, $row, $reporttype) {
-        global $DB, $USER, $CFG;
+        global $DB, $USER, $CFG, $OUTPUT;
         $systemcontext = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'courseprofile'], IGNORE_MULTIPLE);
         $courseprofilepermissions = empty($reportid) ? false :
@@ -82,14 +82,16 @@ class plugin_coursesoverview extends pluginbase {
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $inprogressactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
-                ['id' => $activityinfoid, 'filter_courses' => $row->id, 'filter_status' => 'notcompleted',
+                ['id' => $activityinfoid, 'filter_courses' => $row->id,
+                'filter_status' => get_string('notcompleted', 'block_learnerscript'),
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $completedactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
-                ['id' => $activityinfoid, 'filter_courses' => $row->id, 'filter_status' => 'completed',
+                ['id' => $activityinfoid, 'filter_courses' => $row->id,
+                'filter_status' => get_string('completed', 'block_learnerscript'),
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
+        $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         switch ($data->column) {
             case 'coursename':
                 if (!isset($row->coursename)) {

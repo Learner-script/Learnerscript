@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module chart
+ * Describe different types of charts.
  *
  * @module     block_learnerscript/chart
  * @copyright  2023 YOUR NAME <your@email.com>

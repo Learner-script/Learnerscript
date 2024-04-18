@@ -41,6 +41,9 @@ class report_sql extends reportbase {
      */
     public $columns;
 
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * SQL report construct
      * @param object $report           Report data
@@ -49,7 +52,7 @@ class report_sql extends reportbase {
     public function __construct($report, $reportproperties=[]) {
         parent::__construct($report, $reportproperties);
         $this->parent = true;
-        $this->components = ['customsql', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['customsql', 'filters', 'permissions', 'plot'];
     }
 
     /**
@@ -121,12 +124,7 @@ class report_sql extends reportbase {
         $timestamp = $date->getTimestamp();
         $sql = str_replace('%%UNIXTIME%%', $timestamp, $sql);
 
-        // TOP & LIMIT.
-        if ($CFG->dbtype == 'sqlsrv') {
-            $sql = str_replace('%%TOP%%', 'TOP 10', $sql);
-        } else {
-            $sql = str_replace('%%LIMIT%%', 'LIMIT 10', $sql);
-        }
+        $sql = str_replace('%%LIMIT%%', 'LIMIT 10', $sql);
 
         if (preg_match("/%%FILTER_USER:([^%]+)%%/i", $sql, $output) && $this->params['filter_users'] > 1) {
             $replace = ' AND ' . $output[1] . ' = ' . $this->params['filter_users'];
@@ -306,7 +304,6 @@ class report_sql extends reportbase {
     public function create_report($blockinstanceid = null) {
         $this->check_filters_request();
         $components = (new ls)->cr_unserialize($this->config->components);
-        $calcs = (isset($components['calculations']['elements'])) ? $components['calculations']['elements'] : [];
 
         $tablehead = [];
         $finalcalcs = [];

@@ -39,6 +39,15 @@ class report_grades extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report construct
      * @param object $report Report object
@@ -49,7 +58,7 @@ class report_grades extends reportbase implements report {
         $this->columns = ['userfield' => ['userfield'], 'gradecolumns' => ['grade', 'status']];
         $this->parent = false;
         $this->basicparams = [['name' => 'courses'], ['name' => 'activities']];
-        $this->components = ['columns', 'conditions', 'ordering', 'filters',  'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters',  'permissions', 'plot'];
         $this->courselevel = true;
         $this->orderable = ['fullname', 'email'];
         $this->defaultcolumn = 'u.id';

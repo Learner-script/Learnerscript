@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
+ *
  * @package   block_learnerscript
  * @copyright 2023 Moodle India
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,6 +28,16 @@ use context_system;
 
 /** Course Field Columns */
 class plugin_coursefield extends pluginbase {
+
+    /** @var string $reportinstance  */
+    public $reportinstance;
+
+    /** @var string $role  */
+    public $role;
+
+    /** @var array $reportfilterparams  */
+    public $reportfilterparams;
+
     /**
      * Course fields init function
      */

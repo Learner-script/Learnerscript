@@ -47,9 +47,6 @@ $reportexportformats = ['ods' => REPORT_EXPORT_FORMAT_ODS,
     'csv' => REPORT_EXPORT_FORMAT_CSV,
     'pdf' => REPORT_EXPORT_FORMAT_PDF, ];
 
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
-
 /**
  * A Moodle block to create customizable reports.
  *

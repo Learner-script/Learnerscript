@@ -19,6 +19,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/lib/evalmath/evalmath.class.php');
 require_once($CFG->dirroot . "/course/lib.php");
 
+use block_learnerscript\highcharts\graphicalreport;
 use stdclass;
 use DateTime;
 use DateTimeZone;
@@ -26,7 +27,6 @@ use core_date;
 use context_system;
 use context_course;
 use core_course_category;
-use highreports;
 
 use block_learnerscript\local\schedule;
 
@@ -37,9 +37,6 @@ define('ONDEMAND', -1);
 
 define('OPENSANS', 1);
 define('PTSANS', 2);
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
-
 
 /**
  * A Moodle block to create customizable reports.
@@ -96,7 +93,7 @@ class ls {
         }
     }
     /**
-     * Ddelete report
+     * Delete report
      * @param  object $report  Report data to delete
      * @param  object $context Report context
      */
@@ -138,8 +135,7 @@ class ls {
         global $CFG;
         $components = (new ls)->cr_unserialize($reportclass->config->components);
         $seriesvalues = (isset($components['plot']['elements'])) ? $components['plot']['elements'] : [];
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/highcharts/graphicalreport.php');
-        $highcharts = new highreports();
+        $highcharts = new graphicalreport();
         if (!empty($seriesvalues)) {
             switch ($graphdata['pluginname']) {
                 case 'pie':
@@ -207,7 +203,7 @@ class ls {
         return $optionsplugins;
     }
     /**
-     * Report tabledata
+     * Report table data
      * @param  object $table Report data table
      * @return array
      */
@@ -749,10 +745,7 @@ class ls {
         if ($frequency == ONDEMAND) {
             $frequencyquery = " AND crs.frequency = $frequency AND crs.timemodified = 0 ";
         } else {
-            if ($CFG->dbtype == 'sqlsrv') {
-                $frequencyquery = " AND FORMAT(DATEADD(s, nextschedule, '1970-01-01'), 'yyy-MM-dd') = '$date'
-                AND DATEPART(HOUR, DATEADD(s, nextschedule, '".$usertime."')) = $hour";
-            } else if ($CFG->dbtype == 'pgsql') {
+            if ($CFG->dbtype == 'pgsql') {
                 $frequencyquery = " AND to_char(to_timestamp(crs.nextschedule), 'YYYY-mm-dd') = '$date'
                 AND to_char(to_timestamp(crs.nextschedule), 'HH24')::INTEGER = $hour";
             } else {
@@ -1119,7 +1112,7 @@ class ls {
      */
     public function lsconfigreports() {
         global $CFG, $DB;
-        $path = $CFG->dirroot . '/blocks/learnerscript/backup/';
+        $path = $CFG->dirroot . '/blocks/learnerscript/reportsbackup/';
         $learnerscriptreports = glob($path . '*.xml');
         $lsreportscount = $DB->count_records('block_learnerscript');
         $lsimportlogs = [];
@@ -1205,23 +1198,27 @@ class ls {
         $scormcrontime = get_config('block_learnerscript', 'userscormtimespent');
         $moduleid = $DB->get_field('modules', 'id', ['name' => 'scorm']);
         if ($scormcrontime == 0) {
-            $scormdetails = $DB->get_records_sql("SELECT sst.id, sst.userid, sst.scormid, sst.value AS time
-            FROM {scorm_scoes_track} sst
+            $scormdetails = $DB->get_records_sql("SELECT sst.id, sa.userid, sa.scormid, sst.value AS time
+            FROM {scorm_scoes_value} sst
             JOIN {scorm_scoes} ss ON ss.id = sst.scoid
-            JOIN {scorm_scoes_track} sst1 ON sst1.scormid = sst.scormid
-            AND sst1.userid = sst.userid AND sst1.attempt = sst.attempt
-            WHERE sst.element LIKE 'cmi.core.total_time' AND sst1.value IN ('passed', 'completed', 'failed')
-            AND sst.userid > 2 ");
+            JOIN {scorm_attempt} sa ON sa.id = sst.attemptid
+            JOIN {scorm_element} se ON se.id = sst.elementid
+            JOIN {scorm_scoes_value} sst1 ON sst1.scoid = sst.scoid AND sa.id = sst1.attemptid
+            JOIN {scorm_element} se1 ON se1.id = sst1.elementid
+            WHERE se.element LIKE 'cmi.core.total_time' AND sst1.value IN ('passed', 'completed', 'failed')
+            AND sa.userid > 2 ");
             $time = time();
             set_config('userscormtimespent', $time, 'block_learnerscript');
         } else if ($scormcrontime > 0) {
-            $scormdetails = $DB->get_records_sql("SELECT sst.id, sst.userid, sst.scormid, sst.value AS time
-            FROM {scorm_scoes_track} sst
+            $scormdetails = $DB->get_records_sql("SELECT sst.id, sa.userid, sa.scormid, sst.value AS time
+            FROM {scorm_scoes_value} sst
             JOIN {scorm_scoes} ss ON ss.id = sst.scoid
-            JOIN {scorm_scoes_track} sst1 ON sst1.scormid = sst.scormid
-            AND sst1.userid = sst.userid AND sst1.attempt = sst.attempt
-            WHERE sst.element LIKE 'cmi.core.total_time' AND sst1.value IN ('passed', 'completed', 'failed')
-            AND sst.userid > 2 AND sst.timemodified > :scormcrontime ",
+            JOIN {scorm_attempt} sa ON sa.id = sst.attemptid
+            JOIN {scorm_element} se ON se.id = sst.elementid
+            JOIN {scorm_scoes_value} sst1 ON sst1.scoid = sst.scoid AND sa.id = sst1.attemptid
+            JOIN {scorm_element} se1 ON se1.id = sst1.elementid
+            WHERE se.element LIKE 'cmi.core.total_time' AND sst1.value IN ('passed', 'completed', 'failed')
+            AND sa.userid > 2 AND sst.timemodified > :scormcrontime ",
             ['scormcrontime' => $scormcrontime]);
             $time = time();
             set_config('userscormtimespent', $time, 'block_learnerscript');
@@ -1386,7 +1383,7 @@ class ls {
      * @return string User timespent
      */
     public function strtime($values) {
-        global $CFG;
+        global $OUTPUT;
         $totalval = $values;
         $day = intval($values / 86400);
         $values -= $day * 86400;
@@ -1394,7 +1391,7 @@ class ls {
         $values -= $hours * 3600;
         $minutes = intval($values / 60);
         $values -= $minutes * 60;
-        $dateimage = '<img class="dateicon" src="'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/date.png" />';
+        $dateimage = $OUTPUT->pix_icon('courseprofile/date', '', 'block_reportdashboard', ['class' => 'dateicon']);
         if (!empty($hours)) {
             $hrs = ($hours == 1) ? $hours. get_string('hr', 'block_learnerscript').' ' :
                             $hours. get_string('hrs', 'block_learnerscript').' ';
@@ -1402,7 +1399,7 @@ class ls {
             $hrs = '';
         }
         if (!empty($minutes)) {
-            $min = $minutes. get_string('min', 'block_learnerscript').' ';
+            $min = $minutes. get_string('mins', 'block_learnerscript').' ';
         } else {
             $min = '';
         }
@@ -1418,12 +1415,13 @@ class ls {
         } else {
             $days = '';
         }
+        $timeimage = '';
         if (empty($totalval)) {
-            $image = '';
+            $timeimage = '';
         } else {
-             $image = '<img class="timeicon" src="'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/time1.png" />';
+            $timeimage = $OUTPUT->pix_icon('courseprofile/time1', '', 'block_reportdashboard', ['class' => 'timeicon']);
         }
-        $result = $days . $image . $hrs . $min . $sec;
+        $result = $days . $timeimage . $hrs . $min . $sec;
         return $result;
     }
 

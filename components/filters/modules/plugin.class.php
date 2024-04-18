@@ -36,8 +36,7 @@ class plugin_modules extends pluginbase {
         $this->unique = true;
         $this->singleselection = true;
         $this->fullname = get_string('filtermodules', 'block_learnerscript');
-        $this->reporttypes = ['listofactivities', 'useractivities', 'student_performance',
-        'coursesoverview', 'popularresources', 'resources_accessed', 'gradedactivity', 'upcomingactivities', ];
+        $this->reporttypes = ['useractivities', 'coursesoverview'];
     }
 
     /**

@@ -28,7 +28,6 @@ define(['jquery',
         'core/fragment',
         'block_learnerscript/ajax',
         'block_learnerscript/schedule',
-        'block_learnerscript/config',
         'block_learnerscript/select2',
         'core/yui',
         'core/templates',
@@ -36,7 +35,7 @@ define(['jquery',
         'block_learnerscript/helper',
         'jqueryui'
         ],
-    function($, Str, ModalFactory, ModalEvents, Fragment, Ajax, schedule, cfgs, select2, Y, Templates, Modal, helper) {
+    function($, Str, ModalFactory, ModalEvents, Fragment, Ajax, schedule, select2, Y, Templates, Modal, helper) {
 
         /**
          * Constructor
@@ -266,70 +265,6 @@ define(['jquery',
                         $("." + this.nodeContent).dialog('close');
                         Str.get_string('reportschedule', 'block_learnerscript').then(function(s) {
                             helper.notifications(s);
-                        });
-                    } else if (this.args.action == 'plotforms') {
-                        var self = this;
-                        $("." + this.nodeContent).dialog('close');
-                        Str.get_strings([{
-                            key: 'graphcreated',
-                            component: 'block_learnerscript'
-                        }, {
-                            key: 'graphupdated',
-                            component: 'block_learnerscript'
-                        }]).then(function(s) {
-                            var cid;
-                            var templatename;
-                            var tabdata;
-                            if (self.args.type == 'add') {
-                                helper.notifications(s[0]);
-                                var reportid = self.args.reportid;
-                                cid = data.data.id;
-                                var CreateDashboardwidget = {};
-                                CreateDashboardwidget.reportid = reportid;
-                                CreateDashboardwidget.chartid = data.data.id;
-                                CreateDashboardwidget.reporttype = data.data.id;
-                                CreateDashboardwidget.pluginname = self.args.pname;
-                                CreateDashboardwidget.chartname = data.data.chartname;
-                                CreateDashboardwidget.issiteadmin = true;
-                                CreateDashboardwidget.editicon = M.util.image_url("t/edit");
-                                Str.get_string(self.args.pname, 'block_learnerscript').then(function(s) {
-                                    CreateDashboardwidget.title = s;
-                                });
-                                CreateDashboardwidget.cid = data.data.id;
-                                CreateDashboardwidget.pname = self.args.pname;
-                                CreateDashboardwidget.type = 'edit';
-                                CreateDashboardwidget.deleteicon = M.util.image_url("t/delete");
-                                CreateDashboardwidget.pname = self.args.pname;
-                                CreateDashboardwidget.type = 'edit';
-                                if ($('#report_plottabs').length > 0) {
-                                    templatename = 'block_learnerscript/tabs';
-                                    tabdata = CreateDashboardwidget;
-                                } else {
-                                    templatename = 'block_learnerscript/plottabs';
-                                    var CreateDashboardwidgetargs = {};
-                                    CreateDashboardwidgetargs.reportid = reportid;
-                                    CreateDashboardwidgetargs.multiplot = true;
-                                    CreateDashboardwidgetargs.enableplots = false;
-                                    CreateDashboardwidgetargs.plottabs = CreateDashboardwidget;
-                                    tabdata = CreateDashboardwidgetargs;
-                                }
-
-                                Templates.render(templatename, tabdata).done(function(tab) {
-                                    if ($('#report_plottabs').length > 0) {
-                                        $("span#report_plottabs ul").append(tab);
-                                    } else {
-                                        $("span.filter_buttons").prepend(tab);
-                                    }
-
-                                    $('.plotgraphcontainer').removeClass('show').addClass('hide');
-                                    $('#plotreportcontainer' + reportid).html('');
-                                });
-                            } else if (self.args.type == 'edit') {
-                                helper.notifications(s[1]);
-                                cid = self.args.cid;
-                                $('#lschartname' + cid).text(data.data.chartname);
-                                $('#' + cid).trigger('click');
-                            }
                         });
                     } else if (this.args.action == 'sendreportemail') {
                         $("." + this.nodeContent).dialog('close');

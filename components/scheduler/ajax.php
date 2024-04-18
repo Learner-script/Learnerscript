@@ -28,7 +28,7 @@ use block_learnerscript\local\schedule;
 
 $action = required_param('action', PARAM_TEXT);
 $reportid = optional_param('reportid', 0, PARAM_INT);
-$search = optional_param('search', '', PARAM_TEXT);
+$search = optional_param_array('search', [], PARAM_RAW);
 $start = optional_param('start', 0, PARAM_INT);
 $length = optional_param('length', 5, PARAM_INT);
 $courseid = optional_param('courseid', 1, PARAM_INT);

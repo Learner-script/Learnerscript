@@ -33,6 +33,15 @@ class report_coursecompetency extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report constructor
      * @param object $report           Report data
@@ -153,7 +162,7 @@ class report_coursecompetency extends reportbase implements report {
      * Concat groupby to SQL
      */
     public function groupby() {
-          $this->sql .= " GROUP BY com.id, com.shortname, comf.id, comf.shortname, ccom.courseid ";
+          $this->sql .= " GROUP BY com.id, com.shortname, comf.id, comf.shortname, ccom.courseid, ucom.userid ";
     }
 
     /**

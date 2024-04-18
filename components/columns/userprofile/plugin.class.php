@@ -68,7 +68,7 @@ class plugin_userprofile extends pluginbase {
      * @return object
      */
     public function execute($data, $row) {
-        global $DB, $USER, $CFG;
+        global $DB, $USER, $CFG, $OUTPUT;
         $context = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursesoverview'], IGNORE_MULTIPLE);
         $quizreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myquizs'], IGNORE_MULTIPLE);
@@ -76,7 +76,7 @@ class plugin_userprofile extends pluginbase {
         $scormreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myscorm'], IGNORE_MULTIPLE);
         $userbadgeid = $DB->get_field('block_learnerscript', 'id', ['type' => 'userbadges'], IGNORE_MULTIPLE);
         $courseoverviewpermissions = empty($reportid) ? false : (new reportbase($reportid))->check_permissions($context, $USER->id);
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
+        $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         switch ($data->column) {
             case 'enrolled':
                 if (!isset($row->enrolled) && isset($data->subquery)) {

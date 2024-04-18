@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module lsreportconfig
+ * Configured the reports on dashboard when we install plugin.
  *
  * @module     block_learnerscript/lsreportconfig
  * @copyright  2023 Moodle India

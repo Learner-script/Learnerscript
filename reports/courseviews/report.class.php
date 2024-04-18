@@ -33,6 +33,15 @@ class report_courseviews extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report constructor
      * @param object $report Report object
@@ -41,7 +50,7 @@ class report_courseviews extends reportbase implements report {
     public function __construct($report, $reportproperties) {
         global $USER;
         parent::__construct($report, $reportproperties);
-        $this->components = ['columns', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $this->columns = ['courseviews' => ['learner', 'views']];
         $this->courselevel = true;
         $this->basicparams = [['name' => 'courses']];

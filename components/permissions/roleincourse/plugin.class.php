@@ -36,18 +36,10 @@ class plugin_roleincourse extends pluginbase {
         $this->form = true;
         $this->unique = false;
         $this->fullname = get_string('roleincourse', 'block_learnerscript');
-        $this->reporttypes = ['courses', 'sql', 'users', 'statistics', 'timeline', 'categories', 'activitystatus',
-        'listofactivities', 'coursesoverview', 'usercourses', 'grades', 'scorm_activities_course',
-        'competencycompletion', 'myassignments', 'useractivities',
-        'assignments', 'userassignments', 'resources', 'myscorm', 'quizzes', 'userquizzes',
-        'assignment', 'myquizs', 'topic_wise_performance', 'courseaverage', 'uniquelogins',
-        'popularresources', 'userbadges', 'scorm', 'usersresources', 'usersscorm', 'badges',
-        'pageresourcetimespent', 'coursewisetimespent', 'gradedactivity', 'userprofile',
-        'resources_accessed', 'timespent', 'noofviews', 'forum', 'assignstatus', 'myforums',
-        'courseprofile', 'userattendance', 'attendanceoverview', 'courseactivities', 'courseviews',
-        'coursesoverview', 'quizzparticipation', 'assignmentparticipation', 'weeklysessions',
-        'monthlysessions', 'dailysessions', 'upcomingactivities', 'pendingactivities', 'needgrading',
-        'scormparticipation', 'cohortusers', 'bigbluebutton', 'activestudents', ];
+        $this->reporttypes = ['courses', 'sql', 'users', 'statistics',
+        'coursesoverview', 'usercourses', 'grades', 'useractivities',
+        'userbadges', 'userprofile', 'noofviews',
+        'courseprofile', 'courseactivities', 'courseviews', ];
     }
 
     /** Summary

@@ -34,6 +34,12 @@ class report_coursesoverview extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * @var $userid
      */
@@ -46,7 +52,7 @@ class report_coursesoverview extends reportbase implements report {
     public function __construct($report, $reportproperties) {
         global $USER;
         parent::__construct($report, $reportproperties);
-        $this->components = ['columns', 'conditions', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $columns = ['coursename', 'totalactivities', 'completedactivities', 'inprogressactivities', 'grades', 'totaltimespent'];
         $this->columns = ['coursesoverview' => $columns];
 
@@ -170,14 +176,14 @@ class report_coursesoverview extends reportbase implements report {
         if ($filtercourses > SITEID) {
             $this->sql .= " AND c.id IN ($filtercourses)";
         }
-        if (empty($this->params['filter_status']) || $this->params['filter_status'] == 'all') {
+        if (empty($this->params['filter_status']) || $this->params['filter_status'] == 'All') {
             $this->sql .= " ";
         }
-        if (!empty($this->params['filter_status']) && $this->params['filter_status'] == 'completed') {
+        if (!empty($this->params['filter_status']) && $this->params['filter_status'] == 'Completed') {
             $this->sql .= " AND c.id IN (SELECT DISTINCT course FROM {course_completions}
                             WHERE userid = :subuserid AND timecompleted > 0)";
         }
-        if (!empty($this->params['filter_status']) && $this->params['filter_status'] == 'inprogress') {
+        if (!empty($this->params['filter_status']) && $this->params['filter_status'] == 'Inprogress') {
             $this->sql .= " AND c.id NOT IN (SELECT DISTINCT course FROM {course_completions}
                             WHERE userid = :subuserid AND timecompleted > 0)";
         }
@@ -247,17 +253,7 @@ class report_coursesoverview extends reportbase implements report {
             case 'grades' :
                 $identity = 'gi.courseid';
                 $modulename = $DB->get_field('modules', 'name', ['id' => $filtermoduleid]);
-                if ($CFG->dbtype == 'sqlsrv') {
-                    $gradesql = "SELECT CASE WHEN SUM(gi.grademax) > 0
-                    THEN  CASE WHEN SUM(gg.finalgrade) > 0 THEN
-                    CONCAT(FORMAT(SUM(gg.finalgrade), 'N2'),' / ', FORMAT(SUM(gi.grademax), 'N2'))
-                    ELSE CONCAT(0,' / ', FORMAT(SUM(gi.grademax), 'N2')) END
-                    ELSE '--' END
-                               FROM {grade_grades} gg
-                               JOIN {grade_items} gi ON gi.id = gg.itemid
-                              WHERE gg.userid = $filteruserid  $where ";
-                } else {
-                    $gradesql = "SELECT CASE WHEN SUM(gi.grademax) > 0
+                $gradesql = "SELECT CASE WHEN SUM(gi.grademax) > 0
                     THEN  CASE WHEN SUM(gg.finalgrade) > 0 THEN
                     CONCAT(ROUND(SUM(gg.finalgrade), 2),' / ', ROUND(SUM(gi.grademax), 2))
                     ELSE CONCAT(0,' / ', ROUND(SUM(gi.grademax), 2)) END
@@ -265,7 +261,6 @@ class report_coursesoverview extends reportbase implements report {
                                FROM {grade_grades} gg
                                JOIN {grade_items} gi ON gi.id = gg.itemid
                               WHERE gg.userid = $filteruserid  $where ";
-                }
                 if (!empty($filtermoduleid)) {
                     $gradesql .= " AND gi.itemmodule = '$modulename' AND gi.itemtype != 'course'";
                 } else {

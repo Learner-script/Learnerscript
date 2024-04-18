@@ -38,6 +38,12 @@ class report_userprofile extends reportbase {
     /** @var string $defaultcolumn  */
     public $defaultcolumn;
 
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
+    /** @var array $orderable  */
+    public $orderable;
+
 
     /**
      * Report construct function
@@ -46,7 +52,7 @@ class report_userprofile extends reportbase {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report, $reportproperties);
-        $this->components = ['columns', 'conditions', 'ordering', 'filters', 'permissions'];
+        $this->components = ['columns', 'filters', 'permissions'];
         $this->parent = false;
         if ($this->role != 'student') {
             $this->basicparams = [['name' => 'users', 'singleselection' => false, 'placeholder' => false, 'maxlength' => 5]];
@@ -148,10 +154,7 @@ class report_userprofile extends reportbase {
      * Concat groupby to SQL
      */
     public function groupby() {
-        global $CFG;
-        if ($CFG->dbtype != 'sqlsrv') {
-            $this->sql .= " GROUP BY u.id";
-        }
+        $this->sql .= " GROUP BY u.id";
     }
     /**
      * Get list of users list
@@ -219,7 +222,9 @@ class report_userprofile extends reportbase {
                 break;
             case 'progress':
                 $identity = "ra.userid";
-                $query = "SELECT ROUND((COUNT(distinct cc.course) / COUNT(DISTINCT c.id)) *100, 2) as progress
+                $query = "SELECT
+                ROUND((CAST(COUNT(DISTINCT cc.course) AS DECIMAL) / CAST(COUNT(DISTINCT c.id) AS DECIMAL)) * 100, 2)
+                            as progress
                             FROM {user_enrolments} ue
                             JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
                             JOIN {role_assignments} ra ON ra.userid = ue.userid
@@ -315,16 +320,6 @@ class report_userprofile extends reportbase {
 
         if ($this->ordercolumn) {
             $this->sqlorder = $this->selectedcolumns[$this->ordercolumn['column']] . " " . $this->ordercolumn['dir'];
-        } else if (!empty($ordering)) {
-            foreach ($ordering as $o) {
-                require_once($CFG->dirroot.'/blocks/learnerscript/components/ordering/'.$o['pluginname'].'/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_'.$o['pluginname'];
-                $classorder = new $classname($this->config);
-                if ($classorder->sql) {
-                    $orderingdata = $o['formdata'];
-                    $this->sqlorder = $classorder->execute($orderingdata);
-                }
-            }
         }
 
         $this->build_query(true);

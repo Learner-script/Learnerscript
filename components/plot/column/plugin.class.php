@@ -35,12 +35,8 @@ class plugin_column extends pluginbase {
         $this->fullname = get_string('column', 'block_learnerscript');
         $this->form = true;
         $this->ordering = true;
-        $this->reporttypes = ['timeline', 'sql', 'assignment',
-                            'courseactivities', 'courseparticipation', 'courses', 'coursesoverview',
-                            'gradedactivity', 'myassignments', 'myquizs', 'myresources',
-                            'quizzes', 'scorm', 'student_overall_performance',
-                            'student_performance', 'useractivities', 'userassignments',
-                            'users', 'forum', 'myforums', 'assignstatus', 'bigbluebutton', ];
+        $this->reporttypes = ['sql', 'courseactivities', 'courses', 'coursesoverview',
+                            'useractivities', 'users', ];
     }
 
     /** Graph summary

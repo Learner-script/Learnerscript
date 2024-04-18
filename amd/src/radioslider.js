@@ -14,18 +14,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module radioslider
+ * jquery plugin to create a slider using a list of radio buttons
  *
  * @module     block_learnerscript/radioslider
  * @copyright  2023 Moodle India
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-/**
- * radiosToSlider v0.3.2
- * jquery plugin to create a slider using a list of radio buttons
- * (c)2014 Rubén Torres - rubentdlh@gmail.com
- * Released under the MIT license
- */
+
 define(['jquery'], function($) {
     var RadiosToSlider = {
         init: function(element, options) {

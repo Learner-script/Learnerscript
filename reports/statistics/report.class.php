@@ -30,6 +30,10 @@ use html_table;
  * Statistics reports class
  */
 class report_statistics extends reportbase {
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report initialization
      */
@@ -44,7 +48,7 @@ class report_statistics extends reportbase {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report);
-        $this->components = ['customsql', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['filters', 'permissions', 'plot'];
         $this->parent = true;
     }
     /**
@@ -79,12 +83,7 @@ class report_statistics extends reportbase {
         $timestamp = $date->getTimestamp();
         $sql = str_replace('%%UNIXTIME%%', $timestamp, $sql);
 
-        // TOP & LIMIT.
-        if ($CFG->dbtype == 'sqlsrv') {
-            $sql = str_replace('%%TOP%%', 'TOP 1', $sql);
-        } else {
-            $sql = str_replace('%%LIMIT%%', 'LIMIT 1', $sql);
-        }
+        $sql = str_replace('%%LIMIT%%', 'LIMIT 1', $sql);
 
         if (($this->courseid != SITEID) && preg_match("/%%LS_COURSEID:([^%]+)%%/i", $sql, $output)) {
             $replace = ' AND ' . $output[1] . ' = ' . $this->courseid;
@@ -182,7 +181,6 @@ class report_statistics extends reportbase {
         $components = (new ls)->cr_unserialize($this->config->components);
 
         $filters = (isset($components['filters']['elements'])) ? $components['filters']['elements'] : [];
-        $calcs = (isset($components['calcs']['elements'])) ? $components['calcs']['elements'] : [];
 
         $tablehead = [];
         $finalcalcs = [];

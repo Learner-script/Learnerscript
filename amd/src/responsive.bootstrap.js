@@ -1,107 +1,119 @@
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * TODO describe module responsive.bootstrap
- *
- * @module     block_learnerscript/responsive.bootstrap
- * @copyright  2023 YOUR NAME <your@email.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-/* ! Bootstrap integration for DataTables' Responsive
- * ©2015-2016 SpryMedia Ltd - datatables.net/license
+/*! Bootstrap integration for DataTables' Responsive
+ * © SpryMedia Ltd - datatables.net/license
  */
 
-(function(factory) {
-    /* eslint-disable no-undef */
-    if (typeof define === 'function' && define.amd) {
-        // AMD
-        define(['jquery', 'block_learnerscript/dataTables.bootstrap', 'block_learnerscript/dataTables.responsive'], function($) {
-            return factory($, window, document);
-        });
-    } else if (typeof exports === 'object') {
-        // CommonJS
-        module.exports = function(root, $) {
-            if (!root) {
-                root = window;
-            }
+(function( factory ){
+	if ( typeof define === 'function' && define.amd ) {
+		// AMD
+		define( ['jquery', 'block_learnerscript/dataTables.bootstrap', 'block_learnerscript/dataTables.responsive'], function ( $ ) {
+			return factory( $, window, document );
+		} );
+	}
+	else if ( typeof exports === 'object' ) {
+		// CommonJS
+		var jq = require('jquery');
+		var cjsRequires = function (root, $) {
+			if ( ! $.fn.dataTable ) {
+				require('block_learnerscript/dataTables.bootstrap')(root, $);
+			}
 
-            if (!$ || !$.fn.dataTable) {
-                $ = require('block_learnerscript/dataTables.bootstrap')(root, $).$;
-            }
+			if ( ! $.fn.dataTable.Responsive ) {
+				require('block_learnerscript/dataTables.responsive')(root, $);
+			}
+		};
 
-            if (!$.fn.dataTable.Responsive) {
-                require('block_learnerscript/dataTables.responsive')(root, $);
-            }
+		if (typeof window === 'undefined') {
+			module.exports = function (root, $) {
+				if ( ! root ) {
+					// CommonJS environments without a window global must pass a
+					// root. This will give an error otherwise
+					root = window;
+				}
 
-            return factory($, root, root.document);
-        };
-    } else {
-        // Browser
-        factory(jQuery, window, document);
-    }
-    /* eslint-enable no-undef */
-}(function($) {
+				if ( ! $ ) {
+					$ = jq( root );
+				}
+
+				cjsRequires( root, $ );
+				return factory( $, root, root.document );
+			};
+		}
+		else {
+			cjsRequires( window, jq );
+			module.exports = factory( jq, window, window.document );
+		}
+	}
+	else {
+		// Browser
+		factory( jQuery, window, document );
+	}
+}(function( $, window, document ) {
 'use strict';
 var DataTable = $.fn.dataTable;
+
 
 
 var _display = DataTable.Responsive.display;
 var _original = _display.modal;
 var _modal = $(
-    '<div class="modal fade dtr-bs-modal" role="dialog">' +
-        '<div class="modal-dialog" role="document">' +
-            '<div class="modal-content">' +
-                '<div class="modal-header">' +
-                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
-                    '<span aria-hidden="true">&times;</span></button>' +
-                '</div>' +
-                '<div class="modal-body"/>' +
-            '</div>' +
-        '</div>' +
-    '</div>'
+	'<div class="modal fade dtr-bs-modal" role="dialog">' +
+		'<div class="modal-dialog" role="document">' +
+		'<div class="modal-content">' +
+		'<div class="modal-header">' +
+		'<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+		'</div>' +
+		'<div class="modal-body"/>' +
+		'</div>' +
+		'</div>' +
+		'</div>'
 );
 
-_display.modal = function(options) {
-    return function(row, update, render) {
-        if (!$.fn.modal) {
-            _original(row, update, render);
-        } else {
-            if (!update) {
-                if (options && options.header) {
-                    var header = _modal.find('div.modal-header');
-                    var button = header.find('button').detach();
+_display.modal = function (options) {
+	return function (row, update, render, closeCallback) {
+		if (!$.fn.modal) {
+			return _original(row, update, render, closeCallback);
+		}
+		else {
+			var rendered = render();
 
-                    header
-                        .empty()
-                        .append('<h4 class="modal-title">' + options.header(row) + '</h4>')
-                        .prepend(button);
-                }
+			if (rendered === false) {
+				return false;
+			}
 
-                _modal.find('div.modal-body')
-                    .empty()
-                    .append(render());
+			if (!update) {
+				if (options && options.header) {
+					var header = _modal.find('div.modal-header');
+					var button = header.find('button').detach();
 
-                _modal
-                    .appendTo('body')
-                    .modal();
-            }
-        }
-    };
+					header
+						.empty()
+						.append('<h4 class="modal-title">' + options.header(row) + '</h4>')
+						.prepend(button);
+				}
+
+				_modal.find('div.modal-body').empty().append(rendered);
+
+				_modal
+					.data('dtr-row-idx', row.index())
+					.one('hidden.bs.modal', closeCallback)
+					.appendTo('body')
+					.modal();
+			}
+			else {
+				if ($.contains(document, _modal[0]) && row.index() === _modal.data('dtr-row-idx')) {
+					_modal.find('div.modal-body').empty().append(rendered);
+				}
+				else {
+					// Modal not shown - do nothing
+					return null;
+				}
+			}
+
+			return true;
+		}
+	};
 };
 
 
-return DataTable.Responsive;
+return DataTable;
 }));

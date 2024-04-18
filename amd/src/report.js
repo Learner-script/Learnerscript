@@ -22,8 +22,8 @@
  * @since      3.3
  */
 define(['jquery',
-    'block_learnerscript/config',
     'block_learnerscript/select2',
+    'block_learnerscript/jquery.dataTables',
     'block_learnerscript/responsive.bootstrap',
     'block_learnerscript/reportwidget',
     'block_learnerscript/chart',
@@ -36,7 +36,7 @@ define(['jquery',
     'block_learnerscript/flatpickr',
     'core/templates',
     'jqueryui'
-], function($, cfgs, select2, DataTable, reportwidget, chart, smartfilter, schedule, helper, AjaxForms, ajax,
+], function($, select2, dataTable, responsive, reportwidget, chart, smartfilter, schedule, helper, AjaxForms, ajax,
     RadiosToSlider, flatpickr, templates) {
     var BasicparamCourse = $('.basicparamsform #id_filter_courses');
     var BasicparamUser = $('.basicparamsform #id_filter_users');
@@ -311,11 +311,13 @@ define(['jquery',
                     'reporttype': args.reporttype
                 });
             } else if (disabletable == 0) {
-                reportwidget.CreateDashboardwidget({
-                    reportid: args.reportid,
-                    reporttype: 'table',
-                    instanceid: args.instanceid,
-                    reportdashboard: args.reportdashboard
+                require(['block_learnerscript/reportwidget'], function(reportwidget) {
+                    reportwidget.CreateDashboardwidget({
+                        reportid: args.reportid,
+                        reporttype: 'table',
+                        instanceid: args.instanceid,
+                        reportdashboard: args.reportdashboard
+                    });
                 });
             } else {
 
@@ -440,9 +442,6 @@ define(['jquery',
                 "oScroll": {},
                 'responsive': true,
                 "fnInitComplete": function() {
-                    this.fnAdjustColumnSizing(true);
-                    // $(".drilldown" + reportinstance + " .ui-dialog-title").html(args.reportname);
-
                     if (args.reportname == 'Users profile' || args.reportname == 'Course profile'
                         || args.reportname == 'Statistic') {
                         $("#reporttable_" + reportinstance + "_wrapper .co_report_header").remove();

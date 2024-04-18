@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
+ *
  * @package   block_learnerscript
  * @copyright 2023 Moodle India
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,6 +29,16 @@ use context_system;
 use html_writer;
 /** Courses Columns */
 class plugin_coursescolumns extends pluginbase {
+
+    /** @var string $reportinstance  */
+    public $reportinstance;
+
+    /** @var string $role  */
+    public $role;
+
+    /** @var array $reportfilterparams  */
+    public $reportfilterparams;
+
     /**
      * Course columns init function
      */
@@ -61,7 +73,7 @@ class plugin_coursescolumns extends pluginbase {
      * @return object|string
      */
     public function execute($data, $row, $reporttype = 'table') {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG, $USER, $OUTPUT;
         $context = context_system::instance();
         $usercoursesreportid = $DB->get_field('block_learnerscript', 'id',
         ['type' => 'usercourses', 'name' => 'Learners activity summary'], IGNORE_MULTIPLE);
@@ -124,7 +136,8 @@ class plugin_coursescolumns extends pluginbase {
                 } else {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
-                    ['id' => $competencyreportid, 'filter_courses' => $row->id, 'filter_status' => 'all']),
+                    ['id' => $competencyreportid, 'filter_courses' => $row->id,
+                    'filter_status' => get_string('all', 'block_learnerscript')]),
                     $competencies.$searchicon, ["target" => "_blank"]);
                 }
 
@@ -142,7 +155,8 @@ class plugin_coursescolumns extends pluginbase {
                 } else {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
-                    ['id' => $usercoursesreportid, 'filter_courses' => $row->id, 'filter_status' => 'all']),
+                    ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
+                    'filter_status' => get_string('all', 'block_learnerscript')]),
                     $enrolments.$searchicon, ["target" => "_blank"]);
                 }
 
@@ -161,7 +175,8 @@ class plugin_coursescolumns extends pluginbase {
                 } else {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
-                    ['id' => $usercoursesreportid, 'filter_courses' => $row->id, 'filter_status' => 'completed']),
+                    ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
+                    'filter_status' => get_string('completed', 'block_learnerscript')]),
                     $completed.$searchicon, ["target" => "_blank"]);
                 }
             break;
@@ -229,8 +244,9 @@ class plugin_coursescolumns extends pluginbase {
                     $row->{$data->column} = '--';
                 } else {
                     return html_writer::link(new \moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
-                    ['id' => $reportid, 'filter_courses' => $row->id, 'filter_status' => 'completed']),
-                    '<img src="'.$CFG->wwwroot.'/blocks/reportdashboard/pix/views.png" />', ["target" => "_blank"]);
+                    ['id' => $reportid, 'filter_courses' => $row->id,
+                    'filter_status' => get_string('completed', 'block_learnerscript')]),
+                    $OUTPUT->pix_icon('views', '', 'block_reportdashboard', ['target' => '_blank']));
                 }
             break;
             case 'status':
