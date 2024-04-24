@@ -1,28 +1,19 @@
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
+ * radiosToSlider v0.3.2
  * jquery plugin to create a slider using a list of radio buttons
- *
- * @module     block_learnerscript/radioslider
- * @copyright  2023 Moodle India
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * (c)2014 Rubén Torres - rubentdlh@gmail.com
+ * Released under the MIT license
  */
-
-define(['jquery'], function($) {
-    var RadiosToSlider = {
+define(['jquery','block_learnerscript/report'], function($,report) {
+    var defaults = {
+                    size: 'medium',
+                    animation: true,
+                    fitContainer: true,
+                    isDisable: false,
+                    onSelect: null,
+                    reportdashboard: true
+                    };
+    return RadiosToSlider = {
         init: function(element, options) {
             this.KNOB_WIDTH = 10;
             this.KNOB_MARGIN = 42;
@@ -31,7 +22,7 @@ define(['jquery'], function($) {
             this.LEVEL_WIDTH = 10;
             this.bearer = element;
             this.options = options;
-            this.currentLevel = 0; // This means no level selected
+            this.currentLevel = 0; //this means no level selected
             this.value = null;
                 var rtn = [],
                     $this = element;
@@ -51,7 +42,7 @@ define(['jquery'], function($) {
         activate: function() {
             // Get number options
             this.numOptions = this.bearer.find('input[type=radio]').length;
-            this.reset(); // Helps prevent duplication
+            this.reset(); // helps prevent duplication
             this.fitContainer();
             this.addBaseStyle();
             this.addLevels();
@@ -108,15 +99,14 @@ define(['jquery'], function($) {
             this.bearer.css('width', width + 'px');
             this.bearer.find('label').each(function() {
                 var $this = $(this),
-                    leftPos = slider.KNOB_WIDTH / 2 - (slider.LABEL_WIDTH / 2) +
-                    label * slider.LEVEL_MARGIN + label * slider.LEVEL_WIDTH;
+                    leftPos = slider.KNOB_WIDTH / 2 - (slider.LABEL_WIDTH / 2) + label * slider.LEVEL_MARGIN + label * slider.LEVEL_WIDTH;
                 $this.addClass('slider-label');
                 $this.css('left', leftPos + 'px');
                 label++;
             });
         },
 
-        // Add level indicators to DOM
+        //Add level indicators to DOM
         addLevels: function() {
             var $bearer = this.bearer,
                 level = 0,
@@ -125,8 +115,7 @@ define(['jquery'], function($) {
             $bearer.find('input[type=radio]').each(function() {
                 var $this = $(this);
 
-                $bearer.append("<ins class='slider-level' data-radio='" +
-                $this.attr('id') + "' data-value=" + $this.val() + "></ins>");
+                $bearer.append("<ins class='slider-level' data-radio='" + $this.attr('id') + "' data-value=" + $this.val() + "></ins>");
             });
 
             $bearer.find('.slider-level').each(function() {
@@ -141,12 +130,12 @@ define(['jquery'], function($) {
 
         },
 
-        // Add slider bar to DOM
+        //Add slider bar to DOM
         addBar: function() {
             this.bearer.append("<ins class='slider-bar'><span class='slider-knob'></span></ins>");
         },
 
-        // Set width of slider bar and current level
+        //set width of slider bar and current level
         setSlider: function() {
             var $inputs = this.bearer.find('input[type=radio]'),
                 $levels = this.bearer.find('.slider-level'),
@@ -157,10 +146,11 @@ define(['jquery'], function($) {
 
             $inputs.each(function() {
                 var $this = $(this),
-                    $sliderbar = slider.bearer.find('.slider-bar');
+                    $sliderbar = slider.bearer.find('.slider-bar'),
+                    radioId = $this.attr('id');
 
-            if ($this.prop('checked')) {
-                    var width = (radio * slider.KNOB_WIDTH) + (radio - 1) * slider.KNOB_MARGIN + 10 * (radio - 1);
+                if ($this.prop('checked')) {
+                    var width = (radio * slider.KNOB_WIDTH) + (radio - 1) * slider.KNOB_MARGIN + 10 * (radio-1);
 
                     $sliderbar.css('display', 'block');
                     $sliderbar.width(width + 'px');
@@ -175,7 +165,7 @@ define(['jquery'], function($) {
                 radio++;
             });
 
-            // Set style for lower levels
+            //Set style for lower levels
             label = 0;
             $levels.each(function() {
                 label++;
@@ -193,7 +183,7 @@ define(['jquery'], function($) {
                 }
             });
 
-            // Add bold style for selected label
+            //Add bold style for selected label
             label = 0;
             $labels.each(function() {
                 label++;
@@ -267,10 +257,8 @@ define(['jquery'], function($) {
 
         },
 
-        setDisabled: function() {
-            if (!this.options.isDisable) {
- return;
-}
+        setDisabled: function(isDisable, cb) {
+            if (!this.options.isDisable) return;
 
             this.setDisable();
         },
@@ -322,5 +310,4 @@ define(['jquery'], function($) {
         }
 
     };
-    return RadiosToSlider;
 });

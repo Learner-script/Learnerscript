@@ -247,7 +247,7 @@ class report_useractivities extends reportbase implements report {
                         AND c.visible = 1 AND
                         e.status = 0 AND u.deleted = 0 AND m.name IN ($activitieslist) AND main.visible = 1
                         AND main.deletioninprogress = 0";
-        if ($status == "Notcompleted") {
+        if ($status == 'notcompleted') {
             $this->params['userid'] = $userid;
             $this->sql .= " AND main.id NOT IN (SELECT coursemoduleid FROM {course_modules_completion}
                                                   WHERE completionstate <> 0 AND userid= :subuserid ) ";

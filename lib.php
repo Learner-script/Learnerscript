@@ -119,7 +119,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
     if ((has_capability('block/learnerscript:managereports', $context) ||
         has_capability('block/learnerscript:manageownreports', $context) ||
         is_siteadmin()) && !empty($reportid)) {
-        require_once($CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
+        require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
         $roleslist = (new schedule)->reportroles('', $reportid);
         $schuserslist = !empty($ajaxformdata['schuserslist']) ? $ajaxformdata['schuserslist'] : [];
         list($schusers, $schusersids) = (new schedule)->userslist($reportid, $scheduleid, $schuserslist);

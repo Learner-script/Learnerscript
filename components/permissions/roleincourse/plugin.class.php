@@ -31,6 +31,12 @@ class plugin_roleincourse extends pluginbase {
 
     /** @var $role */
     public $role;
+
+    /**
+     * @var array $userroles User role
+     */
+    public $userroles;
+
     /** Role in course */
     public function init() {
         $this->form = true;

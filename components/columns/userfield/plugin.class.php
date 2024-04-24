@@ -31,6 +31,21 @@ use html_writer;
 class plugin_userfield extends pluginbase {
 
     /**
+     * @var string $role User role
+     */
+    public $role;
+
+    /**
+     * @var string $reportinstance User role
+     */
+    public $reportinstance;
+
+    /**
+     * @var array $reportfilterparams User role
+     */
+    public $reportfilterparams;
+
+    /**
      * User fields init function
      */
     public function init() {

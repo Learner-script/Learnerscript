@@ -254,8 +254,8 @@ if (!$download) {
         }
         $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $managereporturl);
     } else {
-        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?
-        role='.$SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
+        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?role='.
+        $SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
 
         $PAGE->navbar->add(get_string("reports_view", 'block_learnerscript'), $dashboardurl);
     }

@@ -28,6 +28,22 @@ use moodle_url;
 use html_writer;
 /** Course Activities Columns */
 class plugin_courseactivitiescolumns extends pluginbase {
+
+    /**
+     * @var string $role User role
+     */
+    public $role;
+
+    /**
+     * @var string $reportinstance User role
+     */
+    public $reportinstance;
+
+    /**
+     * @var array $reportfilterparams User role
+     */
+    public $reportfilterparams;
+
     /**
      * Course activities columns init function
      */

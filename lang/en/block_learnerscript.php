@@ -207,6 +207,7 @@ $string['nocourseexist'] = 'Course does not exists';
 $string['nocourseid'] = 'No such course id';
 $string['nodataavailable'] = 'No data available';
 $string['noexplicitprefix'] = "No explicit prefix";
+$string['nolsinstance'] = 'LearnerScript Report Instances not configured in this page.';
 $string['noofviews'] = 'Activity views columns';
 $string['noplugin'] = 'No such plugin';
 $string['noreportexists'] = 'Report does not exists';

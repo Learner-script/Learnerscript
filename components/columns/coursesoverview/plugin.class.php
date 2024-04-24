@@ -28,6 +28,22 @@ use moodle_url;
 use html_writer;
 /** Course Overview Columns */
 class plugin_coursesoverview extends pluginbase {
+
+    /**
+     * @var string $role User role
+     */
+    public $role;
+
+    /**
+     * @var string $reportinstance User role
+     */
+    public $reportinstance;
+
+    /**
+     * @var array $reportfilterparams User role
+     */
+    public $reportfilterparams;
+
     /**
      * Course overview init function
      */
@@ -77,13 +93,15 @@ class plugin_coursesoverview extends pluginbase {
         (new reportbase($activityinfoid))->check_permissions($systemcontext, $USER->id);
         $this->reportfilterparams['filter_modules'] = isset($this->reportfilterparams['filter_modules']) ?
         $this->reportfilterparams['filter_modules'] : 0;
+        $this->reportfilterparams['filter_users'] = isset($this->reportfilterparams['filter_users']) ?
+        $this->reportfilterparams['filter_users'] : 0;
         $allactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id,
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $inprogressactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id,
-                'filter_status' => get_string('notcompleted', 'block_learnerscript'),
+                'filter_status' => 'notcompleted',
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $completedactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
