@@ -35,13 +35,8 @@ class plugin_line extends pluginbase {
         $this->fullname = get_string('line', 'block_learnerscript');
         $this->form = true;
         $this->ordering = true;
-        $this->reporttypes = ['sql', 'assignment',
-        'courseactivities', 'courseparticipation', 'courses', 'coursesoverview',
-        'gradedactivity', 'myassignments', 'myquizs', 'myresources', 'myscorm',
-        'quizzes', 'scorm', 'student_overall_performance',
-        'student_performance', 'useractivities', 'userassignments',
-        'usercourses', 'userquizzes', 'usersresources', 'usersscorm', 'forum', 'myforums',
-        'assignstatus', 'userattendance', 'attendanceoverview', 'resources', 'coursecompetency', ];
+        $this->reporttypes = ['sql', 'courseactivities', 'courses', 'coursesoverview',
+                                'useractivities', 'usercourses', ];
     }
 
     /** Graph summary

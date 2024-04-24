@@ -2818,10 +2818,6 @@ body#page-blocks-learnerscript-components-scheduler-schedule #scheduleform.colla
     height: auto;
 }
 
-body#page-blocks-learnerscript-components-scheduler-schedule #scheduleform.collapsibleregion.collapsed {
-    height: 21px;
-}
-
 body#page-blocks-learnerscript-components-scheduler-schedule.has_dock #scheduleform.collapsibleregion #scheduleform_caption > a {
     text-decoration: none;
 }
@@ -4096,6 +4092,7 @@ body.path-blocks-learnerscript .ui-widget.ui-widget-content .ui-progressbar-valu
 }
 
 body.path-blocks-learnerscript .ui-widget.ui-widget-content#progressbar {
+    min-height: 0px;
     height: 20px;
     position: relative;
     color: #fff;
@@ -4335,12 +4332,6 @@ body.path-blocks-learnerscript .ls.viewreport-active {
     background-position: 4px -1147px;
 }
 
-body.path-blocks-learnerscript .ls.worldmap {
-    background-position: 0 -1109px;
-    width: 40px;
-    height: 35px;
-}
-
 body .editreport.viewreport-active a,
 body .editreport.design-active a,
 body .editreport.permissions-active a,
@@ -4389,11 +4380,6 @@ body.path-blocks-learnerscript .ls-plotgraphs_list .ui-state-default .ls.pie {
 
 body.path-blocks-learnerscript.ls-plotgraphs_list .ui-state-default.ui-state-active .ls.pie {
     background-position: 0 -882px;
-}
-
-body.path-blocks-learnerscript .ls-plotgraphs_list .ui-state-default .ls.worldmap {
-    background-position: 0 -1374px;
-    background-size: 37px;
 }
 
 body.path-blocks-learnerscript .ls_components {
@@ -4676,6 +4662,11 @@ body.path-blocks-learnerscript span.graphicon ul#align_menu .ls-plotgraphs_listi
 
 body.path-blocks-learnerscript span.graphicon > a.htitle .custom {
     line-height: 35px;
+}
+
+body.path-blocks-learnerscript span.dateicon > a {
+    line-height: 35px;
+    padding-left: 5px;
 }
 
 body#page-blocks-learnerscript-viewreport #licenseresult span.dateicon {
@@ -5197,7 +5188,7 @@ body#page-blocks-learnerscript-editreport label[for="id_querysql"] {
 body#page-blocks-learnerscript-viewreport #licenseresult .reportcustomfilters.show form.filterform .form-group,
 body#page-blocks-learnerscript-viewreport #licenseresult .basicparamsform .form-group {
     width: inherit;
-    margin: 0 0 7px;
+    margin: 0 0 7px 7px;
 }
 
 body#page-blocks-learnerscript-viewreport #licenseresult .reportcustomfilters.show form.filterform .form-group .col-md-3,
@@ -5486,4 +5477,10 @@ body.path-blocks-learnerscript table.dataTable.dtr-inline.collapsed > tbody > tr
 body.path-blocks-learnerscript table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child::before,
 body.path-blocks-learnerscript table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child::before {
     background-color: #808080;
+}
+
+body.path-blocks-reportdashboard #dashboard-header img {
+    width: 50px;
+    height: 50px;
+    object-fit: none;
 }

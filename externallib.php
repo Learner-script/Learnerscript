@@ -20,7 +20,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 require_login();
 global $CFG, $DB, $USER, $OUTPUT;
@@ -1029,7 +1029,7 @@ class block_learnerscript_external extends external_api {
 
         // We always must call validate_context in a webservice.
         self::validate_context($context);
-        $path = $CFG->dirroot . '/blocks/learnerscript/backup/';
+        $path = $CFG->dirroot . '/blocks/learnerscript/reportsbackup/';
         $learnerscriptreports = glob($path . '*.xml');
         $course = get_course(SITEID);
         if ($lastreportposition > 0) {

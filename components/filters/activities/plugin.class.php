@@ -35,6 +35,10 @@ class plugin_activities extends pluginbase {
 
     /** @var mixed $filtertype  */
     public $filtertype;
+
+    /** @var int $maxlength  */
+    public $maxlength;
+
     /** Activities filter init function*/
     public function init() {
         $this->form = false;
@@ -50,7 +54,7 @@ class plugin_activities extends pluginbase {
                 }
             }
         }
-        $this->reporttypes = ['listofactivities', 'useractivities', 'student_performance', 'gradedactivity'];
+        $this->reporttypes = ['useractivities'];
     }
 
     /**

@@ -66,14 +66,14 @@ class plugin_usercolumns extends pluginbase {
      * @return object
      */
     public function execute($data, $row) {
-        global $DB, $USER, $CFG;
+        global $DB, $USER, $CFG, $OUTPUT;
         $context = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursesoverview'], IGNORE_MULTIPLE);
         $quizreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myquizs'], IGNORE_MULTIPLE);
         $assignreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myassignments'], IGNORE_MULTIPLE);
         $userbadgeid = $DB->get_field('block_learnerscript', 'id', ['type' => 'userbadges'], IGNORE_MULTIPLE);
         $courseoverviewpermissions = empty($reportid) ? false : (new reportbase($reportid))->check_permissions($context, $USER->id);
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
+        $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         switch ($data->column) {
             case 'enrolled':
                 if (!isset($row->enrolled)) {
@@ -98,7 +98,7 @@ class plugin_usercolumns extends pluginbase {
                 }
                 $inprogressurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_users' => $row->id,
-                    'filter_status' => 'inprogress', ]);
+                    'filter_status' => get_string('inprogress', 'block_learnerscript'), ]);
                 if (empty($courseoverviewpermissions) || empty($reportid)) {
                     $row->{$data->column} = $inprogress;
                 } else {
@@ -114,7 +114,7 @@ class plugin_usercolumns extends pluginbase {
                 }
                 $completedurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_users' => $row->id,
-                    'filter_status' => 'completed', ]);
+                    'filter_status' => get_string('completed', 'block_learnerscript'), ]);
                 if (empty($courseoverviewpermissions) || empty($reportid)) {
                     $row->{$data->column} = $completed;
                 } else {

@@ -28,243 +28,234 @@ use stdclass;
 use block_learnerscript\form\filter_form;
 use html_table;
 use EvalMath;
-use EvalWise;
-use component_columns;
 use block_learnerscript\local\ls as ls;
 use context_system;
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
 
 /** Reportbase */
 class reportbase {
 
     /**
-     * @var [type] $id [description]
+     * @var int $id Report id
      */
     public $id = 0;
 
     /**
-     * @var [type] $components [description]
+     * @var array $components Report components
      */
     public $components = [];
 
     /**
-     * @var [type] $finalreport [description]
+     * @var array $finalreport Final report data
      */
     public $finalreport;
 
     /**
-     * @var [type] $finalelements [description]
+     * @var array $finalelements Report final elements
      */
     public $finalelements;
 
     /**
-     * @var [type] $totalrecords [description]
+     * @var int $totalrecords Total records
      */
     public $totalrecords = 0;
 
     /**
-     * @var [type] $currentuser [description]
+     * @var int $currentuser Current user id
      */
     public $currentuser = 0;
 
     /**
-     * @var [type] $currentcourseid [description]
+     * @var int $currentcourseid Current course id
      */
     public $currentcourseid = 1;
 
     /**
-     * @var [type] $starttime [description]
+     * @var int $starttime Start time
      */
     public $starttime = 0;
 
     /**
-     * @var [type] $endtime [description]
+     * @var int $endtime End time
      */
     public $endtime = 0;
 
     /**
-     * @var [type] $sql [description]
+     * @var string $sql Report SQL query
      */
     public $sql = '';
 
     /**
-     * @var [type] $designpage [description]
+     * @var boolean $designpage Design page
      */
     public $designpage = true;
 
     /**
-     * @var [type] $tablehead [description]
+     * @var array $tablehead Report table head
      */
     public $tablehead;
 
     /**
-     * @var [type] $ordercolumn [description]
+     * @var array $ordercolumn Report order column
      */
     public $ordercolumn;
 
     /**
-     * @var [type] $sqlorder [description]
+     * @var array $sqlorder SQL order
      */
     public $sqlorder;
 
     /**
-     * @var [type] $exports [description]
+     * @var boolean $exports
      */
     public $exports = true;
 
     /**
-     * @var [type] $start [description]
+     * @var int $start Start count
      */
     public $start = 0;
 
     /**
-     * @var [type] $length [description]
+     * @var int $length Reports length
      */
     public $length = 10;
 
     /**
-     * @var [type] $search [description]
+     * @var string $search Search value
      */
     public $search;
 
     /**
-     * @var [type] $courseid [description]
+     * @var int $courseid Course id
      */
     public $courseid;
 
     /**
-     * @var [type] $cmid [description]
+     * @var int $cmid Course module id
      */
     public $cmid;
 
     /**
-     * @var [type] $userid [description]
+     * @var int $userid User id
      */
     public $userid;
 
     /**
-     * @var [type] $status [description]
+     * @var string $status Report data status
      */
     public $status;
 
     /**
-     * @var [type] $filters [description]
+     * @var array $filters Report filters
      */
     public $filters;
 
     /**
-     * @var [type] $columns [description]
+     * @var array $columns Report columns
      */
     public $columns;
 
     /**
-     * @var [type] $basicparams [description]
+     * @var array $basicparams Basic params list
      */
     public $basicparams;
 
     /**
-     * @var [type] $params [description]
+     * @var array $params Report params list
      */
     public $params;
 
     /**
-     * @var [type] $filterdata [description]
+     * @var array $filterdata Report filters data
      */
     public $filterdata;
 
     /**
-     * @var [type] $role [description]
+     * @var string $role User role
      */
     public $role;
 
     /**
-     * @var [type] $contextlevel [description]
+     * @var int $contextlevel User contextlevel
      */
     public $contextlevel;
 
     /**
-     * @var [type] $parent [description]
+     * @var boolean $parent
      */
     public $parent = true;
 
     /**
-     * @var [type] $courselevel [description]
+     * @var boolean $courselevel
      */
     public $courselevel = false;
 
     /**
-     * @var [type] $conditionsenabled [description]
+     * @var boolean $conditionsenabled
      */
     public $conditionsenabled = false;
 
     /**
-     * @var [type] $reporttype [description]
+     * @var string $reporttype
      */
     public $reporttype = 'table';
 
     /**
-     * @var [type] $scheduling [description]
+     * @var boolean $scheduling
      */
     public $scheduling = false;
 
     /**
-     * @var [type] $colformat [description]
+     * @var boolean $colformat
      */
     public $colformat = false;
 
     /**
-     * @var [type] $calculations [description]
+     * @var boolean $calculations
      */
     public $calculations = false;
 
     /**
-     * @var [type] $singleplot [description]
+     * @var boolean $singleplot
      */
     public $singleplot;
 
     /**
-     * @var [type] $rolewisecourses [description]
+     * @var string $rolewisecourses
      */
     public $rolewisecourses = '';
 
     /**
-     * @var [type] $groupcolumn [description]
-     */
-    public $groupcolumn;
-
-    /**
-     * @var [type] $componentdata [description]
+     * @var array $componentdata
      */
     public $componentdata;
 
     /**
-     * @var [type] $graphcolumns [description]
+     * @var array $graphcolumns
      */
     private $graphcolumns;
 
     /**
-     * @var [type] $userroles [description]
+     * @var array $userroles
      */
     public $userroles;
 
     /**
-     * @var [type] $selectedcolumns [description]
+     * @var array $selectedcolumns
      */
     public $selectedcolumns;
 
     /**
-     * @var [type] $selectedfilters [description]
+     * @var array $selectedfilters
      */
     public $selectedfilters;
 
     /**
-     * @var [type] $conditionfinalelements [description]
+     * @var array $conditionfinalelements
      */
     public $conditionfinalelements = [];
 
     /**
-     * @var [type] $config [description]
+     * @var stdClass $config
      */
     public $config;
 
@@ -279,12 +270,12 @@ class reportbase {
     public $lsenddate;
 
     /**
-     * @var [type] $moodleroles
+     * @var array $moodleroles
      */
     public $moodleroles;
 
     /**
-     * @var [type] $contextrole
+     * @var string $contextrole
      */
     public $contextrole;
 
@@ -297,6 +288,16 @@ class reportbase {
      * @var int $defaultcolumn
      */
     public $defaultcolumn;
+
+    /**
+     * @var boolean $customheader Custom header
+     */
+    public $customheader;
+
+    /**
+     * @var string $reportcontenttype Report contenttype
+     */
+    public $reportcontenttype;
 
     /**
      * Construct
@@ -491,7 +492,7 @@ class reportbase {
                     } else {
                         $statuslist = ['all' => get_string('selectstatus', 'block_learnerscript'),
                         'inprogress' => get_string('inprogress', 'block_learnerscript'),
-                        'notyetstarted' => get_string('notyeststarteds', 'block_learnerscript'),
+                        'notyetstarted' => get_string('notyetstarted', 'block_learnerscript'),
                         'completed' => get_string('completed', 'block_learnerscript'), ];
                     }
                     $this->finalelements = $mform->addElement('select', 'filter_status', '',
@@ -730,17 +731,6 @@ class reportbase {
         if (!empty($this->ordercolumn)) {
             $this->sqlorder['column'] = $this->selectedcolumns[$this->ordercolumn['column']];
             $this->sqlorder['dir'] = $this->ordercolumn['dir'];
-        } else if (!empty($ordering)) {
-            foreach ($ordering as $o) {
-                require_once($CFG->dirroot.'/blocks/learnerscript/components/ordering/' .
-                    $o['pluginname'] . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_'.$o['pluginname'];
-                $classorder = new $classname($this->config);
-                if ($classorder->sql) {
-                    $orderingdata = $o['formdata'];
-                    $sqlorder = $classorder->execute($orderingdata);
-                }
-            }
         }
         $this->params['siteid'] = SITEID;
         $this->build_query(true);
@@ -832,11 +822,7 @@ class reportbase {
                                 $c['formdata']->subquery = $this->column_queries($c['formdata']->column, $rid);
                             }
                         }
-                        $columndata = $class->execute($c['formdata'], $r, $this->userid,
-                                                                         $this->currentcourseid,
-                                                                         $this->reporttype,
-                                                                         $this->starttime,
-                                                                         $this->endtime
+                        $columndata = $class->execute($c['formdata'], $r, $this->reporttype
                                                                          );
                         $tempcols[$c['formdata']->column] = $columndata;
                     }

@@ -67,18 +67,12 @@ if (!is_siteadmin()) {
             }
             $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
         }
-        $limit = '';
-        $querysql = "SELECT $limit DISTINCT ctx.contextlevel, r.shortname
-                           FROM {role} AS r
-                           JOIN {role_assignments} AS ra ON ra.roleid = r.id
-                           JOIN {context} as ctx ON ctx.id = ra.contextid
-                           WHERE ra.userid = :userid ORDER BY ctx.contextlevel ASC $limit";
-        if ($CFG->dbtype == 'sqlsrv') {
-            $limit = str_replace('%%TOP%%', 'TOP 1', $querysql);
-        } else {
-            $limit = str_replace('%%LIMIT%%', 'LIMIT 1', $querysql);
-        }
-        $contextlevels = $DB->get_record_sql($querysql, ['userid' => $USER->id]);
+        $querysql = "SELECT DISTINCT ctx.contextlevel, r.shortname
+                           FROM {role} r
+                           JOIN {role_assignments} ra ON ra.roleid = r.id
+                           JOIN {context} ctx ON ctx.id = ra.contextid
+                           WHERE ra.userid = :userid ORDER BY ctx.contextlevel ASC";
+        $contextlevels = $DB->get_record_sql($querysql, ['userid' => $USER->id], 0, 1);
         $SESSION->rolecontextlist = $rcontext;
         $SESSION->ls_contextlevel = $contextlevels->contextlevel;
         $SESSION->rolecontext = $SESSION->role . '_' . $SESSION->ls_contextlevel;
@@ -260,8 +254,8 @@ if (!$download) {
         }
         $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $managereporturl);
     } else {
-        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?
-        role='.$SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
+        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?role='.
+        $SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
 
         $PAGE->navbar->add(get_string("reports_view", 'block_learnerscript'), $dashboardurl);
     }
@@ -282,8 +276,8 @@ if (!$download) {
     $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
     if ($report->type == 'sql' || $report->type == 'statistics') {
         echo $OUTPUT->heading($report->name."  ".
-        html_writer::empty_tag('img', ['src' => "$CFG->wwwroot/pix/help.png", 'id' => 'helpimg',
-        'title' => 'Help with ' . $report->name, 'alt' => 'help', 'href' => "javascript:void(0)",
+        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'), 'title' => 'Help with ' . $report->name,
+                'alt' => 'help', 'href' => "javascript:void(0)",
         'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
 
     } else {
@@ -310,11 +304,10 @@ if (!$download) {
 } else {
     $reportclass->reporttype = 'table';
     $reportclass->create_report();
-    $exportplugin = $CFG->dirroot . '/blocks/learnerscript/export/' . $format . '/export.php';
-    if (file_exists($exportplugin)) {
-        require_once($exportplugin);
+    $exportclass = 'block_learnerscript\export\export_' . $format;
+    if (class_exists($exportclass)) {
         $reportclass->finalreport->name = $reportclass->config->name;
-        export_report($reportclass, $id);
+        (new $exportclass)->export_report($reportclass, $id);
     }
     die;
 }

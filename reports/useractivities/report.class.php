@@ -47,6 +47,15 @@ class report_useractivities extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report construct function
      * @param object $report Report object
@@ -60,7 +69,7 @@ class report_useractivities extends reportbase implements report {
             $this->basicparams = [['name' => 'courses']];
         }
         $this->parent = false;
-        $this->components = ['columns', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $columns = ['modulename', 'highestgrade', 'lowestgrade', 'finalgrade', 'firstaccess', 'lastaccess',
                     'totaltimespent', 'numviews', 'completedon', 'completionstatus', ];
         $this->columns = ['activityfield' => ['activityfield'], 'useractivitiescolumns' => $columns];
@@ -243,7 +252,7 @@ class report_useractivities extends reportbase implements report {
             $this->sql .= " AND main.id NOT IN (SELECT coursemoduleid FROM {course_modules_completion}
                                                   WHERE completionstate <> 0 AND userid= :subuserid ) ";
         }
-        if ($status == 'completed') {
+        if ($status == 'Completed') {
             $this->sql .= " AND main.id IN (SELECT coursemoduleid FROM {course_modules_completion}
                                               WHERE completionstate <> 0 AND userid= :subuserid ) ";
         }

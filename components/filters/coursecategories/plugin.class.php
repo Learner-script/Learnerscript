@@ -31,6 +31,9 @@ class plugin_coursecategories extends pluginbase {
     /** @var mixed $filtertype  */
     public $filtertype;
 
+    /** @var mixed $singleselection  */
+    public $singleselection;
+
     /** Course categories filter init function*/
     public function init() {
         $this->form = false;

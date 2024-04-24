@@ -32,6 +32,15 @@ class report_users extends reportbase {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report construct
      * @param object $report           Report data
@@ -39,7 +48,7 @@ class report_users extends reportbase {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report, $reportproperties);
-        $this->components = ['columns', 'conditions', 'ordering', 'permissions', 'filters', 'plot'];
+        $this->components = ['columns', 'permissions', 'filters', 'plot'];
         $this->parent = true;
         $this->columns = ['userfield' => ['userfield'], 'usercolumns' => ['enrolled', 'inprogress',
             'completed', 'grade', 'badges', 'progress', 'status', ], ];
@@ -150,10 +159,7 @@ class report_users extends reportbase {
      * Concat groupby to SQL
      */
     public function groupby() {
-        global $CFG;
-        if ($CFG->dbtype != 'sqlsrv') {
-            $this->sql .= " GROUP BY u.id ";
-        }
+        $this->sql .= " GROUP BY u.id ";
     }
 
     /**
@@ -222,7 +228,9 @@ class report_users extends reportbase {
                 break;
             case 'progress':
                 $identity = "ra.userid";
-                $query = "SELECT ROUND((COUNT(distinct cc.course) / COUNT(DISTINCT c.id)) *100, 2) as progress
+                $query = "SELECT
+                ROUND((CAST(COUNT(DISTINCT cc.course) AS DECIMAL) / CAST(COUNT(DISTINCT c.id) AS DECIMAL)) * 100, 2)
+                as progress
                             FROM {user_enrolments} ue
                             JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
                             JOIN {role_assignments} ra ON ra.userid = ue.userid

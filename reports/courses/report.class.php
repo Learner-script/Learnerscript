@@ -35,6 +35,15 @@ class report_courses extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report constructor
      * @param object $report           Report data
@@ -46,7 +55,7 @@ class report_courses extends reportbase implements report {
                     'highgrade', 'lowgrade', 'badges', 'totaltimespent', 'numviews', ];
         $this->columns = ['coursefield' => ['coursefield'] ,
                           'coursescolumns' => $columns, ];
-        $this->components = ['columns', 'ordering', 'filters', 'permissions', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $this->filters = ['coursecategories', 'courses'];
         $this->parent = true;
         $this->orderable = ['enrolments', 'completed', 'activities', 'competencies', 'avggrade',
@@ -191,7 +200,9 @@ class report_courses extends reportbase implements report {
                              JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
                              JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0
                             WHERE 1 = 1 $where) = 0 THEN 0 ELSE
-                            (SELECT ROUND(((COUNT(DISTINCT cc.userid) / COUNT(DISTINCT ue.userid)) * 100) , 2) AS progress
+                            (SELECT
+                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ue.userid) AS DECIMAL)) * 100, 2)
+                            AS progress
                              FROM {user_enrolments} ue
                              JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
                              JOIN {role_assignments} ra ON ra.userid = ue.userid

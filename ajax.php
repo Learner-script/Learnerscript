@@ -18,7 +18,7 @@
  * Learnerscript, a Moodle block to create customizable reports.
  *
  * @package    block_learnerscript
- * @copyright  2023 Moodle India
+ * @copyright  2023 Jahnavi Nanduri <jahnavi.nanduri@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('AJAX_SCRIPT', true);
@@ -143,11 +143,6 @@ if (empty($requests['jsonformdata'])) {
 } else {
     $jsonformdata = $requests['jsonformdata'];
 }
-if (empty($requests['advancedcolumn'])) {
-    $advancedcolumn = '';
-} else {
-    $advancedcolumn = $requests['advancedcolumn'];
-}
 if (empty($requests['export'])) {
     $export = '';
 } else {
@@ -227,7 +222,6 @@ $component = optional_param('component', $component, PARAM_RAW);
 $pname = optional_param('pname', $pname, PARAM_RAW);
 $jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_RAW);
 $conditionsdata = optional_param('conditions', $conditionsdata, PARAM_RAW);
-$advancedcolumn = optional_param('advancedcolumn', $advancedcolumn, PARAM_RAW);
 $export = optional_param('export', $export, PARAM_RAW);
 $lsfstartdate = optional_param('lsfstartdate', $lsfstartdate, PARAM_INT);
 $lsfenddate = optional_param('lsfenddate', $lsfenddate, PARAM_INT);
@@ -484,8 +478,6 @@ switch ($action) {
         $reportclass = new $reportclassname($report, $properties);
         $comp = (array) $ls->cr_unserialize($reportclass->config->components);
         $components = json_decode($components, true);
-        $plugins = get_list_of_plugins('blocks/learnerscript/components/calcs');
-        $orderingplugins = get_list_of_plugins('blocks/learnerscript/components/ordering');
         foreach ($components['calculations']['elements'] as $k => $calculations) {
             if (empty($calculations['pluginname']) || ($calculations['type'] != 'calculations')) {
                 unset($components['calculations']['elements'][$k]);
@@ -496,9 +488,7 @@ switch ($action) {
         }
         $comp['columns']['elements'] = $components['columns']['elements'];
         $comp['filters']['elements'] = $components['filters']['elements'];
-        $comp['calculations']['elements'] = $components['calculations']['elements'];
-        $comp['ordering']['elements'] = $components['ordering']['elements'];
-        $comparray = ['columns', 'filters', 'calculations', 'ordering'];
+        $comparray = ['columns', 'filters'];
         foreach ($comparray as $c) {
             foreach ($comp[$c]['elements'] as $k => $d) {
                 if ($c == 'filters') {
@@ -506,24 +496,6 @@ switch ($action) {
                         unset($comp[$c]['elements'][$k]);
                         continue;
                     }
-                }
-                if ($c == 'calculations') {
-                    $comp[$c]['elements'][$k]['formdata'] = (object) $comp[$c]['elements'][$k]['formdata'];
-                    if (empty($d['pluginname']) || ($d['type'] == 'selectedcolumns'
-                    && !in_array($d['pluginname'], $plugins)) || empty($comp[$c]['elements'][$k]['formdata'])) {
-                        unset($comp[$c]['elements'][$k]);
-                        continue;
-                    }
-                }
-                if ($c == 'ordering') {
-                    if (empty($d['pluginname']) || ($d['type'] == 'Ordering' && !in_array($d['pluginname'], $orderingplugins))) {
-                        unset($comp[$c]['elements'][$k]);
-                        continue;
-                    }
-                    unset($comp[$c]['elements'][$k]['orderingcolumn']);
-                }
-                if ($c != 'calculations') {
-                    $comp[$c]['elements'][$k]['formdata'] = (object) $d['formdata'];
                 }
             }
         }

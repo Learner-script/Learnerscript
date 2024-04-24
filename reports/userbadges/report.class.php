@@ -41,6 +41,12 @@ class report_userbadges extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report construct function
      * @param object $report           User badges report data

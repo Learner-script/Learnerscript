@@ -35,12 +35,8 @@ class plugin_combination extends pluginbase {
         $this->fullname = get_string('combination', 'block_learnerscript');
         $this->form = true;
         $this->ordering = true;
-        $this->reporttypes = ['timeline', 'sql', 'assignment',
-                            'courseactivities', 'courseparticipation',  'courses', 'coursesoverview',
-                            'gradedactivity', 'myassignments', 'myquizs', 'myresources', 'myscorm',
-                            'quizzes', 'scorm', 'student_overall_performance',
-                            'student_performance', 'useractivities', 'userassignments', 'resources',
-                            'usercourses', 'userquizzes', 'users', 'usersresources', 'usersscorm', 'forum', 'assignstatus', ];
+        $this->reporttypes = ['sql', 'courseactivities', 'courses', 'coursesoverview',
+                            'useractivities', 'usercourses', 'users', ];
     }
 
     /** Graph summary

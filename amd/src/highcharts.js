@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * TODO describe module highcharts
+ * Describe the report visualizations.
  *
  * @module     block_learnerscript/highcharts
  * @copyright  2023 Moodle India

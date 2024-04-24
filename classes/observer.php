@@ -98,7 +98,7 @@ class block_learnerscript_observer {
              unset($_COOKIE['time_timeme']);
         } else {
             $_COOKIE['time_timeme'] = 0;
-            $_SESSION['pageurl_timeme'] = parse_url($_SERVER['REQUEST_URI'])['path'];
+            $_SESSION['pageurl_timeme'] = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'])['path'] : '';
             $_SESSION['time_timeme'] = round($_COOKIE['time_timeme'], 0);
 
         }

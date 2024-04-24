@@ -115,8 +115,7 @@ class block_learnerscript extends block_list {
         }
         $reportdashboardblockexists = $this->page->blocks->is_known_block_type('reportdashboard', false);
         if (!is_siteadmin()) {
-            $limit = '';
-            $userrolesql = "SELECT $limit CONCAT(ra.roleid, '_',c.contextlevel) AS rolecontext, r.shortname, c.contextlevel
+            $userrolesql = "SELECT CONCAT(ra.roleid, '_',c.contextlevel) AS rolecontext, r.shortname, c.contextlevel
             FROM {role_assignments} ra
             JOIN {context} c ON c.id = ra.contextid
             JOIN {role} r ON r.id = ra.roleid
@@ -124,13 +123,8 @@ class block_learnerscript extends block_list {
             foreach ($USER->access['ra'] as $key => $value) {
                 $userrolesql .= " c.path LIKE '".$key."' OR ";
             }
-            $userrolesql .= " 1 = 1) GROUP BY ra.roleid, c.contextlevel, r.shortname $limit";
-            if ($CFG->dbtype == 'sqlsrv') {
-                $limit = str_replace('%%TOP%%', 'TOP 1', $userrolesql);
-            } else {
-                $limit = str_replace('%%LIMIT%%', 'LIMIT 1', $userrolesql);
-            }
-            $userroles = $DB->get_record_sql($userrolesql, ['userid' => $USER->id]);
+            $userrolesql .= " 1 = 1) GROUP BY ra.roleid, c.contextlevel, r.shortname ";
+            $userroles = $DB->get_record_sql($userrolesql, ['userid' => $USER->id], IGNORE_MULTIPLE);
             if (!empty($userroles)) {
                 $roleshortname = $userroles->shortname;
                 if ($roleshortname == 'editingteacher' && $userroles->contextlevel == 10) {

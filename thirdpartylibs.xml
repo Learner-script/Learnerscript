@@ -4,23 +4,11 @@
         <location>js/highcharts/exporting.js</location>
         <name>Exporting</name>
         <description>Highcharts JS exporting module</description>
-        <version>v6.0.3</version>
+        <version>v11.4.0</version>
         <license>www.highcharts.com/license</license>
-        <repository></repository>
+        <repository>https://code.highcharts.com/modules/exporting.js</repository>
         <copyrights>
-            <copyright>2010-2017 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highcharts/heatmap.js</location>
-        <name>Heatmap</name>
-        <description>Highmaps JS heatmap module</description>
-        <version>v11.2.0</version>
-        <license>www.highcharts.com/license</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2009-2021 Torstein Honsi</copyright>
+            <copyright>2010-2024 Torstein Honsi</copyright>
         </copyrights>
         <customised/>
     </library>
@@ -28,144 +16,35 @@
         <location>js/highcharts/highcharts-more.js</location>
         <name>Highcharts-more</name>
         <description>Highcharts JS highcharts-more module</description>
-        <version>v6.0.3</version>
+        <version>v11.4.0</version>
         <license>www.highcharts.com/license</license>
-        <repository></repository>
+        <repository>https://code.highcharts.com/highcharts-more.js</repository>
         <copyrights>
-            <copyright>2009-2016 Torstein Honsi</copyright>
+            <copyright>2009-2024 Torstein Honsi</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
-        <location>js/highcharts/solid-gauge.js</location>
-        <name>solid-gauge</name>
-        <description>Highcharts JS solid-gauge module</description>
-        <version>v6.0.3</version>
+        <location>js/highmaps/heatmap.js</location>
+        <name>Heatmap</name>
+        <description>Highmaps JS heatmap module</description>
+        <version>v11.4.0</version>
         <license>www.highcharts.com/license</license>
-        <repository></repository>
+        <repository>https://code.highcharts.com/modules/heatmap.js</repository>
         <copyrights>
-            <copyright>2009-2017 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highmaps/highmaps.js</location>
-        <name>solid-gauge</name>
-        <description>Highmaps JS</description>
-        <version>v6.0.4</version>
-        <license>www.highcharts.com/license</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2011-2016 Torstein Honsi</copyright>
+            <copyright>2009-2024 Torstein Honsi</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
         <location>js/highmaps/map.js</location>
-        <name>map</name>
-        <description>Highmaps as a plugin for Highcharts</description>
-        <version>v6.0.4</version>
+        <name>Highmaps JS</name>
+        <description>Highmaps as a plugin for Highcharts or Highcharts Stock</description>
+        <version>v11.4.0</version>
         <license>www.highcharts.com/license</license>
-        <repository></repository>
+        <repository>https://code.highcharts.com/maps/modules/map.js</repository>
         <copyrights>
-            <copyright>2011-2016 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-animate.min.js</location>
-        <name>angular-animate</name>
-        <description>Angular JS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-aria.min.js</location>
-        <name>angular-aria</name>
-        <description>Angular JS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-drag-and-drop-lists.min.js</location>
-        <name>angular-drag-and-drop-lists</name>
-        <description>Angular drag and drop lists hs</description>
-        <version>v2.1.0</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2014 Marcel Juenemann marcel@juenemann.cc</copyright>
-            <copyright>2014-2017 Google Inc.</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-material.min.js</location>
-        <name>angular-material</name>
-        <description>AngularJS Material Design</description>
-        <version>v1.1.5</version>
-        <license>MIT</license>
-        <repository>https://github.com/angular/material</repository>
-        <copyrights>
-            <copyright>2014-2017 Google Inc.</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-route.js</location>
-        <name>angular-route</name>
-        <description>AngularJS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular-route.min.js</location>
-        <name>angular-route.min</name>
-        <description>AngularJS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular.js</location>
-        <name>angular</name>
-        <description>AngularJS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/angular.min.js</location>
-        <name>angular.min</name>
-        <description>AngularJS</description>
-        <version>v1.4.3</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2010-2015 Google, Inc. http://angularjs.org</copyright>
+            <copyright>2011-2024 Torstein Honsi</copyright>
         </copyrights>
         <customised/>
     </library>
@@ -182,86 +61,38 @@
         <customised/>
     </library>
     <library>
-        <location>js/jquery.dataTables.js</location>
-        <name>jquery.dataTables</name>
-        <description>jQuery datatables</description>
-        <version>1.13.7</version>
-        <license>MIT https://datatables.net/license</license>
-        <repository></repository>
+        <location>amd/src/jquery.dataTables.js</location>
+        <name>DataTables</name>
+        <description>Paginate, search and order HTML tables</description>
+        <version>1.13.11</version>
+        <license>MIT</license>
+        <repository>https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js</repository>
         <copyrights>
-            <copyright>2008-2023 SpryMedia Ltd - datatables.net/license</copyright>
+            <copyright>2008-2024 SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
-        <location>js/jquery.serialize-object.js</location>
-        <name>jquery.serialize-object</name>
-        <description>jQuery serialize objects</description>
+        <location>amd/src/jquery.serialize-object.js</location>
+        <name>jQuery serializeObject</name>
+        <description>jQuery serializeObject</description>
         <version>2.5.0</version>
-        <license>MIT https://datatables.net/license</license>
-        <repository></repository>
+        <license>BSD</license>
+        <repository>https://github.com/macek/jquery-serialize-object</repository>
         <copyrights>
-            <copyright>2014, macek (paulmacek@gmail.com)</copyright>
+            <copyright>2014, Paul Macek</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
-        <location>js/select2.js</location>
-        <name>select2</name>
-        <description>select2 JS</description>
+        <location>amd/src/select2.js</location>
+        <name>Select2</name>
+        <description>Select2 JS</description>
         <version>4.0.3</version>
-        <license>MIT https://github.com/select2/select2/blob/master/LICENSE.md</license>
-        <repository></repository>
-        <copyrights>
-            <copyright></copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/smart-table.min.js</location>
-        <name>smart-table</name>
-        <description>Smart table JS</description>
-        <version>2.1.8</version>
         <license>MIT</license>
-        <repository></repository>
+        <repository>https://github.com/select2/select2/blob/develop/dist/js/select2.js</repository>
         <copyrights>
-            <copyright></copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>css/angular-material.min.css</location>
-        <name>angular-material</name>
-        <description>AngularJS Material Design</description>
-        <version>v1.1.5</version>
-        <license>MIT</license>
-        <repository>https://github.com/angular/material</repository>
-        <copyrights>
-            <copyright></copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>css/dataTables.bootstrap.min.css</location>
-        <name>dataTables.bootstrap</name>
-        <description>Bootstrap datatables</description>
-        <version>1.13.7</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2007-2023 SpryMedia Ltd</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>css/fixedHeader.bootstrap.min.css</location>
-        <name>fixedHeader.bootstrap</name>
-        <description>Bootstrap fixedheader css</description>
-        <version>1.13.7</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2007-2023 SpryMedia Ltd</copyright>
+            <copyright>2012-2017 Kevin Brown, Igor Vaynberg, and Select2 contributors</copyright>
         </copyrights>
         <customised/>
     </library>
@@ -278,33 +109,9 @@
         <customised/>
     </library>
     <library>
-        <location>css/highcharts.css</location>
-        <name>highcharts</name>
-        <description>Highcharts css</description>
-        <version>v6.0.3</version>
-        <license>www.highcharts.com/license</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2009-2016 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
         <location>css/jquery.dataTables.min.css</location>
         <name>jquery.dataTables</name>
         <description>jQuery datatables css</description>
-        <version>1.13.7</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2007-2023 SpryMedia Ltd</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>css/responsive.bootstrap.min.css</location>
-        <name>responsive.bootstrap</name>
-        <description>Bootstrap responsive css</description>
         <version>1.13.7</version>
         <license>MIT</license>
         <repository></repository>
@@ -338,108 +145,85 @@
         <customised/>
     </library>
     <library>
-        <location>amd/src/dataTables.bootstrap.js</location>
-        <name>dataTables.bootstrap</name>
-        <description>DataTables Bootstrap 3 integration</description>
-        <version>1.13.7</version>
-        <license>datatables.net/license</license>
-        <repository></repository>
+        <location>amd/src/bootstrapnotify.js</location>
+        <name>Bootstrap Notify</name>
+        <description>Turns standard Bootstrap alerts into "Growl-like" notifications.</description>
+        <version>v3.1.5</version>
+        <license>MIT</license>
+        <repository>https://github.com/mouse0270/bootstrap-notify/blob/master/bootstrap-notify.js</repository>
         <copyrights>
-            <copyright>©2011-2015 SpryMedia Ltd</copyright>
+            <copyright>2015 Robert McIntoch</copyright>
+        </copyrights>
+        <customised/>
+    </library>
+    <library>
+        <location>amd/src/dataTables.bootstrap.js</location>
+        <name>DataTables Bootstrap</name>
+        <description>This file sets the defaults and adds options to DataTables to style its
+ *      controls using Bootstrap</description>
+        <version>2.1.1</version>
+        <license>MIT</license>
+        <repository>https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs/2.1.1/dataTables.bootstrap.js</repository>
+        <copyrights>
+            <copyright>2011-2015 SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
         <location>amd/src/dataTables.fixedHeader.js</location>
         <name>FixedHeader</name>
-        <description>FixedHeader</description>
-        <version>3.4.0</version>
-        <license>datatables.net/license</license>
-        <repository></repository>
+        <description>Fix a table's header or footer, so it is always visible while scrolling</description>
+        <version>4.0.1</version>
+        <license>MIT</license>
+        <repository>https://cdn.datatables.net/fixedheader/4.0.1/js/dataTables.fixedHeader.js</repository>
         <copyrights>
-            <copyright>©2011-2015 SpryMedia Ltd</copyright>
+            <copyright>SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
         <location>amd/src/dataTables.responsive.js</location>
         <name>Responsive</name>
-        <description>Responsive</description>
+        <description>Responsive for DataTables</description>
         <version>2.5.0</version>
-        <license>datatables.net/license</license>
-        <repository></repository>
+        <license>MIT</license>
+        <repository>https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.js</repository>
         <copyrights>
-            <copyright>©2011-2015 SpryMedia Ltd</copyright>
+            <copyright>SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
         <location>amd/src/flatpickr.js</location>
         <name>Flatpickr</name>
-        <description>Flatpickr</description>
+        <description>A lightweight, powerful datetimepicker</description>
         <version>v4.0.7</version>
         <license>MIT</license>
-        <repository></repository>
+        <repository>https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.0.7/flatpickr.js</repository>
         <copyrights>
             <copyright>©2011-2015 SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
-        <location>amd/src/fragment.js</location>
-        <name>fragment</name>
-        <description>fragment</description>
-        <version></version>
-        <license>GNU GPL v3</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2016 Adrian Greeve</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>amd/src/newgroup.js</location>
-        <name>Newgroup</name>
-        <description>Newgroup</description>
-        <version></version>
-        <license>GNU GPL v3</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2017 Damyon Wiese</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>amd/src/radioslider.js</location>
-        <name>radioslider</name>
-        <description>jquery plugin to create a slider using a list of radio buttons</description>
-        <version>v0.3.2</version>
-        <license>MIT</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2014 Rubén Torres - rubentdlh@gmail.com</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
         <location>amd/src/responsive.bootstrap.js</location>
-        <name>responsive.bootstrap</name>
-        <description>radiosToSlider</description>
-        <version>1.13.7</version>
+        <name>DataTables Responsive</name>
+        <description>Bootstrap integration for DataTables' Responsive</description>
+        <version>3.0.1</version>
         <license>datatables.net/license</license>
-        <repository></repository>
+        <repository>https://cdn.datatables.net/responsive/3.0.1/js/responsive.bootstrap.js</repository>
         <copyrights>
-            <copyright>2015-2016 SpryMedia Ltd</copyright>
+            <copyright>SpryMedia Ltd</copyright>
         </copyrights>
         <customised/>
     </library>
     <library>
         <location>amd/src/timeme.js</location>
-        <name>timeme</name>
-        <description>radiosToSlider</description>
-        <version></version>
-        <license>GNU GPL v3</license>
-        <repository></repository>
+        <name>TimeMe</name>
+        <description>A utility to time how long a user interacts with a page, disregarding time spent on other tabs, minimized, or idle time.</description>
+        <version>2.0.0</version>
+        <license>MIT</license>
+        <repository>https://cdnjs.cloudflare.com/ajax/libs/TimeMe.js/2.0.0/timeme.js</repository>
         <copyrights>
             <copyright>2017 Jason Zissman</copyright>
         </copyrights>

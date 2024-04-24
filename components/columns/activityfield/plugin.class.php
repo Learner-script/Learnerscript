@@ -27,6 +27,22 @@ use html_writer;
 use context_system;
 /** Activity Field column */
 class plugin_activityfield extends pluginbase {
+
+    /**
+     * @var string $role User role
+     */
+    public $role;
+
+    /**
+     * @var array $reportinstance User role
+     */
+    public $reportinstance;
+
+    /**
+     * @var string $reportfilterparams User role
+     */
+    public $reportfilterparams;
+
     /**
      * Activity fields init function
      */

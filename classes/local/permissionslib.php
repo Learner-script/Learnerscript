@@ -19,9 +19,6 @@ use context_system;
 use cache;
 use context_helper;
 use context_coursecat;
-defined('MOODLE_INTERNAL') || die();
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
 
 /**
  * A Moodle block to create customizable reports.
@@ -56,6 +53,11 @@ class permissionslib {
      * @var $userid
      */
     private $userid;
+
+    /**
+     * @var $moodleroles
+     */
+    public $moodleroles;
 
     /**
      * Construct

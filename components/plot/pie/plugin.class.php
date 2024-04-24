@@ -35,13 +35,8 @@ class plugin_pie extends pluginbase {
         $this->fullname = get_string('pie', 'block_learnerscript');
         $this->form = true;
         $this->ordering = true;
-        $this->reporttypes = ['courses', 'sql', 'assignment',
-                            'courseactivities', 'courseparticipation', 'courses', 'coursesoverview',
-                            'gradedactivity', 'myassignments', 'myquizs', 'myresources',
-                            'quizzes', 'student_overall_performance',
-                            'student_performance',  'useractivities', 'forum', 'myforums',
-                            'assignstatus', 'bigbluebutton',
-                        ];
+        $this->reporttypes = ['courses', 'sql', 'courseactivities', 'coursesoverview',
+                            'useractivities', ];
     }
 
     /** Graph summary

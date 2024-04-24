@@ -1,26 +1,4 @@
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * TODO describe module timeme
- *
- * @module     block_learnerscript/timeme
- * @copyright  2017 Jason Zissman
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-/* Copyright (c) 2017 Jason Zissman
+/*Copyright (c) 2017 Jason Zissman
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
@@ -39,412 +17,345 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-(function() {
-    // eslint-disable-next-line consistent-return
-    (function(root, factory) {
-        // eslint-disable-next-line no-undef
-        if (typeof module !== 'undefined' && module.exports) {
-            // CommonJS
-            // eslint-disable-next-line no-return-assign
-            // eslint-disable-next-line no-undef, no-return-assign
-            return module.exports = factory();
-        } else if (typeof define === 'function' && define.amd) {
-            // AMD
-            define([], function () {
-                return (root.TimeMe = factory());
-            });
-        } else {
-            // Global Variables
-            // eslint-disable-next-line no-return-assign
-            return root.TimeMe = factory();
-        }
-    })(this, function () {
+(function () {
+	(function (root, factory) {
+		if (typeof module !== 'undefined' && module.exports) {
+			// CommonJS
+			return module.exports = factory();
+		} else if (typeof define === 'function' && define.amd) {
+			// AMD
+			define([], function () {
+				return (root.TimeMe = factory());
+			});
+		} else {
+			// Global Variables
+			return root.TimeMe = factory();
+		}
+	})(this, function () {
+		var TimeMe = {
+			startStopTimes: {},
+			idleTimeoutMs: 60 * 1000,
+			currentIdleTimeMs: 0,
+			checkStateRateMs: 250,
+			active: false,
+			idle: false,
+			currentPageName: "default-page-name",
+			timeElapsedCallbacks: [],
+			userLeftCallbacks: [],
+			userReturnCallbacks: [],
 
-        var TimeMe = {
+			startTimer: function () {
+				var pageName = TimeMe.currentPageName;
 
-            startStopTimes: {},
-            idleTimeoutMs: 30 * 1000,
-            currentIdleTimeMs: 0,
-            checkStateRateMs: 250,
-            active: false,
-            idle: false,
-            currentPageName: "default-page-name",
-            timeElapsedCallbacks: [],
-            userLeftCallbacks: [],
-            userReturnCallbacks: [],
+				if (TimeMe.startStopTimes[pageName] === undefined) {
+					TimeMe.startStopTimes[pageName] = [];
+				} else {
+					var arrayOfTimes = TimeMe.startStopTimes[pageName];
+					var latestStartStopEntry = arrayOfTimes[arrayOfTimes.length - 1];
+					if (latestStartStopEntry !== undefined && latestStartStopEntry.stopTime === undefined) {
+						// Can't start new timer until previous finishes.
+						return;
+					}
+				}
+				TimeMe.startStopTimes[pageName].push({
+					"startTime": new Date(),
+					"stopTime": undefined
+				});
+				TimeMe.active = true;
+			},
 
-            trackTimeOnElement: function (elementId) {
-                var element = document.getElementById(elementId);
-                if (element) {
-                    element.addEventListener("mouseover", function () {
-                        TimeMe.startTimer(elementId);
-                    });
-                    element.addEventListener("mousemove", function () {
-                        TimeMe.startTimer(elementId);
-                    });
-                    element.addEventListener("mouseleave", function () {
-                        TimeMe.stopTimer(elementId);
-                    });
-                    element.addEventListener("keypress", function () {
-                        TimeMe.startTimer(elementId);
-                    });
-                    element.addEventListener("focus", function () {
-                        TimeMe.startTimer(elementId);
-                    });
-                }
-            },
+			stopTimer: function () {
+				var pageName = TimeMe.currentPageName;
+				var arrayOfTimes = TimeMe.startStopTimes[pageName];
+				if (arrayOfTimes === undefined || arrayOfTimes.length === 0) {
+					// Can't stop timer before you've started it.
+					return;
+				}
+				if (arrayOfTimes[arrayOfTimes.length - 1].stopTime === undefined) {
+					arrayOfTimes[arrayOfTimes.length - 1].stopTime = new Date();
+				}
+				TimeMe.active = false;
+			},
 
-            getTimeOnElementInSeconds: function (elementId) {
-                var time = TimeMe.getTimeOnPageInSeconds(elementId);
-                if (time) {
-                    return time;
-                } else {
-                    return 0;
-                }
-            },
+			getTimeOnCurrentPageInSeconds: function () {
+				return TimeMe.getTimeOnPageInSeconds(TimeMe.currentPageName);
+			},
 
-            // StartTime is optional. If provided, must be of type Date(). By providing
-            // startTime, you are overriding the internal timing mechanism and manually
-            // indicating the start time.
-            startTimer: function (pageName, startTime) {
-                if (!pageName) {
-                    pageName = TimeMe.currentPageName;
-                }
+			getTimeOnPageInSeconds: function (pageName) {
+				var timeInMs = TimeMe.getTimeOnPageInMilliseconds(pageName);
+				if (timeInMs === undefined) {
+					return undefined;
+				} else {
+					return TimeMe.getTimeOnPageInMilliseconds(pageName) / 1000;
+				}
+			},
 
-                if (TimeMe.startStopTimes[pageName] === undefined) {
-                    TimeMe.startStopTimes[pageName] = [];
-                } else {
-                    var arrayOfTimes = TimeMe.startStopTimes[pageName];
-                    var latestStartStopEntry = arrayOfTimes[arrayOfTimes.length - 1];
-                    if (latestStartStopEntry !== undefined && latestStartStopEntry.stopTime === undefined) {
-                        // Can't start new timer until previous finishes.
-                        return;
-                    }
-                }
-                TimeMe.startStopTimes[pageName].push({
-                    "startTime": startTime || new Date(),
-                    "stopTime": undefined
-                });
-                TimeMe.active = true;
-            },
+			getTimeOnCurrentPageInMilliseconds: function () {
+				return TimeMe.getTimeOnPageInMilliseconds(TimeMe.currentPageName);
+			},
 
-            stopAllTimers: function () {
-                var pageNames = Object.keys(TimeMe.startStopTimes);
-                for (var i = 0; i < pageNames.length; i++) {
-                    TimeMe.stopTimer(pageNames[i]);
-                }
-            },
+			getTimeOnPageInMilliseconds: function (pageName) {
 
-            // StopTime is optional. If provided, must be of type Date(). By providing
-            // stopTime, you are overriding the internal timing mechanism and manually
-            // indicating the stop time.
-            stopTimer: function (pageName, stopTime) {
-                if (!pageName) {
-                    pageName = TimeMe.currentPageName;
-                }
-                var arrayOfTimes = TimeMe.startStopTimes[pageName];
-                if (arrayOfTimes === undefined || arrayOfTimes.length === 0) {
-                    // Can't stop timer before you've started it.
-                    return;
-                }
-                if (arrayOfTimes[arrayOfTimes.length - 1].stopTime === undefined) {
-                    arrayOfTimes[arrayOfTimes.length - 1].stopTime = stopTime || new Date();
-                }
-                TimeMe.active = false;
-            },
+				var totalTimeOnPage = 0;
 
-            getTimeOnCurrentPageInSeconds: function () {
-                return TimeMe.getTimeOnPageInSeconds(TimeMe.currentPageName);
-            },
+				var arrayOfTimes = TimeMe.startStopTimes[pageName];
+				if (arrayOfTimes === undefined) {
+					// Can't get time on page before you've started the timer.
+					return;
+				}
 
-            getTimeOnPageInSeconds: function (pageName) {
-                var timeInMs = TimeMe.getTimeOnPageInMilliseconds(pageName);
-                if (timeInMs === undefined) {
-                    return undefined;
-                } else {
-                    return timeInMs / 1000;
-                }
-            },
+				var timeSpentOnPageInSeconds = 0;
+				for (var i = 0; i < arrayOfTimes.length; i++) {
+					var startTime = arrayOfTimes[i].startTime;
+					var stopTime = arrayOfTimes[i].stopTime;
+					if (stopTime === undefined) {
+						stopTime = new Date();
+					}
+					var difference = stopTime - startTime;
+					timeSpentOnPageInSeconds += (difference);
+				}
 
-            getTimeOnCurrentPageInMilliseconds: function () {
-                return TimeMe.getTimeOnPageInMilliseconds(TimeMe.currentPageName);
-            },
+				totalTimeOnPage = Number(timeSpentOnPageInSeconds);
+				return totalTimeOnPage;
+			},
 
-            getTimeOnPageInMilliseconds: function (pageName) {
+			getTimeOnAllPagesInSeconds: function () {
+				var allTimes = [];
+				var pageNames = Object.keys(TimeMe.startStopTimes);
+				for (var i = 0; i < pageNames.length; i++) {
+					var pageName = pageNames[i];
+					var timeOnPage = TimeMe.getTimeOnPageInSeconds(pageName);
+					allTimes.push({
+						"pageName": pageName,
+						"timeOnPage": timeOnPage
+					});
+				}
+				return allTimes;
+			},
 
-                var totalTimeOnPage = 0;
+			setIdleDurationInSeconds: function (duration) {
+				var durationFloat = parseFloat(duration);
+				if (isNaN(durationFloat) === false) {
+					TimeMe.idleTimeoutMs = duration * 1000;
+				} else {
+					throw {
+						name: "InvalidDurationException",
+						message: "An invalid duration time (" + duration + ") was provided."
+					};
+				}
+				return this;
+			},
 
-                var arrayOfTimes = TimeMe.startStopTimes[pageName];
-                if (arrayOfTimes === undefined) {
-                    // Can't get time on page before you've started the timer.
-                    return;
-                }
+			setCurrentPageName: function (pageName) {
+				TimeMe.currentPageName = pageName;
+				return this;
+			},
 
-                var timeSpentOnPageInSeconds = 0;
-                for (var i = 0; i < arrayOfTimes.length; i++) {
-                    var startTime = arrayOfTimes[i].startTime;
-                    var stopTime = arrayOfTimes[i].stopTime;
-                    if (stopTime === undefined) {
-                        stopTime = new Date();
-                    }
-                    var difference = stopTime - startTime;
-                    timeSpentOnPageInSeconds += (difference);
-                }
+			resetRecordedPageTime: function (pageName) {
+				delete TimeMe.startStopTimes[pageName];
+			},
 
-                totalTimeOnPage = Number(timeSpentOnPageInSeconds);
-                // eslint-disable-next-line consistent-return
-                return totalTimeOnPage;
-            },
+			resetAllRecordedPageTimes: function () {
+				var pageNames = Object.keys(TimeMe.startStopTimes);
+				for (var i = 0; i < pageNames.length; i++) {
+					TimeMe.resetRecordedPageTime(pageNames[i]);
+				}
+			},
 
-            getTimeOnAllPagesInSeconds: function () {
-                var allTimes = [];
-                var pageNames = Object.keys(TimeMe.startStopTimes);
-                for (var i = 0; i < pageNames.length; i++) {
-                    var pageName = pageNames[i];
-                    var timeOnPage = TimeMe.getTimeOnPageInSeconds(pageName);
-                    allTimes.push({
-                        "pageName": pageName,
-                        "timeOnPage": timeOnPage
-                    });
-                }
-                return allTimes;
-            },
+			resetIdleCountdown: function () {
+				if (TimeMe.idle) {
+					TimeMe.triggerUserHasReturned();
+				}
+				TimeMe.idle = false;
+				TimeMe.currentIdleTimeMs = 0;
+			},
 
-            setIdleDurationInSeconds: function (duration) {
-                var durationFloat = parseFloat(duration);
-                if (isNaN(durationFloat) === false) {
-                    TimeMe.idleTimeoutMs = duration * 1000;
-                } else {
-                    // eslint-disable-next-line no-throw-literal
-                    throw {
-                        name: "InvalidDurationException",
-                        message: "An invalid duration time (" + duration + ") was provided."
-                    };
-                }
-                return this;
-            },
+			callWhenUserLeaves: function(callback, numberOfTimesToInvoke) {
+				this.userLeftCallbacks.push({
+					callback: callback,
+					numberOfTimesToInvoke: numberOfTimesToInvoke
+				})
+			},
 
-            setCurrentPageName: function (pageName) {
-                TimeMe.currentPageName = pageName;
-                return this;
-            },
+			callWhenUserReturns: function(callback, numberOfTimesToInvoke) {
+				this.userReturnCallbacks.push({
+					callback: callback,
+					numberOfTimesToInvoke: numberOfTimesToInvoke
+				})
+			},
 
-            resetRecordedPageTime: function (pageName) {
-                delete TimeMe.startStopTimes[pageName];
-            },
+			triggerUserHasReturned: function() {
+				if (!TimeMe.active) {
+					for(var i=0; i<this.userReturnCallbacks.length; i++) {
+						var userReturnedCallback = this.userReturnCallbacks[i];
+						var numberTimes = userReturnedCallback.numberOfTimesToInvoke;
+						if (isNaN(numberTimes) || (numberTimes === undefined) || numberTimes > 0 ) {
+							userReturnedCallback.numberOfTimesToInvoke -= 1;
+							userReturnedCallback.callback();
+						}
+					}
+				}
+				TimeMe.startTimer();
+			},
 
-            resetAllRecordedPageTimes: function () {
-                var pageNames = Object.keys(TimeMe.startStopTimes);
-                for (var i = 0; i < pageNames.length; i++) {
-                    TimeMe.resetRecordedPageTime(pageNames[i]);
-                }
-            },
+			triggerUserHasLeftPage: function() {
+				if (TimeMe.active) {
+					for(var i=0; i<this.userLeftCallbacks.length; i++) {
+						var userHasLeftCallback = this.userLeftCallbacks[i];
+						var numberTimes = userHasLeftCallback.numberOfTimesToInvoke;
+						if (isNaN(numberTimes) || (numberTimes === undefined) || numberTimes > 0 ) {
+							userHasLeftCallback.numberOfTimesToInvoke -= 1;
+							userHasLeftCallback.callback();
+						}
+					}
+				}
+				TimeMe.stopTimer();
+			},
 
-            resetIdleCountdown: function () {
-                if (TimeMe.idle) {
-                    TimeMe.triggerUserHasReturned();
-                }
-                TimeMe.idle = false;
-                TimeMe.currentIdleTimeMs = 0;
-            },
+			callAfterTimeElapsedInSeconds: function(timeInSeconds, callback) {
+				TimeMe.timeElapsedCallbacks.push({
+					timeInSeconds: timeInSeconds,
+					callback: callback,
+					pending: true
+				});
+			},
 
-            callWhenUserLeaves: function (callback, numberOfTimesToInvoke) {
-                this.userLeftCallbacks.push({
-                    callback: callback,
-                    numberOfTimesToInvoke: numberOfTimesToInvoke
-                });
-            },
+			checkState: function () {
+				for(var i=0; i<TimeMe.timeElapsedCallbacks.length; i++){
+					if (TimeMe.timeElapsedCallbacks[i].pending && TimeMe.getTimeOnCurrentPageInSeconds() > TimeMe.timeElapsedCallbacks[i].timeInSeconds) {
+						TimeMe.timeElapsedCallbacks[i].callback();
+						TimeMe.timeElapsedCallbacks[i].pending = false;
+					}
+				}
 
-            callWhenUserReturns: function (callback, numberOfTimesToInvoke) {
-                this.userReturnCallbacks.push({
-                    callback: callback,
-                    numberOfTimesToInvoke: numberOfTimesToInvoke
-                });
-            },
+				if (TimeMe.idle === false && TimeMe.currentIdleTimeMs > TimeMe.idleTimeoutMs) {
+					TimeMe.idle = true;
+					TimeMe.triggerUserHasLeftPage();
+				} else {
+					TimeMe.currentIdleTimeMs += TimeMe.checkStateRateMs;
+				}
+			},
 
-            triggerUserHasReturned: function () {
-                if (!TimeMe.active) {
-                    for (var i = 0; i < this.userReturnCallbacks.length; i++) {
-                        var userReturnedCallback = this.userReturnCallbacks[i];
-                        var numberTimes = userReturnedCallback.numberOfTimesToInvoke;
-                        if (isNaN(numberTimes) || (numberTimes === undefined) || numberTimes > 0) {
-                            userReturnedCallback.numberOfTimesToInvoke -= 1;
-                            userReturnedCallback.callback();
-                        }
-                    }
-                }
-                TimeMe.startTimer();
-            },
+			visibilityChangeEventName: undefined,
+			hiddenPropName: undefined,
 
-            triggerUserHasLeftPage: function () {
-                if (TimeMe.active) {
-                    for (var i = 0; i < this.userLeftCallbacks.length; i++) {
-                        var userHasLeftCallback = this.userLeftCallbacks[i];
-                        var numberTimes = userHasLeftCallback.numberOfTimesToInvoke;
-                        if (isNaN(numberTimes) || (numberTimes === undefined) || numberTimes > 0) {
-                            userHasLeftCallback.numberOfTimesToInvoke -= 1;
-                            userHasLeftCallback.callback();
-                        }
-                    }
-                }
-                TimeMe.stopAllTimers();
-            },
+			listenForVisibilityEvents: function () {
 
-            callAfterTimeElapsedInSeconds: function (timeInSeconds, callback) {
-                TimeMe.timeElapsedCallbacks.push({
-                    timeInSeconds: timeInSeconds,
-                    callback: callback,
-                    pending: true
-                });
-            },
+				if (typeof document.hidden !== "undefined") {
+					TimeMe.hiddenPropName = "hidden";
+					TimeMe.visibilityChangeEventName = "visibilitychange";
+				} else if (typeof doc.mozHidden !== "undefined") {
+					TimeMe.hiddenPropName = "mozHidden";
+					TimeMe.visibilityChangeEventName = "mozvisibilitychange";
+				} else if (typeof document.msHidden !== "undefined") {
+					TimeMe.hiddenPropName = "msHidden";
+					TimeMe.visibilityChangeEventName = "msvisibilitychange";
+				} else if (typeof document.webkitHidden !== "undefined") {
+					TimeMe.hiddenPropName = "webkitHidden";
+					TimeMe.visibilityChangeEventName = "webkitvisibilitychange";
+				}
 
-            checkState: function () {
-                for (var i = 0; i < TimeMe.timeElapsedCallbacks.length; i++) {
-                    // eslint-disable-next-line max-len
-                    if (TimeMe.timeElapsedCallbacks[i].pending && TimeMe.getTimeOnCurrentPageInSeconds() > TimeMe.timeElapsedCallbacks[i].timeInSeconds) {
-                        TimeMe.timeElapsedCallbacks[i].callback();
-                        TimeMe.timeElapsedCallbacks[i].pending = false;
-                    }
-                }
+				document.addEventListener(TimeMe.visibilityChangeEventName, function () {
+					if (document[TimeMe.hiddenPropName]) {
+						TimeMe.triggerUserHasLeftPage();
+					} else {
+						TimeMe.triggerUserHasReturned();
+					}
+				}, false);
 
-                if (TimeMe.idle === false && TimeMe.currentIdleTimeMs > TimeMe.idleTimeoutMs) {
-                    TimeMe.idle = true;
-                    TimeMe.triggerUserHasLeftPage();
-                } else {
-                    TimeMe.currentIdleTimeMs += TimeMe.checkStateRateMs;
-                }
-            },
+				window.addEventListener('blur', function() {
+					TimeMe.triggerUserHasLeftPage();
+				});
 
-            visibilityChangeEventName: undefined,
-            hiddenPropName: undefined,
+				window.addEventListener('focus', function() {
+					TimeMe.triggerUserHasReturned();
+				});
 
-            listenForVisibilityEvents: function () {
+				document.addEventListener("mousemove", function () { TimeMe.resetIdleCountdown(); });
+				document.addEventListener("keyup", function () { TimeMe.resetIdleCountdown(); });
+				document.addEventListener("touchstart", function () { TimeMe.resetIdleCountdown(); });
+				window.addEventListener("scroll", function () { TimeMe.resetIdleCountdown(); });
 
-                if (typeof document.hidden !== "undefined") {
-                    TimeMe.hiddenPropName = "hidden";
-                    TimeMe.visibilityChangeEventName = "visibilitychange";
-                } else if (typeof document.mozHidden !== "undefined") {
-                    TimeMe.hiddenPropName = "mozHidden";
-                    TimeMe.visibilityChangeEventName = "mozvisibilitychange";
-                } else if (typeof document.msHidden !== "undefined") {
-                    TimeMe.hiddenPropName = "msHidden";
-                    TimeMe.visibilityChangeEventName = "msvisibilitychange";
-                } else if (typeof document.webkitHidden !== "undefined") {
-                    TimeMe.hiddenPropName = "webkitHidden";
-                    TimeMe.visibilityChangeEventName = "webkitvisibilitychange";
-                }
+				setInterval(function () {
+					TimeMe.checkState();
+				}, TimeMe.checkStateRateMs);
+			},
 
-                document.addEventListener(TimeMe.visibilityChangeEventName, function () {
-                    if (document[TimeMe.hiddenPropName]) {
-                        TimeMe.triggerUserHasLeftPage();
-                    } else {
-                        TimeMe.triggerUserHasReturned();
-                    }
-                }, false);
+			websocket: undefined,
 
-                window.addEventListener('blur', function () {
-                    TimeMe.triggerUserHasLeftPage();
-                });
+			websocketHost: undefined,
 
-                window.addEventListener('focus', function () {
-                    TimeMe.triggerUserHasReturned();
-                });
+			setUpWebsocket: function (websocketOptions) {
+				if (window.WebSocket && websocketOptions) {
+					var websocketHost = websocketOptions.websocketHost; // "ws://hostname:port"
+					try {
+						TimeMe.websocket = new WebSocket(websocketHost);
+						window.onbeforeunload = function (event) {
+							TimeMe.sendCurrentTime(websocketOptions.appId);
+						};
+						TimeMe.websocket.onopen = function () {
+							TimeMe.sendInitWsRequest(websocketOptions.appId);
+						}
+						TimeMe.websocket.onerror = function (error) {
+							if (console) {
+								console.log("Error occurred in websocket connection: " + error);
+							}
+						}
+						TimeMe.websocket.onmessage = function (event) {
+							if (console) {
+								console.log(event.data);
+							}
+						}
+					} catch (error) {
+						if (console) {
+							console.error("Failed to connect to websocket host.  Error:" + error);
+						}
+					}
+				}
+				return this;
+			},
 
-                document.addEventListener("mousemove", function () { TimeMe.resetIdleCountdown(); });
-                document.addEventListener("keyup", function () { TimeMe.resetIdleCountdown(); });
-                document.addEventListener("touchstart", function () { TimeMe.resetIdleCountdown(); });
-                window.addEventListener("scroll", function () { TimeMe.resetIdleCountdown(); });
+			websocketSend: function (data) {
+				TimeMe.websocket.send(JSON.stringify(data));
+			},
 
-                setInterval(function () {
-                    TimeMe.checkState();
-                }, TimeMe.checkStateRateMs);
-            },
+			sendCurrentTime: function (appId) {
+				var timeSpentOnPage = TimeMe.getTimeOnCurrentPageInMilliseconds();
+				var data = {
+					type: "INSERT_TIME",
+					appId: appId,
+					timeOnPageMs: timeSpentOnPage,
+					pageName: TimeMe.currentPageName
+				};
+				TimeMe.websocketSend(data);
+			},
+			sendInitWsRequest: function (appId) {
+				var data = {
+					type: "INIT",
+					appId: appId
+				};
+				TimeMe.websocketSend(data);
+			},
 
-            websocket: undefined,
+			initialize: function (options) {
 
-            websocketHost: undefined,
+				var idleTimeoutInSeconds = TimeMe.idleTimeoutMs || 30;
+				var currentPageName = TimeMe.currentPageName || "default-page-name";
+				var websocktOptions = undefined;
 
-            setUpWebsocket: function (websocketOptions) {
-                if (window.WebSocket && websocketOptions) {
-                    var websocketHost = websocketOptions.websocketHost; // "ws://hostname:port"
-                    try {
-                        TimeMe.websocket = new WebSocket(websocketHost);
-                        window.onbeforeunload = function () {
-                            TimeMe.sendCurrentTime(websocketOptions.appId);
-                        };
-                        TimeMe.websocket.onopen = function () {
-                            TimeMe.sendInitWsRequest(websocketOptions.appId);
-                        };
-                        TimeMe.websocket.onerror = function (error) {
-                            if (console) {
-                                // eslint-disable-next-line no-console
-                                console.error("Error occurred in websocket connection: " + error);
-                            }
-                        };
-                        TimeMe.websocket.onmessage = function (event) {
-                            if (console) {
-                                // eslint-disable-next-line no-console
-                                console.error(event.data);
-                            }
-                        };
-                    } catch (error) {
-                        if (console) {
-                            // eslint-disable-next-line no-console
-                            console.error("Failed to connect to websocket host.  Error:" + error);
-                        }
-                    }
-                }
-                return this;
-            },
+				if (options) {
+					idleTimeoutInSeconds = options.idleTimeoutInSeconds || idleTimeoutInSeconds;
+					currentPageName = options.currentPageName || currentPageName;
+					websocktOptions = options.websocktOptions;
+				}
 
-            websocketSend: function (data) {
-                TimeMe.websocket.send(JSON.stringify(data));
-            },
-
-            sendCurrentTime: function (appId) {
-                var timeSpentOnPage = TimeMe.getTimeOnCurrentPageInMilliseconds();
-                var data = {
-                    type: "INSERT_TIME",
-                    appId: appId,
-                    timeOnPageMs: timeSpentOnPage,
-                    pageName: TimeMe.currentPageName
-                };
-                TimeMe.websocketSend(data);
-            },
-            sendInitWsRequest: function (appId) {
-                var data = {
-                    type: "INIT",
-                    appId: appId
-                };
-                TimeMe.websocketSend(data);
-            },
-
-            initialize: function (options) {
-
-                var idleTimeoutInSeconds = TimeMe.idleTimeoutMs || 30;
-                var currentPageName = TimeMe.currentPageName || "default-page-name";
-                // eslint-disable-next-line no-undef-init
-                var websocketOptions = undefined;
-                // eslint-disable-next-line no-undef-init
-                var initialStartTime = undefined;
-
-                if (options) {
-                    idleTimeoutInSeconds = options.idleTimeoutInSeconds || idleTimeoutInSeconds;
-                    currentPageName = options.currentPageName || currentPageName;
-                    websocketOptions = options.websocketOptions;
-                    initialStartTime = options.initialStartTime;
-                }
-
-                TimeMe.setIdleDurationInSeconds(idleTimeoutInSeconds)
-                    .setCurrentPageName(currentPageName)
-                    .setUpWebsocket(websocketOptions)
-                    .listenForVisibilityEvents();
-
-                // TODO - only do this if page currently visible.
-
-                TimeMe.startTimer(undefined, initialStartTime);
-            }
-        };
-        return TimeMe;
-    });
+				TimeMe.setIdleDurationInSeconds(idleTimeoutInSeconds)
+					  .setCurrentPageName(currentPageName)
+					  .setUpWebsocket(websocktOptions)
+				      .listenForVisibilityEvents();
+				TimeMe.startTimer();
+			}
+		};
+		return TimeMe;
+	});
 }).call(this);

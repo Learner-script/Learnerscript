@@ -35,7 +35,7 @@
 	moodle-block_learnerscript
 
 # Cross-DB compatibility:
-	Compatible with MYSQL and MariaDB
+	Compatible with MYSQL, PostgreSQL and MariaDB
 
 # Bug tracker URL:
 	https://learnerscript.com/support/

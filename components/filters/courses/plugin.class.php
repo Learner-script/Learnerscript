@@ -55,12 +55,7 @@ class plugin_courses extends pluginbase {
             }
         }
         $this->fullname = get_string('filter_courses', 'block_learnerscript');
-        $this->reporttypes = ['courses', 'sql', 'activitystatus', 'coursesoverview', 'student_performance',
-                                    'courseparticipation', 'myassignments', 'userquizzes', 'userassignments', 'myquizs',
-                                    'competencycompletion', 'courseaverage', 'scorm_activities_course',
-                                    'popularresources', 'resources_accessed', 'badges', 'userbadges',
-                                    'timespent', 'pageresourcetimespent', 'gradedactivity', 'assignment', 'quizzes'
-                                    , 'usersscorm', 'scorm', 'myscorm', 'coursewisetimespent', ];
+        $this->reporttypes = ['courses', 'sql', 'coursesoverview', 'userbadges'];
     }
 
     /**

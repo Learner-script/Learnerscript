@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module reportwidget
+ * Creates the dashbaord widgets for configured widgets on dashboard.
  *
  * @module     block_learnerscript/reportwidget
  * @copyright  2023 Moodle India

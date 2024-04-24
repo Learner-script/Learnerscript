@@ -17,7 +17,7 @@
 {{!
     @template block_learnerscript/filtertoggleform
 
-    TODO describe template filtertoggleform
+    Display the date filter option in viewreport page.
 
     Example context (json):
     {
@@ -59,9 +59,9 @@
 				<span class="pull-right filtericon reportfilters" title={{# str }} filter, block_learnerscript {{/ str }} onclick='(function(e){ require("block_learnerscript/helper").ViewReportFilters({activefilter: "reportcustomfilters", inactivefilter: "datefilter" }); })(event)' ></span>
 			{{/ filterform }}
 			{{# enableschedule}}
-				<span class="pull-right dateicon reportfilters mr-1"><a title={{# str }} schedule, block_learnerscript {{/ str }}
+				<span class="pull-right dateicon reportfilters mr-1"><a class="schedulecutom" title={{# str }} schedule, block_learnerscript {{/ str }}
 	                href="{{config.wwwroot}}/blocks/learnerscript/components/scheduler/schedule.php?id={{id}}">
-	                <img src={{config.wwwroot}}/blocks/learnerscript/pix/schedule.png >
+	                {{#pix}} schedule, block_learnerscript {{/pix}}
 	               <i class="fa fa-calendar fa-2x" aria-hidden="true"></i></a>
 	        	</span>
         	{{/ enableschedule}}

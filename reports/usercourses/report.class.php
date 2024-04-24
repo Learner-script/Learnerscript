@@ -42,6 +42,15 @@ class report_usercourses extends reportbase implements report {
     /** @var array $searchable  */
     public $searchable;
 
+    /** @var array $orderable  */
+    public $orderable;
+
+    /** @var array $excludedroles  */
+    public $excludedroles;
+
+    /** @var array $basicparamdata  */
+    public $basicparamdata;
+
     /**
      * Report construct function
      * @param object $report           User courses report data
@@ -49,7 +58,7 @@ class report_usercourses extends reportbase implements report {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report);
-        $this->components = ['columns', 'ordering', 'filters', 'permissions', 'calcs', 'plot'];
+        $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $columns = ['timeenrolled', 'status', 'grade', 'totaltimespent', 'progressbar',
                 'completedassignments', 'completedquizzes', 'completedscorms', 'marks',
                 'badgesissued', 'completedactivities', ];
@@ -75,7 +84,6 @@ class report_usercourses extends reportbase implements report {
             $this->params['filter_courses'] = array_shift($fcourses);
         }
         $this->courseid = !empty($this->params['filter_courses']) ? $this->params['filter_courses'] : SITEID;
-        $this->categoriesid = isset($this->params['filter_coursecategories']) ? $this->params['filter_coursecategories'] : 0;
         $context = context_course::instance($this->courseid);
         list($this->relatedctxsql, $this->relatedctxparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true),
             SQL_PARAMS_NAMED, 'relatedctx');
@@ -156,10 +164,10 @@ class report_usercourses extends reportbase implements report {
         $status = isset($this->params['filter_status']) ? $this->params['filter_status'] : '';
         $this->sql .= " WHERE u.id IN (SELECT ra.userid
                                          FROM {role_assignments} ra
-                                        WHERE ra.roleid = :roleid AND ra.contextid $this->relatedctxsql $this->datefiltersql)
+                                        WHERE ra.roleid = :roleid AND ra.contextid $this->relatedctxsql)
                                           AND u.confirmed = 1 AND u.deleted = 0
                                           AND u.suspended = 0";
-        if ($status == 'completed') {
+        if ($status == 'Completed') {
             $this->params['courseid'] = $this->courseid;
             $this->sql .= " AND u.id IN (SELECT userid FROM {course_completions}
                                     WHERE course= :courseid AND timecompleted IS NOT NULL)";
@@ -228,7 +236,7 @@ class report_usercourses extends reportbase implements report {
         switch ($columnname) {
             case 'grade':
                 $identity = 'gg.userid';
-                $query = "SELECT ((gg.finalgrade/gi.grademax)*100) AS grade
+                $query = "SELECT (gg.finalgrade/gi.grademax) AS grade
                                         FROM {grade_items} gi
                                         JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
                                         WHERE gi.courseid = $filtercourseid $where ";

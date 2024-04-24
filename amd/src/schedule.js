@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * TODO describe module schedule
+ * Schedule a timings on a calender.
  *
  * @module     block_learnerscript/schedule
  * @copyright  2023 Moodle India
@@ -24,11 +24,10 @@ define(['jquery',
     'core/ajax',
     'block_learnerscript/ajax',
     'core/event',
-    'block_learnerscript/config',
     'block_learnerscript/select2',
     'block_learnerscript/report',
     'core/str'
-], function($, Ajax, ajax, Event, cfgs, select2, report, Str) {
+], function($, Ajax, ajax, Event, select2, report, Str) {
 
     var schedule = {
         /**

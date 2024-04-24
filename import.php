@@ -48,7 +48,7 @@ if ($lsreportconfigimport) {
     throw new moodle_exception(get_string('alreadyimportstarted', 'block_learnerscript'));
 }
 
-$path = $CFG->dirroot . '/blocks/learnerscript/backup/';
+$path = $CFG->dirroot . '/blocks/learnerscript/reportsbackup/';
 $learnerscriptreports = glob($path . '*.xml');
 $lsreportscount = $DB->count_records('block_learnerscript');
 $lsimportlogs = [];

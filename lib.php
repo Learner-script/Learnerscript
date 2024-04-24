@@ -14,11 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script Lib
- * @package   block_learnerscript
- * @copyright 2023 Moodle India
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/**
+ * The interface library of Learnerscript
+ *
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 use block_learnerscript\local\ls;
 use block_learnerscript\local\schedule;
 /**
@@ -76,7 +79,7 @@ function get_reportheader_imagepath($excel = false) {
             $filename = $file->get_filename();
             if ($filename !== '.') {
                 if ($excel) {
-                    $reportheaderimagepath = '/var/www/analytics/blocks/learnerscript/pix/logo.jpg';
+                    $reportheaderimagepath = $CFG->wwwroot . '/blocks/learnerscript/pix/logo.jpg';
                 } else {
                     $url = moodle_url::make_pluginfile_url($syscontext->id,
                         'block_learnerscript', 'logo', 0, '/', $file->get_filename(), false);
@@ -85,7 +88,7 @@ function get_reportheader_imagepath($excel = false) {
             }
         }
     } else {
-         $reportheaderimagepath = '/var/www/analytics/blocks/learnerscript/pix/logo.jpg';
+         $reportheaderimagepath = $CFG->wwwroot . '/blocks/learnerscript/pix/logo.jpg';
     }
     return $reportheaderimagepath;
 }

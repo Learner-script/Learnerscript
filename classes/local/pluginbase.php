@@ -16,11 +16,7 @@
 
 namespace block_learnerscript\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 use stdClass;
-use AllowDynamicProperties;
-#[AllowDynamicProperties]
 
 /**
  * A Moodle block to create customizable reports.

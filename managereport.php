@@ -116,7 +116,7 @@ if ($reports) {
     $table = new html_table();
     $table->width = "100%";
     $table->head = [get_string('name'),  get_string('type', 'block_learnerscript'),
-    get_string('actions'), get_string('download', 'block_learnerscript'), ];
+                    get_string('actions'), ];
     $table->align = ['left', 'left', 'left', 'center', 'center'];
     $table->size = ['20%', '20%', '10%', '20%', '20%'];
     $stredit = get_string('edit');
@@ -164,23 +164,9 @@ if ($reports) {
             'alt' => $strschedule, ]),
             ['class' => 'iconsmall', 'title' => $strschedule]);;
         }
-        $download = '';
-        $export = !empty($r->export) ? explode(',', $r->export) : '';
-        if (!empty($export)) {
-            foreach ($export as $e) {
-                if ($e) {
-                    $download .= html_writer::link(new moodle_url('viewreport.php',
-                    ['id' => $r->id, 'download' => 1, 'format' => $e]),
-                    html_writer::empty_tag('img', ['src' => $CFG->wwwroot . '/blocks/learnerscript/export/' . $e . '/pix.gif',
-                    'alt' => $e, ]) . (strtoupper($e)), ['title' => (strtoupper($e))]);
-                } else {
-                    $download .= '--';
-                }
-            }
-        }
 
         $table->data[] = [html_writer::link(new moodle_url('viewreport.php', ['id' => $r->id]), $r->name),
-        get_string('report_' . $r->type, 'block_learnerscript'), $editcell, $download, ];
+        get_string('report_' . $r->type, 'block_learnerscript'), $editcell, ];
     }
 
     $table->id = 'reportslist';
