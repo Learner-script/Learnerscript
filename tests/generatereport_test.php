@@ -22,7 +22,7 @@ use block_learnerscript\local\ls;
  * PHPUnit data generator testcase
  *
  * @package    block_learnerscript
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class generatereport_test extends \advanced_testcase {

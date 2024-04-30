@@ -17,7 +17,7 @@
  * This prevents time being wasted on preparing information for filters that they do not need.
  *
  * @module     block_learnerscript/smartfilter
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -25,7 +25,7 @@ define(['jquery',
         'block_learnerscript/reportwidget',
         'block_learnerscript/report',
         'block_learnerscript/flatpickr',
-        'block_learnerscript/jquery.serialize-object',
+        'block_learnerscript/serialize/jquery.serialize-object',
         'core/str'],
     function($, ajax, reportwidget, report, flatpickr, serialize, str) {
         var BasicparamUser = $('.basicparamsform #id_filter_users');

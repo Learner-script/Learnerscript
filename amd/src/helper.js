@@ -17,7 +17,7 @@
  * Define the function with a clear and descriptive name, and then call it from other functions or code blocks as needed
  *
  * @module     block_learnerscript/helper
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',

@@ -42,7 +42,7 @@ define('PTSANS', 2);
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class ls {
@@ -356,8 +356,7 @@ class ls {
             }
 
         } else {
-            $reports = $DB->get_records_select('block_learnerscript',
-            'ownerid = ? AND courseid = ? ORDER BY name ASC', [$userid, $courseid]);
+            $reports = $DB->get_records('block_learnerscript', ['ownerid' => $userid, 'courseid' => $courseid], 'name ASC');
         }
         return $reports;
     }
@@ -742,23 +741,23 @@ class ls {
         $date = $now->format('Y-m-d');
         $hour = $now->format('H');
         $frequencyquery = '';
+        $scheduledreports = [];
         if ($frequency == ONDEMAND) {
             $frequencyquery = " AND crs.frequency = $frequency AND crs.timemodified = 0 ";
-        } else {
-            if ($CFG->dbtype == 'pgsql') {
-                $frequencyquery = " AND to_char(to_timestamp(crs.nextschedule), 'YYYY-mm-dd') = '$date'
-                AND to_char(to_timestamp(crs.nextschedule), 'HH24')::INTEGER = $hour";
-            } else {
-                $frequencyquery = " AND DATE(FROM_UNIXTIME(nextschedule)) = '$date'
-                AND HOUR(FROM_UNIXTIME(nextschedule)) = $hour";
-            }
         }
         $sql = "SELECT crs.*, cr.name, cr.courseid, u.timezone
                   FROM {block_ls_schedule} as crs
                   JOIN {block_learnerscript} as cr ON crs.reportid = cr.id
                   JOIN {user} as u ON crs.userid = u.id
                  WHERE u.confirmed = :confirmed AND u.suspended = :suspended AND u.deleted = :deleted $frequencyquery";
-        $scheduledreports = $DB->get_records_sql($sql, ['confirmed' => 1, 'suspended' => 0, 'deleted' => 0]);
+        $schereports = $DB->get_records_sql($sql, ['confirmed' => 1, 'suspended' => 0, 'deleted' => 0]);
+        foreach ($schereports as $sch => $repo) {
+            $scheduledate = date('Y-m-d H:i:s', $repo->nextschedule);
+            $scheduletime = date('H', $repo->nextschedule);
+            if(($scheduledate == $date) && ($scheduletime == $hour)) {
+                $scheduledreports[] = ['id' => $repo->id, 'reportid' => $repo->reportid, 'frequency' => $repo->frequency, 'nextschedule' => $repo->nextschedule, 'exporttofilesystem' => $repo->exporttofilesystem, 'timemodified' => $repo->timemodified];
+            }
+        }
         return $scheduledreports;
     }
     /**

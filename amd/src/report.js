@@ -18,13 +18,13 @@
  * @module     block_learnerscript/report
  * @class      report
  * @package
- * @copyright  2017 Naveen kumar <naveen@eabyas.in>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @since      3.3
  */
 define(['jquery',
-    'block_learnerscript/select2',
-    'block_learnerscript/jquery.dataTables',
-    'block_learnerscript/responsive.bootstrap',
+    'block_learnerscript/select2/select2',
+    'block_learnerscript/datatables/jquery.dataTables',
+    'block_learnerscript/datatables/responsive.bootstrap',
     'block_learnerscript/reportwidget',
     'block_learnerscript/chart',
     'block_learnerscript/smartfilter',
@@ -32,7 +32,7 @@ define(['jquery',
     'block_learnerscript/helper',
     'block_learnerscript/ajaxforms',
     'block_learnerscript/ajax',
-    'block_learnerscript/radioslider',
+    'block_learnerscript/radioslider/jquery.radios-to-slider',
     'block_learnerscript/flatpickr',
     'core/templates',
     'jqueryui'

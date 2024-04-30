@@ -17,14 +17,14 @@
  * Schedule a timings on a calender.
  *
  * @module     block_learnerscript/schedule
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
     'core/ajax',
     'block_learnerscript/ajax',
     'core/event',
-    'block_learnerscript/select2',
+    'block_learnerscript/select2/select2',
     'block_learnerscript/report',
     'core/str'
 ], function($, Ajax, ajax, Event, select2, report, Str) {

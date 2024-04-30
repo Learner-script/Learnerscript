@@ -20,7 +20,7 @@ use block_learnerscript\local\ls;
  * Learnerscript, a Moodle block to create customizable reports.
  *
  * @package    block_learnerscript
- * @copyright  2019 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_learnerscript extends block_list {

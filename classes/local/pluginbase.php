@@ -22,7 +22,7 @@ use stdClass;
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class pluginbase {
@@ -87,7 +87,7 @@ class pluginbase {
      * @param  object $report Report data
      */
     public function __construct($report) {
-        global $DB, $CFG, $remotedb;
+        global $DB, $CFG;
 
         if (is_numeric($report)) {
             $this->report = $DB->get_record('block_learnerscript', ['id' => $report]);
@@ -103,26 +103,6 @@ class pluginbase {
 
         $this->init();
 
-        // Use a custom $DB (and not current system's $DB)
-        // TODO: MDL-2345 major security issue.
-        $remotedbhost = get_config('block_learnerscript', 'dbhost');
-        $remotedbname = get_config('block_learnerscript', 'dbname');
-        $remotedbuser = get_config('block_learnerscript', 'dbuser');
-        $remotedbpass = get_config('block_learnerscript', 'dbpass');
-        if (empty($_SESSION['remoteDB'])) {
-            if (!empty($remotedbhost) && !empty($remotedbname) && !empty($remotedbuser) &&
-                !empty($remotedbpass)) {
-                $dbclass = get_class($DB);
-                $remotedb = new $dbclass();
-                $remotedb->connect($remotedbhost, $remotedbuser, $remotedbpass, $remotedbname,
-                    $CFG->prefix);
-                $_SESSION['remoteDB'] = $remotedb;
-            } else {
-                $remotedb = $DB;
-            }
-        } else {
-            $remotedb = $_SESSION['remoteDB'];
-        }
     }
 
     /**

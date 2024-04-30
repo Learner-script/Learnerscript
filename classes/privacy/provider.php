@@ -27,7 +27,7 @@ use context_system;
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\provider,
@@ -40,6 +40,20 @@ class provider implements \core_privacy\local\metadata\provider,
      * @return collection The metadata.
      */
     public static function get_metadata(collection $collection): collection {
+
+        $learnerscriptreports = [
+            'courseid' => 'privacy:metadata:lscourseid',
+            'ownerid' => 'privacy:metadata:ownerid',
+            'visible' => 'privacy:metadata:visible',
+            'name' => 'privacy:metadata:name',
+            'summary' => 'privacy:metadata:summary',
+            'type' => 'privacy:metadata:type',
+            'components' => 'privacy:metadata:components',
+            'export' => 'privacy:metadata:export',
+            'global' => 'privacy:metadata:global',
+            'lastexecutiontime' => 'privacy:metadata:lastexecutiontime',
+            'disabletable' => 'privacy:metadata:disabletable',
+        ];
 
         $scheduletasks = [
             'reportid' => 'privacy:metadata:reportid',
@@ -81,6 +95,7 @@ class provider implements \core_privacy\local\metadata\provider,
             'timemodified' => 'privacy:metadata:usertimemodified',
         ];
 
+        $collection->add_database_table('block_learnerscript', $learnerscriptreports, 'privacy:metadata:learnerscriptreports');
         $collection->add_database_table('block_ls_schedule', $scheduletasks, 'privacy:metadata:scheduletablesummary');
         $collection->add_database_table('block_ls_coursetimestats',
                     $coursetimespent, 'privacy:metadata:coursetimesummary');
@@ -97,12 +112,39 @@ class provider implements \core_privacy\local\metadata\provider,
      * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
-        $params = ['userid' => $userid, 'contextuser' => CONTEXT_USER];
-        $sql = "SELECT id
-                  FROM {context}
-                 WHERE instanceid = :userid and contextlevel = :contextuser";
-        $contextlist = new contextlist();
+        $params = ['userid' => $userid, 'contextlevel' => CONTEXT_USER];
+        $sql = "SELECT ctx.id
+                FROM {context} ctx
+                JOIN {block_learnerscript} bcr ON ctx.instanceid = bcr.ownerid AND ctx.contextlevel = :contextlevel
+                WHERE bcr.ownerid = :userid";
         $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                FROM {context} ctx
+                JOIN {block_ls_schedule} bls ON ctx.instanceid = bls.userid AND ctx.contextlevel = :contextlevel
+                WHERE bls.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                FROM {context} ctx
+                JOIN {block_ls_userlmsaccess} blms ON ctx.instanceid = blms.userid AND ctx.contextlevel = :contextlevel
+                WHERE blms.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $params = ['userid' => $userid, 'contextcourse' => CONTEXT_COURSE];
+
+        $sql = "SELECT ctx.id
+                FROM {context} ctx
+                JOIN {block_ls_coursetimestats} blc ON ctx.instanceid = blc.courseid
+                WHERE blc.userid = :userid AND ctx.contextlevel = :contextcourse";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                FROM {context} ctx
+                JOIN {block_ls_modtimestats} blm ON ctx.instanceid = blm.courseid
+                WHERE blm.userid = :userid AND ctx.contextlevel = :contextcourse";
+        $contextlist->add_from_sql($sql, $params);
+
         return $contextlist;
     }
 
@@ -130,7 +172,11 @@ class provider implements \core_privacy\local\metadata\provider,
 
             $sql = "SELECT userid FROM {block_ls_schedule}";
             $userlist->add_from_sql('userid', $sql, []);
+
             $sql = "SELECT userid FROM {block_ls_userlmsaccess}";
+            $userlist->add_from_sql('userid', $sql, []);
+
+            $sql = "SELECT ownerid as userid FROM {block_learnerscript}";
             $userlist->add_from_sql('userid', $sql, []);
         }
     }

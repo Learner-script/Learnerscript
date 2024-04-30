@@ -17,7 +17,7 @@
  * Describe different types of charts.
  *
  * @module     block_learnerscript/chart
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',

@@ -17,7 +17,7 @@
  * Configured the reports on dashboard when we install plugin.
  *
  * @module     block_learnerscript/lsreportconfig
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
