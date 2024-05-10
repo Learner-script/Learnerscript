@@ -24,7 +24,6 @@ use core_external\external_value;
 use block_learnerscript\local\ls as ls;
 use block_learnerscript\local\reportbase as reportbase;
 use block_learnerscript\local\schedule;
-use context_system as contextsystem;
 use block_learnerscript_license_setting as lssetting;
 
 /**
@@ -403,7 +402,7 @@ class block_learnerscript_external extends external_api {
             if (!empty($scheduledreport)) {
                 $schedulelist = (new schedule)->getschedule($scheduledreport->frequency);
             } else {
-                $schedulelist = [null => '--SELECT--'];
+                $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
             }
             $scheduleform = new scheduled_reports_form($CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php',
             ['id' => $reportid, 'scheduleid' => $scheduleid, 'AjaxForm' => true, 'roles_list' => $roleslist,
@@ -789,7 +788,7 @@ class block_learnerscript_external extends external_api {
         self::validate_context($context);
         require_capability('block/learnerscript:managereports', $context);
         if (empty($return)) {
-            $return = [null => '--SELECT--'];
+            $return = [null => get_string('selectall', 'block_reportdashboard')];
         }
         $data = json_encode($return);
         return $data;

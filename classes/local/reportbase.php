@@ -484,7 +484,7 @@ class reportbase {
                     if ($this->config->type == 'useractivities') {
                         $statuslist = ['all' => get_string('selectstatus', 'block_learnerscript'),
                         'notcompleted' => get_string('notcompleted', 'block_learnerscript'),
-                        'completed' => 'Completed', ];
+                        'completed' => get_string('completed', 'block_learnerscript'), ];
                     } else if ($this->config->type == 'coursesoverview') {
                         $statuslist = ['all' => get_string('selectstatus', 'block_learnerscript'),
                         'inprogress' => get_string('inprogress', 'block_learnerscript'),

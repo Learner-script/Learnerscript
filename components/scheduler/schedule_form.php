@@ -23,7 +23,6 @@
  */
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/lib/formslib.php');
-use block_learnerscript\learnerscript;
 /**
  * Formslib template for the new report form
  */
@@ -62,15 +61,9 @@ class scheduled_reports_form extends moodleform {
 
         $mform->_attributes['data-reportid'] = $reportid;
         $mform->_attributes['data-scheduleid'] = $scheduledreportid;
-        $reportname = $DB->get_field('block_learnerscript', 'name', ['id' => $reportid]);
         $exporttofilesystem = true;
         if (get_config('block_learnerscript', 'exportfilesystem') == 1) {
             $exporttofilesystem = true;
-        }
-        if ($scheduledreportid > 0) {
-            $pagename = 'editscheduledreport';
-        } else {
-            $pagename = 'addschedulereport';
         }
         $mform->addElement('hidden', 'reportid', $reportid);
         $mform->setType('reportid', PARAM_INT);
@@ -84,7 +77,7 @@ class scheduled_reports_form extends moodleform {
                 reportinstance : ' . $reportinstance . '}) })(event);',
             'data-placeholder' => get_string('selectroles', 'block_learnerscript'), ]);
         $mform->setType('role', PARAM_RAW);
-        $mform->addRule('role', get_string('PleaseSelectRole', 'block_learnerscript'),
+        $mform->addRule('role', get_string('pleaseselectrole', 'block_learnerscript'),
         'required', null, 'client', false, false);
 
         $scheduleusers = $mform->addElement('select', 'users_data', get_string('fullname'),
@@ -94,7 +87,7 @@ class scheduled_reports_form extends moodleform {
             '(function(e){ require("block_learnerscript/schedule").addschusers({reportid: ' . $reportid . ',
                 reportinstance : ' . $reportinstance . '}) })(event);', 'data-class' => $requireclass,
             'data-element' => 'users_data', 'data-placeholder' => get_string('selectusers', 'block_learnerscript'), ]);
-        $mform->addRule('users_data', get_string('PleaseSelectUser', 'block_learnerscript'),
+        $mform->addRule('users_data', get_string('pleaseselectuser', 'block_learnerscript'),
                     'required', null, 'client', false, false);
 
         $mform->addElement('hidden', 'schuserslist', $schusersids, ['class' => 'schuserslist',

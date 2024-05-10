@@ -23,8 +23,9 @@
 define(['jquery',
         'core/ajax',
         'block_learnerscript/report',
-        'block_learnerscript/smartfilter'
-    ], function($, Ajax, report, smartfilter) {
+        'block_learnerscript/smartfilter',
+        'core/str'
+    ], function($, Ajax, report, smartfilter, Str) {
     var reportwidget = {
         /**
          * Creates dashboard widgets for configured widgets of dashboard depends on type
@@ -293,7 +294,9 @@ define(['jquery',
                                 report.generate_plotgraph(chartdata.plot);
                             });
                         } else {
-                            $(chartdata.plot.container).html('<p class="alert alert-warning">No data available</p>');
+                            Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
+                                $(chartdata.plot.container).html('<p class="alert alert-warning">' + s + '</p>');
+                            });
                         }
                     }
                 }

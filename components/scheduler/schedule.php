@@ -139,11 +139,11 @@ $mform = new scheduled_reports_form($returnurl, ['id' => $reportid,
                                                 'schusers' => $schusers,
                                                 'scheduleid' => $scheduledreportid,
                                                 'roles_list' => $roleslist,
-                                                 'schusersids' => $schusersids,
-                                                 'exportoptions' => $exportoptions,
-                                                 'schedule_list' => $schedulelist,
-                                                 'frequencyselect' => $frequencyselect,
-                                                 'reportfilters' => $reportclass->basicparams, ]);
+                                                'schusersids' => $schusersids,
+                                                'exportoptions' => $exportoptions,
+                                                'schedule_list' => $schedulelist,
+                                                'frequencyselect' => $frequencyselect,
+                                                'reportfilters' => $reportclass->basicparams, ]);
 if ($scheduledreportid > 0) {
 
     $collapse = false;

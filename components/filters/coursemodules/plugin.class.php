@@ -90,7 +90,6 @@ class plugin_coursemodules extends pluginbase {
      */
     public function filter_data($selectoption = true) {
         global $DB;
-        $filtercoursemoduleid = optional_param('filter_coursemodules', 0, PARAM_INT);
 
         $reportclassname = 'block_learnerscript\lsreports\report_' . $this->report->type;
         $properties = new stdClass;

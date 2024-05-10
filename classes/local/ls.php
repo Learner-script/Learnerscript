@@ -426,7 +426,7 @@ class ls {
      * @return array Plugin options
      */
     public function cr_get_export_plugins() {
-        $plugins = get_list_of_plugins('blocks/learnerscript/export');
+        $plugins = get_list_of_plugins('blocks/learnerscript/pix');
         if ($plugins) {
             foreach ($plugins as $p) {
                 $pluginoptions[$p] = get_string('export_' . $p, 'block_learnerscript');
@@ -729,15 +729,6 @@ class ls {
         global $DB, $CFG;
         core_date::set_default_server_timezone();
         $now = new DateTime("now", core_date::get_server_timezone_object());
-        $datearray = (array) $now;
-        $timezone = $datearray['timezone'];
-        $timezonetime = (new DateTime('now', new DateTimeZone( $timezone )))->format('P');
-        $seconds = strtotime("1970-01-01 $timezonetime");
-        if ($seconds > 0 || $seconds < 0) {
-            $usertime = date("Y-m-d h:i:s");
-        } else if ($timezonetime == 0) {
-            $usertime = '1970-01-01 00:00:00';
-        }
         $date = $now->format('Y-m-d');
         $hour = $now->format('H');
         $frequencyquery = '';
@@ -770,41 +761,27 @@ class ls {
         $schedule = new schedule;
         $scheduledreports = (new self)->schedulereportsquery($frequency);
         $totalschedulereports = count($scheduledreports);
-        mtrace('Processing ' . $totalschedulereports . ' scheduled reports');
+        mtrace(get_string('processing', 'block_learnerscript') . ' ' . $totalschedulereports . ' ' . get_string('scheduledreport', 'block_learnerscript'));
         if ($totalschedulereports > 0) {
             foreach ($scheduledreports as $scheduled) {
                 switch ($scheduled->exporttofilesystem) {
                     case REPORT_EXPORT_AND_EMAIL:
-                        mtrace('ReportID (' . $scheduled->reportid . ') - ScheduleID (' . $scheduled->id . ')
-                        Option:'. get_string('emailsave', 'block_learnerscript'));
+                        mtrace(get_string('reportexportemail', 'block_learnerscript', $schedule));
                         break;
                     case REPORT_EXPORT:
-                        mtrace('ReportID (' . $scheduled->reportid . ') - ScheduleID (' . $scheduled->id . ')
-                        Option: '.get_string('schedulesave', 'block_learnerscript'));
+                        mtrace(get_string('reportexport', 'block_learnerscript', $schedule));
                         break;
                     case REPORT_EMAIL:
-                        mtrace('ReportID (' . $scheduled->reportid . ') - ScheduleID (' . $scheduled->id . ')
-                        Option:'.get_string('emailschedule', 'block_learnerscript'));
+                        mtrace(get_string('reportemail', 'block_learnerscript', $schedule));
                         break;
                 }
                 $schedule->scheduledreport_send_scheduled_report($scheduled);
-                if ($scheduled->frequency == DAILY) {
-                    $scheduletype = 'dailyreport';
-                } else if ($scheduled->frequency == WEEKLY) {
-                    $scheduletype = 'weeklyreport';
-                } else if ($scheduled->frequency == MONTHLY) {
-                    $scheduletype = 'monthlyreport';
-                } else if ($scheduled->frequency == ONDEMAND) {
-                    $scheduletype = 'On Demand';
-                } else {
-                    $scheduletype = 'N/A';
-                }
 
                 if ($frequency != ONDEMAND) {
                     $scheduled->nextschedule = $schedule->next($scheduled);
                     $scheduled->timemodified = time();
                     if (!$DB->update_record('block_ls_schedule', $scheduled)) {
-                        mtrace('Failed to update next report field for scheduled report id:' . $scheduled->id);
+                        mtrace(get_string('failedscheduleupdate', 'block_learnerscript') .  ' ' . $scheduled->id);
                     }
                 }
             }
@@ -1068,16 +1045,15 @@ class ls {
             $reporttitle = str_replace('Course', '<b>'.$coursename.'</b> Course', $reporttype);
         }
         if (array_key_exists('filter_status', $reportclassparams) && $reportclassparams['filter_status'] != 'all') {
-            $reporttitle = $reporttitle . ' - ' . '<b>' . get_string($reportclassparams['filter_status'],
-            'block_learnerscript') . '</b>';
+            $reporttitle = $reporttitle . ' - ' . '<b>' . $reportclassparams['filter_status'] . '</b>';
         }
         if (array_key_exists('filter_users', $reportclassparams)) {
             if (is_int($reportclassparams['filter_users'])) {
                 $learnername = $DB->get_field_sql("SELECT firstname AS fullname FROM {user}
                                                     WHERE id = (:filterusers) ",
                                                     ['filterusers' => $reportclassparams['filter_users']]);
-                $reporttitle = str_replace('Learner', '<b>'.$learnername.'</b>', $reporttitle);
-                $reporttitle = str_replace('My', '<b>'.$learnername.'\'s</b>', $reporttitle);
+                $reporttitle = str_replace(get_string('learner', 'block_learnerscript'), '<b>'.$learnername.'</b>', $reporttitle);
+                $reporttitle = str_replace(get_string('my', 'block_learnerscript'), '<b>'.$learnername.'\'s</b>', $reporttitle);
             }
         }
         return $reporttitle;
@@ -1501,11 +1477,11 @@ class ls {
             }
             $contexttext = '';
             if ($rolecontext[1] == CONTEXT_SYSTEM) {
-                $contexttext = "System";
+                $contexttext = get_string('system', 'block_learnerscript');
             } else if ($rolecontext[1] == CONTEXT_COURSECAT) {
-                $contexttext = "Category";
+                $contexttext = get_string('category');
             } else if ($rolecontext[1] == CONTEXT_COURSE) {
-                $contexttext = "Course";
+                $contexttext = get_string('course');
             }
             $data['roles'][] = ['roleshortname' => $roleshortname, 'rolename' => $contexttext." ".$value1,
                                 'active' => $active, 'contextlevel' => $rolecontext[1], ];
@@ -1607,7 +1583,7 @@ class ls {
                 }
             }
             $options = ["type" => "heatmap",
-                            "title" => "LMS access",
+                            "title" => get_string('lmsaccess', 'block_learnerscript'),
                             "xAxis" => $weekdayslist,
                             "yAxis" => $timingslist,
                             "data" => $timestampdiff,

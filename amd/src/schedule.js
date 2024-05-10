@@ -39,59 +39,68 @@ define(['jquery',
          * @return Popup with schedule form
          */
         schreportform: function(args) {
-            var promise = Ajax.call([{
-                methodname: 'block_learnerscript_schreportform',
-                args: {
-                    // action: 'schreportform',
-                    reportid: args.reportid,
-                    instance: args.instanceid
-                },
-                // url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php"
-            }]);
-            promise[0].done(function(response) {
-                response = $.parseJSON(response);
-                $('body').append("<div class='schreportform" + args.instanceid + "'>" + response + "</div>");
-                var title_img = "<img class='dialog_title_icon' alt='Scheduled Report' src='" +
-                    M.util.image_url("schedule_icon", "block_learnerscript") + "'/>";
-                var dlg = $(".schreportform" + args.instanceid).dialog({
-                    resizable: true,
-                    autoOpen: false,
-                    width: "90%",
-                    title: 'Add schedule report',
-                    modal: true,
-                    appendTo: "#inst" + args.instanceid,
-                    position: {
-                        my: "center",
-                        at: "center",
-                        of: "#reportcontainer" + args.instanceid
+            Str.get_strings([{
+                key: 'addschedulereport',
+                component: 'block_learnerscript'
+            }, {
+                key: 'schedulereport',
+                component: 'block_learnerscript'
+            }, {
+                key: 'close',
+                component: 'block_learnerscript'
+            }]).then(function(s) {
+                var promise = Ajax.call([{
+                    methodname: 'block_learnerscript_schreportform',
+                    args: {
+                        reportid: args.reportid,
+                        instance: args.instanceid
                     },
-                    open: function() {
-                        $(this).closest(".ui-dialog").find(".ui-dialog-titlebar-close")
-                            .removeClass("ui-dialog-titlebar-close")
-                            .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
-                            var Closebutton = $('.ui-icon-closethick').parent();
-                            $(Closebutton).attr({
-                                "title" : "Close"
-                            });
-                        $(this).closest(".ui-dialog").find('.ui-dialog-title')
-                            .html(title_img + 'Schedule report');
-                    },
-                    close: function() {
-                        $(this).dialog('destroy').remove();
-                    }
+                }]);
+                promise[0].done(function(response) {
+                    response = $.parseJSON(response);
+                    $('body').append("<div class='schreportform" + args.instanceid + "'>" + response + "</div>");
+                    var title_img = "<img class='dialog_title_icon' alt=" + s[1] + " src='" +
+                        M.util.image_url("schedule_icon", "block_learnerscript") + "'/>";
+                    var dlg = $(".schreportform" + args.instanceid).dialog({
+                        resizable: true,
+                        autoOpen: false,
+                        width: "90%",
+                        title: s[0],
+                        modal: true,
+                        appendTo: "#inst" + args.instanceid,
+                        position: {
+                            my: "center",
+                            at: "center",
+                            of: "#reportcontainer" + args.instanceid
+                        },
+                        open: function() {
+                            $(this).closest(".ui-dialog").find(".ui-dialog-titlebar-close")
+                                .removeClass("ui-dialog-titlebar-close")
+                                .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
+                                var Closebutton = $('.ui-icon-closethick').parent();
+                                $(Closebutton).attr({
+                                    "title" : s[2]
+                                });
+                            $(this).closest(".ui-dialog").find('.ui-dialog-title')
+                                .html(title_img + s[1]);
+                        },
+                        close: function() {
+                            $(this).dialog('destroy').remove();
+                        }
+                    });
+                    dlg.dialog("open");
+                    $("#id_role" + args.instanceid).select2();
+                    this.SelectRoleUsers();
+                    this.schformvalidation({
+                        reportid: args.reportid,
+                        form: 'schform' + args.instanceid,
+                        reqclass: 'schformreq' + args.instanceid,
+                        instanceid: args.instanceid
+                    });
+                }).fail(function() {
+                    // Do something with the exception
+                    //  console.log(ex);
                 });
-                dlg.dialog("open");
-                $("#id_role" + args.instanceid).select2();
-                this.SelectRoleUsers();
-                this.schformvalidation({
-                    reportid: args.reportid,
-                    form: 'schform' + args.instanceid,
-                    reqclass: 'schformreq' + args.instanceid,
-                    instanceid: args.instanceid
-                });
-            }).fail(function() {
-                // Do something with the exception
-                //  console.log(ex);
             });
         },
         ScheduledTimings: function(args) {
@@ -216,7 +225,9 @@ define(['jquery',
                 }
                 if (value == '' && !errFlag[escapedName]) {
                     errFlag[escapedName] = true;
-                    _qfMsg = _qfMsg + ' - You must supply a value here.';
+                    Str.get_string('supplyvalue', 'block_learnerscript').then(function(s) {
+                        _qfMsg = _qfMsg + s;
+                    });
                 }
                 return this.qf_errorHandler(element, _qfMsg, escapedName, args);
             } else {
@@ -299,7 +310,9 @@ define(['jquery',
                         template += '<option value = ' + index + ' >' + value + '</option>';
                     });
                 } else {
-                    template += '<option value=null > --SELECT-- </option>';
+                    Str.get_string('selectall', 'block_reportdashboard').then(function(s) {
+                        template += '<option value=null >' + s + '</option>';
+                    });
                 }
                 $("#id_updatefrequency" + args.reportinstance).html(template);
             }).fail(function() {
@@ -313,7 +326,7 @@ define(['jquery',
          * @return Display popup with manage users for scheduled/Scheduling report
          */
         manageschusers: function(args) {
-            Str.get_string('manageschusers','block_learnerscript').then(function() {
+            Str.get_string('manageschusers','block_learnerscript').then(function(s) {
             var promise = Ajax.call([{
                 methodname: 'block_learnerscript_manageschusers',
                 args: {
@@ -343,7 +356,7 @@ define(['jquery',
                     resizable: true,
                     autoOpen: false,
                     width: "60%",
-                    title: 'Manage Schedule Users',
+                    title: s,
                     modal: true,
                     position: {
                         my: my,
@@ -363,15 +376,12 @@ define(['jquery',
                             $(Closebutton).attr({
                                 "title" : "Close"
                             });
-                        // $(this).closest(".ui-dialog")
-                        //     .find('.ui-dialog-title').html(title_img + self.args.title);
                     }
                 });
                 if($(".manageschusers").hasClass("notschuserspage")){
                     var parentdialog = $(".manageschusers").parent();
                     parentdialog.addClass('notinschpage');
                 }
-                // dlg.closest(".ui-dialog").draggable({containment: "parent"});
                 $(".selectrole" + args.reportid).select2();
                 dlg.dialog("open");
             }).fail(function() {
@@ -395,7 +405,9 @@ define(['jquery',
             });
             var bullkselectedusers = $('.removeselect').val();
             if ($('#addselect_searchtext').val().length < 1) {
-                template = "<optgroup label='Enter a value in search.'></optgroup>";
+                Str.get_string('entervalue', 'block_learnerscript').then(function(s) {
+                    template = "<optgroup label=" + s + "></optgroup>";
+                });
                 $('#' + args.type + 'select' + args.reportid).html(template);
             } else {
                 var roleid = roles.split('_');
@@ -420,7 +432,9 @@ define(['jquery',
                             template += '<option value = ' + value.id + ' >' + value.fullname + '</option>';
                         });
                     } else {
-                        template += "<optgroup label='No results found.'></optgroup>";
+                        Str.get_string('entervalue', 'block_learnerscript').then(function(s) {
+                            template += "<optgroup label=" + s + "></optgroup>";
+                        });
                     }
                     $('#' + args.type + 'select' + args.reportid).html(template);
                 }).fail(function() {
@@ -461,7 +475,7 @@ define(['jquery',
          * @return Preview users in dialog
          */
         viewschusers: function(args) {
-            Str.get_string('viewschusers','block_learnerscript').then(function() {
+            Str.get_string('viewschusers','block_learnerscript').then(function(s) {
                 args.schuserslist = $('#schuserslist' + args.reportinstance).val();
                 var promise = ajax.call({
                     methodname: 'viewschuserstable',
@@ -479,7 +493,7 @@ define(['jquery',
                         resizable: true,
                         autoOpen: false,
                         width: "60%",
-                        title: 'View Scheduled Users',
+                        title: s,
                         modal: true,
                         close: function() {
                             $(this).dialog('destroy').remove();
@@ -493,8 +507,6 @@ define(['jquery',
                                 $(Closebutton).attr({
                                     "title" : "Close"
                                 });
-                            // $(this).closest(".ui-dialog")
-                            //     .find('.ui-dialog-title').html(title_img + self.args.title);
                         }
                     });
                     schedule.ViewSchUsersTable(args);
@@ -544,7 +556,7 @@ define(['jquery',
                 helper.Select2Ajax({
                     reportid: reportid,
                     action: 'rolewiseusers',
-                    maximumselectionlength: 10
+                    maximumselectionlength: 5
                 });
             });
         },

@@ -68,7 +68,7 @@ class plugin_userprofile extends pluginbase {
      * @return object
      */
     public function execute($data, $row) {
-        global $DB, $USER, $CFG, $OUTPUT;
+        global $DB, $USER, $OUTPUT;
         $context = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursesoverview'], IGNORE_MULTIPLE);
         $quizreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myquizs'], IGNORE_MULTIPLE);

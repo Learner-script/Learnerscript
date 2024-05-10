@@ -48,10 +48,8 @@ class graphicalreport {
             empty($series['formdata']->serieslabel) ? $series['formdata']->serieslabel = $name->name : null;
             if (isset($series['formdata']->percentage)) {
                 $tooltipvalue = '{point.percentage:.1f}%';
-                $legendvalue = '{percentage:.1f} %';
             } else {
                 $tooltipvalue = '{point.y}';
-                $legendvalue = '{y}';
             }
             $options = ['type' => 'pie',
                         'containerid' => 'piecontainer' . $containerid . '',

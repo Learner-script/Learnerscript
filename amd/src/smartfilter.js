@@ -295,12 +295,13 @@ define(['jquery',
             }
         },
         EnrolledUsers: function(args) {
+            str.get_string('selectusers', 'block_learnerscript').then(function(s) {
             var nearelement = args.element || $('#id_filter_users');
             var currentuser = nearelement.val();
             nearelement.find('option')
                 .remove()
                 .end()
-                .append('<option value="">Select User</option>');
+                .append('<option value="">' + s + '</option>');
                 var promise = ajax.call({
                     args: {
                         action: 'enrolledusers',
@@ -313,12 +314,6 @@ define(['jquery',
                     url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
                 });
                 promise.done(function(response) {
-                    // if (typeof nearelement == 'undefined') {
-                    //     nearelement.find('option')
-                    //         .not(':eq(0), :selected')
-                    //         .remove()
-                    //         .end();
-                    // }
                     $.each(response, function(key, value) {
                         if(key == 0){
                             return true;
@@ -345,7 +340,7 @@ define(['jquery',
                         }
                     }
                 });
-
+            });
         },
         CohortUsers: function(args) {
             var currentcohort = $('#id_filter_cohort').find(":selected").val();

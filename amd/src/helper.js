@@ -40,7 +40,7 @@ define(['jquery',
                     key: 'sendmessage',
                     component: 'block_learnerscript'
                 }, {
-                    key: 'messageconformation',
+                    key: 'messageconfirmation',
                     component: 'block_learnerscript'
                 }, {
                     key: 'messagesent',
@@ -412,8 +412,10 @@ define(['jquery',
                                     $(Closebutton).attr({
                                         "title": "Close"
                                     });
-                                $(".drilldown" + reportid).append('<a href=' + args.url +
-                                '><span class="reportdashboard_right">View more</span></a>');
+                                Str.get_string('viewmore', 'block_learnerscript').then(function(s) {
+                                    $(".drilldown" + reportid).append('<a href=' + args.url +
+                                    '><span class="reportdashboard_right">' + s + '</span></a>');
+                                });
                             },
                             close: function() {
                                 $(this).dialog('destroy').remove();

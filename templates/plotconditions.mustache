@@ -38,7 +38,7 @@
     <span class="col-md-8">
         {{#column.name}}
         <select class="custom-select" name="{{column.name}}" id="id_{{column.name}}" {{#column.disabled}}disabled{{/column.disabled}}>
-            <option value="">--SELECT--</option>
+            <option value="">{{#str}}selectall, block_reportdashboard{{/str}}</option>
             {{#column.conditionsymbols}}
                 <option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}}</option>
             {{/column.conditionsymbols}}
