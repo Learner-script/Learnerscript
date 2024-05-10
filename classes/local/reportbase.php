@@ -18,7 +18,7 @@
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace block_learnerscript\local;
@@ -484,7 +484,7 @@ class reportbase {
                     if ($this->config->type == 'useractivities') {
                         $statuslist = ['all' => get_string('selectstatus', 'block_learnerscript'),
                         'notcompleted' => get_string('notcompleted', 'block_learnerscript'),
-                        'completed' => 'Completed', ];
+                        'completed' => get_string('completed', 'block_learnerscript'), ];
                     } else if ($this->config->type == 'coursesoverview') {
                         $statuslist = ['all' => get_string('selectstatus', 'block_learnerscript'),
                         'inprogress' => get_string('inprogress', 'block_learnerscript'),

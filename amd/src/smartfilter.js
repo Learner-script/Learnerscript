@@ -17,7 +17,7 @@
  * This prevents time being wasted on preparing information for filters that they do not need.
  *
  * @module     block_learnerscript/smartfilter
- * @copyright  2023 Moodle India
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -25,7 +25,7 @@ define(['jquery',
         'block_learnerscript/reportwidget',
         'block_learnerscript/report',
         'block_learnerscript/flatpickr',
-        'block_learnerscript/jquery.serialize-object',
+        'block_learnerscript/serialize/jquery.serialize-object',
         'core/str'],
     function($, ajax, reportwidget, report, flatpickr, serialize, str) {
         var BasicparamUser = $('.basicparamsform #id_filter_users');
@@ -295,12 +295,13 @@ define(['jquery',
             }
         },
         EnrolledUsers: function(args) {
+            str.get_string('selectusers', 'block_learnerscript').then(function(s) {
             var nearelement = args.element || $('#id_filter_users');
             var currentuser = nearelement.val();
             nearelement.find('option')
                 .remove()
                 .end()
-                .append('<option value="">Select User</option>');
+                .append('<option value="">' + s + '</option>');
                 var promise = ajax.call({
                     args: {
                         action: 'enrolledusers',
@@ -313,12 +314,6 @@ define(['jquery',
                     url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
                 });
                 promise.done(function(response) {
-                    // if (typeof nearelement == 'undefined') {
-                    //     nearelement.find('option')
-                    //         .not(':eq(0), :selected')
-                    //         .remove()
-                    //         .end();
-                    // }
                     $.each(response, function(key, value) {
                         if(key == 0){
                             return true;
@@ -345,7 +340,7 @@ define(['jquery',
                         }
                     }
                 });
-
+            });
         },
         CohortUsers: function(args) {
             var currentcohort = $('#id_filter_cohort').find(":selected").val();

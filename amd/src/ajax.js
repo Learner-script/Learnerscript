@@ -18,7 +18,7 @@
  * @module     block_learnerscript/ajax
  * @class      ajax
  * @package
- * @copyright  2017 Naveen kumar <naveen@eabyas.in>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  */
 define(['jquery', 'core/config', 'core/log', 'core/modal_factory'], function($, config, Log, ModalFactory) {
     // Keeps track of when the user leaves the page so we know not to show an error.

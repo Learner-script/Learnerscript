@@ -18,7 +18,7 @@
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once("../../config.php");
@@ -215,14 +215,14 @@ $PAGE->set_url('/blocks/learnerscript/viewreport.php', ['id' => $id]);
 $download = ($download && $format && strpos($report->export, $format) !== false) ? true : false;
 
 $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
-$PAGE->requires->css('/blocks/reportdashboard/css/radios-to-slider.min.css');
+$PAGE->requires->css('/blocks/reportdashboard/css/radioslider/radios-to-slider.min.css');
 $PAGE->requires->css('/blocks/reportdashboard/css/flatpickr.min.css');
-$PAGE->requires->css('/blocks/learnerscript/css/fixedHeader.dataTables.min.css');
-$PAGE->requires->css('/blocks/learnerscript/css/responsive.dataTables.min.css');
+$PAGE->requires->css('/blocks/learnerscript/css/datatables/fixedHeader.dataTables.min.css');
+$PAGE->requires->css('/blocks/learnerscript/css/datatables/responsive.dataTables.min.css');
 $PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('ui-css');
-$PAGE->requires->css('/blocks/learnerscript/css/select2.min.css');
-$PAGE->requires->css('/blocks/learnerscript/css/jquery.dataTables.min.css');
+$PAGE->requires->css('/blocks/learnerscript/css/select2/select2.min.css');
+$PAGE->requires->css('/blocks/learnerscript/css/datatables/jquery.dataTables.min.css');
 // No download, build navigation header etc.
 if (!$download) {
     $reportsheadstart = get_config('block_reportdashboard', 'header_start');

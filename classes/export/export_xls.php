@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/adminlib.php');
  * Class export_xls
  *
  * @package    block_learnerscript
- * @copyright  2024 YOUR NAME <your@email.com>
+ * @copyright  2024 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class export_xls {

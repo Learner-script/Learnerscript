@@ -16,7 +16,7 @@
 
 /** Learner Script - Export Report
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once("../../config.php");
@@ -55,7 +55,7 @@ $downloadfilename = clean_filename(format_string($report->name)) . '.xml';
 $version = $DB->get_field('config_plugins', 'value', ['plugin' => 'block_learnerscript', 'name' => 'version']);
 if (!$version) {
     if (!$version = $DB->get_field('block', 'version', ['name' => 'learnerscript'])) {
-        throw new moodle_exception(get_string('Pluginnotfound', 'block_learnerscript'));
+        throw new moodle_exception(get_string('pluginnotfound', 'block_learnerscript'));
     }
 }
 

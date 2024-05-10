@@ -17,7 +17,7 @@
  * Also it includes JS libraries like Select2,Datatables and Highcharts
  * @module     block_learnerscript/track
  * @class      report
- * @copyright  2017 Naveen kumar <naveen@eabyas.in>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @since      3.3
  */
 define(['jquery', 'block_learnerscript/timeme'], function($, TimeMe) {

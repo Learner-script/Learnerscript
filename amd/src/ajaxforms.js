@@ -18,7 +18,7 @@
  * @module     block_learnerscript/ajaxforms
  * @class      AjaxForms
  * @package
- * @copyright  2017 Mukka Arun Kumar <arun@eabyas.in>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
@@ -28,7 +28,7 @@ define(['jquery',
         'core/fragment',
         'block_learnerscript/ajax',
         'block_learnerscript/schedule',
-        'block_learnerscript/select2',
+        'block_learnerscript/select2/select2',
         'core/yui',
         'core/templates',
         'core/modal',

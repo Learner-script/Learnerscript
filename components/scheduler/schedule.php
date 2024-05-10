@@ -18,7 +18,7 @@
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once('../../../../config.php');
@@ -29,8 +29,8 @@ require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedul
 use block_learnerscript\local\ls;
 use block_learnerscript\local\schedule;
 $PAGE->requires->jquery_plugin('ui-css');
-$PAGE->requires->css('/blocks/learnerscript/css/select2.min.css', true);
-$PAGE->requires->css('/blocks/learnerscript/css/jquery.dataTables.min.css', true);
+$PAGE->requires->css('/blocks/learnerscript/css/select2/select2.min.css', true);
+$PAGE->requires->css('/blocks/learnerscript/css/datatables/jquery.dataTables.min.css', true);
 $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 
 $reportid = required_param('id', PARAM_INT);
@@ -139,11 +139,11 @@ $mform = new scheduled_reports_form($returnurl, ['id' => $reportid,
                                                 'schusers' => $schusers,
                                                 'scheduleid' => $scheduledreportid,
                                                 'roles_list' => $roleslist,
-                                                 'schusersids' => $schusersids,
-                                                 'exportoptions' => $exportoptions,
-                                                 'schedule_list' => $schedulelist,
-                                                 'frequencyselect' => $frequencyselect,
-                                                 'reportfilters' => $reportclass->basicparams, ]);
+                                                'schusersids' => $schusersids,
+                                                'exportoptions' => $exportoptions,
+                                                'schedule_list' => $schedulelist,
+                                                'frequencyselect' => $frequencyselect,
+                                                'reportfilters' => $reportclass->basicparams, ]);
 if ($scheduledreportid > 0) {
 
     $collapse = false;

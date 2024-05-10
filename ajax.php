@@ -18,7 +18,7 @@
  * Learnerscript, a Moodle block to create customizable reports.
  *
  * @package    block_learnerscript
- * @copyright  2023 Jahnavi Nanduri <jahnavi.nanduri@moodle.com>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('AJAX_SCRIPT', true);

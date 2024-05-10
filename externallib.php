@@ -14,16 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script - Report Congiguration/Design for LearnerScript Reports
- * @package   block_learnerscript
- * @copyright 2023 Moodle India
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
-require_login();
-global $CFG, $DB, $USER, $OUTPUT;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
@@ -31,10 +24,15 @@ use core_external\external_value;
 use block_learnerscript\local\ls as ls;
 use block_learnerscript\local\reportbase as reportbase;
 use block_learnerscript\local\schedule;
-use context_system as contextsystem;
 use block_learnerscript_license_setting as lssetting;
 
-/** Learnerscript block */
+/**
+ * Learnerscript external functions
+ *
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India Information Solutions Private Limited
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_learnerscript_external extends external_api {
     /**
      * Roles wise users parameters description
@@ -71,7 +69,9 @@ class block_learnerscript_external extends external_api {
     public static function rolewiseusers($roleid, $term, $contextlevel, $page,
     $type, $reportid, $action, $maximumselectionlength, $courses) {
         global $DB, $CFG;
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
         $pagevariables = get_pagevariables();
         $pagevariables->set_context($context);
         $roles = $roleid;
@@ -80,27 +80,16 @@ class block_learnerscript_external extends external_api {
         'contextlevel' => $contextlevel, 'page' => $page, '_type' => $type, 'reportid' => $reportid,
         'action' => $action, 'maximumselectionlength' => $maximumselectionlength, 'courses' => $courses, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
             is_siteadmin()) && !empty($roles)) {
-            $siteadmins = $DB->get_field_sql("SELECT cfg.value
-                            FROM {config} cfg
-                            WHERE 1 = 1 AND cfg.name = :siteadmins",
-                            ['siteadmins' => 'siteadmins']);
             if ($roles == -1) {
-                if ($CFG->dbtype == 'pgsql') {
-                    $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
-                                    FROM {user} u, {config} cfg
-                                   WHERE cfg.name = :siteadmins
-                                     AND u.id::TEXT IN (cfg.value)";
-                } else {
-                    $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
+                $siteadmins = $CFG->siteadmins;
+                $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
                                     FROM {user} u
                                    WHERE 1 = 1
                                      AND u.id IN ($siteadmins)";
-                }
+
                 $admins = $DB->get_records_sql($adminssql, ['siteadmins' => 'siteadmins']);
                 $userlist = [];
                 foreach ($admins as $admin) {
@@ -174,14 +163,13 @@ class block_learnerscript_external extends external_api {
         global $DB, $CFG;
         $roleid = json_decode($roleid);
         $bullkselectedusers = json_decode($bullkselectedusers);
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::roleusers_parameters(), ['reportid' => $reportid, 'scheduleid' => $scheduleid,
         'selectedroleid' => $selectedroleid, 'roleid' => $roleid, 'contextlevel' => $contextlevel, 'term' => $term,
         'type' => $type, 'bullkselectedusers' => $bullkselectedusers, ]);
-
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
 
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
@@ -192,17 +180,11 @@ class block_learnerscript_external extends external_api {
                     $bullkselectedusersdata = implode(',', $bullkselectedusers);
                     $escselsql = " AND u.id NOT IN ($bullkselectedusersdata) ";
                 }
-                if ($CFG->dbtype == 'pgsql') {
-                    $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
-                                FROM {user} u, {config} cfg
-                               WHERE cfg.name = :siteadmins
-                                 AND u.id::TEXT IN (cfg.value) $escselsql";
-                } else {
-                    $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
-                                FROM {user} u, {config} cfg
-                               WHERE cfg.name = :siteadmins
-                                 AND u.id IN (cfg.value) $escselsql";
-                }
+                $siteadmins = $CFG->siteadmins;
+                $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
+                                    FROM {user} u
+                                   WHERE 1 = 1
+                                     AND u.id IN ($siteadmins) $escselsql";
                 $admins = $DB->get_records_sql($adminssql, ['siteadmins' => 'siteadmins']);
                 $userslist = [];
                 foreach ($admins as $admin) {
@@ -266,11 +248,11 @@ class block_learnerscript_external extends external_api {
      * @param string $schuserslist Scheduled users list
      */
     public static function viewschuserstable($reportid, $scheduleid, $schuserslist) {
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
         self::validate_parameters(self::viewschuserstable_parameters(), ['reportid' => $reportid,
         'scheduleid' => $scheduleid, 'schuserslist' => $schuserslist, ]);
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
 
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
@@ -334,15 +316,15 @@ class block_learnerscript_external extends external_api {
     public static function manageschusers($reportid, $scheduleid, $schuserslist, $selectedroleid, $reportinstance) {
         global $OUTPUT;
         $pagevariables = get_pagevariables();
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
         $pagevariables->set_context($context);
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::manageschusers_parameters(), ['reportid' => $reportid, 'scheduleid' => $scheduleid,
         'schuserslist' => $schuserslist, 'selectedroleid' => $selectedroleid, 'reportinstance' => $reportinstance, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
             is_siteadmin()) && !empty($reportid)) {
@@ -397,16 +379,17 @@ class block_learnerscript_external extends external_api {
      */
     public static function schreportform($reportid, $instance, $schuserslist) {
         global $CFG, $DB;
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
+
         $pagevariables = get_pagevariables();
-        $pagevariables->set_context(contextsystem::instance());
-        $context = contextsystem::instance();
+        $pagevariables->set_context(context_system::instance());
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::schreportform_parameters(), ['reportid' => $reportid,
         'instance' => $instance, 'schuserslist' => $schuserslist, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
             is_siteadmin()) && !empty($reportid)) {
@@ -419,7 +402,7 @@ class block_learnerscript_external extends external_api {
             if (!empty($scheduledreport)) {
                 $schedulelist = (new schedule)->getschedule($scheduledreport->frequency);
             } else {
-                $schedulelist = [null => '--SELECT--'];
+                $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
             }
             $scheduleform = new scheduled_reports_form($CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php',
             ['id' => $reportid, 'scheduleid' => $scheduleid, 'AjaxForm' => true, 'roles_list' => $roleslist,
@@ -474,13 +457,12 @@ class block_learnerscript_external extends external_api {
      */
     public static function scheduledtimings($reportid, $courseid, $start, $length, $search) {
         $pagevariables = get_pagevariables();
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
          // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::scheduledtimings_parameters(), ['reportid' => $reportid,
         'courseid' => $courseid, 'start' => $start, 'length' => $length, 'search' => $search, ]);
-
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
 
         $learnerscript = $pagevariables->get_renderer('block_learnerscript');
         if ((has_capability('block/learnerscript:managereports', $context) ||
@@ -572,15 +554,15 @@ class block_learnerscript_external extends external_api {
         'columnDefs' => $columndefs, 'reportdashboard' => $reportdashboard, ]);
 
         $context = context_system::instance();
-        // We always must call validate_context in a webservice.
         self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
 
         $filters = json_decode($filters, true);
         $basicparams = json_decode($basicparams, true);
         if (empty($basicparams)) {
             $basicparams = [];
         }
-        $pagevariables->set_context(contextsystem::instance());
+        $pagevariables->set_context(context_system::instance());
         $learnerscript = $pagevariables->get_renderer('block_learnerscript');
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
@@ -803,10 +785,10 @@ class block_learnerscript_external extends external_api {
         self::validate_parameters(self::frequency_schedule_parameters(), ['frequency' => $frequency]);
 
         $context = context_system::instance();
-        // We always must call validate_context in a webservice.
         self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
         if (empty($return)) {
-            $return = [null => '--SELECT--'];
+            $return = [null => get_string('selectall', 'block_reportdashboard')];
         }
         $data = json_encode($return);
         return $data;
@@ -839,8 +821,9 @@ class block_learnerscript_external extends external_api {
         self::validate_parameters(self::reportobject_parameters(), ['reportid' => $reportid]);
 
         $context = context_system::instance();
-        // We always must call validate_context in a webservice.
         self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
+
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
         }
@@ -896,9 +879,9 @@ class block_learnerscript_external extends external_api {
         'action' => $action, 'comp' => $comp, 'pname' => $pname, 'cid' => $cid, 'delete' => $delete, ]);
 
         $context = context_system::instance();
-
-        // We always must call validate_context in a webservice.
         self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
+
         $components = (new ls)->cr_unserialize($report->components);
         $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
         if (count($elements) == 1 && $report->disabletable == 1) {
@@ -971,17 +954,15 @@ class block_learnerscript_external extends external_api {
      * @param int $instance Report instance
      */
     public static function reportfilterform($action, $reportid, $instance) {
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:viewreports', $context);
+
         $pagevariables = get_pagevariables();
         $pagevariables->set_context($context);
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::reportfilterform_parameters(), ['action' => $action,
         'reportid' => $reportid, 'instance' => $instance, ]);
-
-        $context = context_system::instance();
-
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
 
         $reportrecord = new reportbase($reportid);
         $reportrecord->customheader = true; // For not to display Form Header.
@@ -1020,15 +1001,15 @@ class block_learnerscript_external extends external_api {
      */
     public static function importreports($total, $current, $errorreportspositiondata, $lastreportposition = 0) {
         global $CFG, $DB;
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::importreports_parameters(),
         ['total' => $total, 'current' => $current, 'errorreportspositiondata' => $errorreportspositiondata,
         'lastreportposition' => $lastreportposition, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         $path = $CFG->dirroot . '/blocks/learnerscript/reportsbackup/';
         $learnerscriptreports = glob($path . '*.xml');
         $course = get_course(SITEID);
@@ -1126,6 +1107,11 @@ class block_learnerscript_external extends external_api {
      * Learnerscript reports configuration import
      */
     public static function lsreportconfigimport() {
+
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:managereports', $context);
+
         $pluginsettings = new lssetting('block_learnerscript/lsreportconfigimport',
                     'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);
         $return = $pluginsettings->config_write('lsreportconfigimport', 0);
@@ -1172,7 +1158,10 @@ class block_learnerscript_external extends external_api {
     public static function filter_courses($action, $maximumselectionlength,
     $term, $type, $fiterdata, $basicparamdata, $reportinstanceid, $courses) {
         global $DB, $CFG;
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:viewreports', $context);
+
         $pagevariables = get_pagevariables();
         $pagevariables->set_context($context);
         $search = $term;
@@ -1183,8 +1172,6 @@ class block_learnerscript_external extends external_api {
         'fiterdata' => $fiterdata, 'basicparamdata' => $basicparamdata,
         'reportinstanceid' => $reportinstanceid, 'courses' => $courses, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         $filters = json_decode($fiterdata, true);
         $basicparams = json_decode($basicparamdata, true);
         $filterdata = array_merge($filters, $basicparams);
@@ -1249,7 +1236,10 @@ class block_learnerscript_external extends external_api {
     public static function filterusers($action, $maximumselectionlength, $term, $type,
     $fiterdata, $basicparamdata, $reportinstanceid, $courses) {
         global $DB, $CFG;
-        $context = contextsystem::instance();
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('block/learnerscript:viewreports', $context);
+
         $pagevariables = get_pagevariables();
         $pagevariables->set_context($context);
         $search = $term;
@@ -1260,8 +1250,6 @@ class block_learnerscript_external extends external_api {
         'fiterdata' => $fiterdata, 'basicparamdata' => $basicparamdata,
         'reportinstanceid' => $reportinstanceid, 'courses' => $courses, ]);
 
-        // We always must call validate_context in a webservice.
-        self::validate_context($context);
         $filters = json_decode($fiterdata, true);
         $basicparams = json_decode($basicparamdata, true);
 

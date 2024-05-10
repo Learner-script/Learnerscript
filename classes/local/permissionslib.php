@@ -24,7 +24,7 @@ use context_coursecat;
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class permissionslib {
@@ -38,11 +38,6 @@ class permissionslib {
      * @var $roleid
      */
     private $roleid;
-
-    /**
-     * @var $contextid
-     */
-    private $contextid;
 
     /**
      * @var $archetype
@@ -203,6 +198,7 @@ class permissionslib {
         $params['now2'] = $params['now1'];
         $role = $DB->get_field_sql("SELECT shortname FROM {role} WHERE id = :roleid",
                         ['roleid' => $this->roleid]);
+        $params['roleshortname'] = "'" . $role . "'";
         $enroljoin = " JOIN (SELECT DISTINCT e.courseid
                                FROM {enrol} e
                                JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid1)
@@ -221,7 +217,7 @@ class permissionslib {
         }
         $sql .= " JOIN {role_assignments} ra ON ra.contextid = ctx.id
                  JOIN {role} r ON r.id = ra.roleid
-                WHERE ra.userid = :userid AND r.shortname = '".$role."'";
+                WHERE ra.userid = :userid AND r.shortname = :roleshortname";
 
         $courses = $DB->get_fieldset_sql($sql, $params);
         return $courses;

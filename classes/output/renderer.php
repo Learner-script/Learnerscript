@@ -28,7 +28,7 @@ use tabobject;
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends plugin_renderer_base {
@@ -130,9 +130,6 @@ class renderer extends plugin_renderer_base {
         $filterform = new \block_learnerscript\output\filtertoggleform($filterform, $plottabscontent);
         echo $this->render($filterform);
 
-        if ($calcbutton) {
-            echo html_writer::div('', "reportcalculation'.$report->id.'", ['style' => "display:none;"]);
-        }
         $plotreportcontainer = '';
         if ($report->disabletable == 1 && empty($plotdata)) {
             $plotreportcontainer = html_writer::div(get_string('nodataavailable', 'block_learnerscript'), 'alert alert-info', []);

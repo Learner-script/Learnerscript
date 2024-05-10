@@ -18,11 +18,10 @@
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
-require_login();
 require_once($CFG->dirroot . "/blocks/learnerscript/lib.php");
 /** Observer class */
 class block_learnerscript_observer {

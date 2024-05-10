@@ -51,7 +51,7 @@ $reportexportformats = ['ods' => REPORT_EXPORT_FORMAT_ODS,
  * A Moodle block to create customizable reports.
  *
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class schedule {
@@ -224,7 +224,7 @@ class schedule {
             case self::WEEKLY:
                 $out .= get_string('weekly', 'block_learnerscript') . ' ' . get_string('on', 'block_learnerscript') . ' ';
                 if (($calendardays[$schedule]['fullname'])) {
-                    $out .= get_string(($calendardays[$schedule]['fullname']), 'block_learnerscript');
+                    $out .= $calendardays[$schedule]['fullname'];
                 }
                 break;
             case self::MONTHLY:
@@ -461,10 +461,7 @@ class schedule {
 
         $reportid = $schedule->reportid;
         $format = $schedule->exportformat;
-        $exporttofilesystem = $schedule->exporttofilesystem;
-        $scheduleid = $schedule->id;
         $contextlevel = $schedule->contextlevel;
-        $tempfilename = md5(time());
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
         }
@@ -1012,7 +1009,7 @@ class schedule {
         global $DB;
 
         if (!$reportid) {
-            throw new moodle_exception(get_string('', 'block_learnerscript'));
+            throw new moodle_exception(get_string('reportnotavailable', 'block_learnerscript'));
         }
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
@@ -1096,7 +1093,7 @@ class schedule {
 
         $selected = '';
         ksort($roles);
-        $roleslist[] = ['key' => null, 'value' => '--SELECT ROLE--'];
+        $roleslist[] = ['key' => null, 'value' => get_string('selectrole', 'block_learnerscript')];
         foreach ($roles as $key => $value) {
             if ($key == $selectedroleid) {
                 $selected = 'selected';

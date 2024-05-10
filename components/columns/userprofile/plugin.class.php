@@ -17,7 +17,7 @@
 /**
  * A Moodle block for creating customizable reports
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace block_learnerscript\lsreports;
@@ -68,7 +68,7 @@ class plugin_userprofile extends pluginbase {
      * @return object
      */
     public function execute($data, $row) {
-        global $DB, $USER, $CFG, $OUTPUT;
+        global $DB, $USER, $OUTPUT;
         $context = context_system::instance();
         $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'coursesoverview'], IGNORE_MULTIPLE);
         $quizreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'myquizs'], IGNORE_MULTIPLE);

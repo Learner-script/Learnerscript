@@ -17,7 +17,7 @@
 /**
  * A Moodle block for creating customizable reports
  * @package   block_learnerscript
- * @copyright 2023 Moodle India
+ * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace block_learnerscript\lsreports;
@@ -170,7 +170,7 @@ class plugin_useractivitiescolumns extends pluginbase {
                         $completiontype = get_string('fail', 'block_learnerscript');
                         break;
                 }
-                $row->completionstatus = $completiontype ? get_string('completion-' . $completiontype, 'completion') : 'N/A';
+                $row->completionstatus = $completiontype ? get_string('completion-' . $completiontype, 'completion') : get_string('na', 'block_learnerscript');
             break;
         }
         return (isset($row->{$data->column})) ? $row->{$data->column} : '--';

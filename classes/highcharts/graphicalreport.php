@@ -20,7 +20,7 @@ namespace block_learnerscript\highcharts;
  * Class graphicalreport
  *
  * @package    block_learnerscript
- * @copyright  2024 YOUR NAME <your@email.com>
+ * @copyright  2024 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class graphicalreport {
@@ -48,10 +48,8 @@ class graphicalreport {
             empty($series['formdata']->serieslabel) ? $series['formdata']->serieslabel = $name->name : null;
             if (isset($series['formdata']->percentage)) {
                 $tooltipvalue = '{point.percentage:.1f}%';
-                $legendvalue = '{percentage:.1f} %';
             } else {
                 $tooltipvalue = '{point.y}';
-                $legendvalue = '{y}';
             }
             $options = ['type' => 'pie',
                         'containerid' => 'piecontainer' . $containerid . '',

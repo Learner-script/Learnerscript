@@ -21,7 +21,7 @@ use block_learnerscript\local\ls;
  * Class userlmsaccess
  *
  * @package    block_learnerscript
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class userlmsaccess extends \core\task\scheduled_task {

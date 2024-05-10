@@ -17,15 +17,16 @@
  * Describe different types of charts.
  *
  * @module     block_learnerscript/chart
- * @copyright  2023 YOUR NAME <your@email.com>
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery',
         'core/ajax',
         'block_learnerscript/highcharts',
         'block_learnerscript/smartfilter',
+        'core/str',
     ],
-    function($, Ajax, Highcharts, smartfilter) {
+    function($, Ajax, Highcharts, smartfilter, Str) {
         /**
          * Get highchart report for report with Ajax request
          * @param object reportid and reportdata
@@ -33,52 +34,54 @@ define(['jquery',
          */
         var chart = {
             HighchartsAjax: function(args) {
-                args.cols = JSON.stringify(args.cols);
-                args.instanceid = args.reportid;
-                args.filters = args.filters || smartfilter.FilterData(args.instanceid);
-                args.basicparams = JSON.stringify(smartfilter.BasicparamsData(args.instanceid));
-                args.filters['lsfstartdate'] = $('#lsfstartdate').val();
-                args.filters['lsfenddate'] = $('#lsfenddate').val();
-                if (typeof args.filters['filter_courses'] == 'undefined') {
-                    var filter_courses = $('.dashboardcourses').val();
-                    if (filter_courses != 1) {
-                        args.filters['filter_courses'] = filter_courses;
-                    }
-                }
-                args.filters = JSON.stringify(args.filters);
-
-                // Request
-                var promise = Ajax.call([{
-                    methodname: 'block_learnerscript_generate_plotgraph',
-                    args: args,
-                }]);
-
-                // Preload
-                $('#report_plottabs').show();
-                $("#plotreportcontainer" +
-                args.instanceid).html('<img src="' +
-                M.util.image_url('loading', 'block_learnerscript') + '" id="reportloadingimage" />');
-
-                // Response process
-                promise[0].done(function(response) {
-                    response = JSON.parse(response);
-                    if (response.plot) {
-                        if (response.plot.error === true) {
-                            $('#plotreportcontainer' +
-                            args.instanceid).html("<div class='alert alert-warning'>No data available</div>");
-                        } else {
-                            response.plot.reportid = args.reportid;
-                            response.plot.reportinstance = args.reportid;
-                            if (response.plot.data && response.plot.data.length > 0) {
-                                require(['block_learnerscript/report'], function(report) {
-                                    report.generate_plotgraph(response.plot);
-                                });
-                            } else {
-                                $('#plotreportcontainer' +
-                                args.instanceid).html("<div class='alert alert-warning'>No data available</div>");
-                            }
+                Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
+                    args.cols = JSON.stringify(args.cols);
+                    args.instanceid = args.reportid;
+                    args.filters = args.filters || smartfilter.FilterData(args.instanceid);
+                    args.basicparams = JSON.stringify(smartfilter.BasicparamsData(args.instanceid));
+                    args.filters['lsfstartdate'] = $('#lsfstartdate').val();
+                    args.filters['lsfenddate'] = $('#lsfenddate').val();
+                    if (typeof args.filters['filter_courses'] == 'undefined') {
+                        var filter_courses = $('.dashboardcourses').val();
+                        if (filter_courses != 1) {
+                            args.filters['filter_courses'] = filter_courses;
                         }
                     }
+                    args.filters = JSON.stringify(args.filters);
+
+                    // Request
+                    var promise = Ajax.call([{
+                        methodname: 'block_learnerscript_generate_plotgraph',
+                        args: args,
+                    }]);
+
+                    // Preload
+                    $('#report_plottabs').show();
+                    $("#plotreportcontainer" +
+                    args.instanceid).html('<img src="' +
+                    M.util.image_url('loading', 'block_learnerscript') + '" id="reportloadingimage" />');
+
+                    // Response process
+                    promise[0].done(function(response) {
+                        response = JSON.parse(response);
+                        if (response.plot) {
+                            if (response.plot.error === true) {
+                                $('#plotreportcontainer' +
+                                args.instanceid).html("<div class='alert alert-warning'>" + s + "</div>");
+                            } else {
+                                response.plot.reportid = args.reportid;
+                                response.plot.reportinstance = args.reportid;
+                                if (response.plot.data && response.plot.data.length > 0) {
+                                    require(['block_learnerscript/report'], function(report) {
+                                        report.generate_plotgraph(response.plot);
+                                    });
+                                } else {
+                                    $('#plotreportcontainer' +
+                                    args.instanceid).html("<div class='alert alert-warning'>" + s + "</div>");
+                                }
+                            }
+                        }
+                    });
                 });
             },
 

@@ -14,27 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace block_learnerscript\event;
+
+
 /**
- * The create_report event.
+ * Event class to import report
  *
  * @package    block_learnerscript
- * @copyright  2014 YOUR NAME
+ * @copyright  2023 Moodle India Information Solutions Private Limited
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace block_learnerscript\event;
-/**
- * The create_report event class.
- *
- * @property-read array $other {
- *      Extra information about event.
- *
- *      - PUT INFO HERE
- * }
- *
- * @since     Moodle MOODLEVERSION
- * @copyright 2023 Moodle India
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- **/
 class import_report extends \core\event\base {
 
     /**
