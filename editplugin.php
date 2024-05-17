@@ -91,7 +91,6 @@ if (!in_array($comp, $reportclass->components)) {
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
 
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->jquery_plugin('ui-css');
 
 $PAGE->set_url('/blocks/learnerscript/editplugin.php', ['id' => $id, 'comp' => $comp, 'cid' => $cid, 'pname' => $pname]);
@@ -257,7 +256,6 @@ $PAGE->set_heading($title);
 $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $renderer = $PAGE->get_renderer('block_learnerscript');
 
 if (has_capability('block/learnerscript:managereports', $context) ||

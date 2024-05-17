@@ -270,36 +270,6 @@ switch ($action) {
             $return = $termsdata;
         }
     break;
-    case 'roleusers':
-        if ((has_capability('block/learnerscript:managereports', $context)
-        || has_capability('block/learnerscript:manageownreports', $context)
-        || is_siteadmin()) && !empty($reportid) && !empty($type) && !empty($roles)) {
-            $userslist = $scheduling->schroleusers($reportid, $scheduleid, $type, $roles, $search, $bullkselectedusers);
-            $termsdata = [];
-            $termsdata['total_count'] = count($userslist);
-            $termsdata['incomplete_results'] = false;
-            $termsdata['items'] = $userslist;
-            $return = $termsdata;
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else if (empty($type)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Type');
-            } else if (empty($roles)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Role');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        break;
     case 'viewschuserstable':
         if ((has_capability('block/learnerscript:managereports', $context)
         || has_capability('block/learnerscript:manageownreports', $context)
@@ -314,34 +284,6 @@ switch ($action) {
             if (empty($schuserslist)) {
                 $termsdata['cap'] = false;
                 $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Schedule Users List');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        break;
-    case 'manageschusers':
-        if ((has_capability('block/learnerscript:managereports', $context)
-        || has_capability('block/learnerscript:manageownreports', $context)
-        || is_siteadmin()) && !empty($reportid)) {
-            $reqimage = $OUTPUT->image_url('req');
-            $roleslist = (new schedule)->reportroles($selectedroleid);
-            $selectedusers = (new schedule)->selectesuserslist($schuserslist);
-            $scheduledata = new \block_learnerscript\output\scheduledusers($reportid,
-                $reqimage,
-                $roleslist,
-                $selectedusers,
-                $scheduleid,
-                $reportinstance);
-            $return = $learnerscript->render($scheduledata);
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
             } else {
                 $termsdata['cap'] = true;
                 $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
@@ -478,14 +420,6 @@ switch ($action) {
         $reportclass = new $reportclassname($report, $properties);
         $comp = (array) $ls->cr_unserialize($reportclass->config->components);
         $components = json_decode($components, true);
-        foreach ($components['calculations']['elements'] as $k => $calculations) {
-            if (empty($calculations['pluginname']) || ($calculations['type'] != 'calculations')) {
-                unset($components['calculations']['elements'][$k]);
-            } else {
-                $components['calculations']['elements'][$k]['formdata'] =
-                (object) $components['calculations']['elements'][$k]['formdata'];
-            }
-        }
         $comp['columns']['elements'] = $components['columns']['elements'];
         $comp['filters']['elements'] = $components['filters']['elements'];
         $comparray = ['columns', 'filters'];
@@ -518,7 +452,7 @@ switch ($action) {
     case 'courseactivities':
         if ($courseid > 0) {
             $modinfo = get_fast_modinfo($courseid);
-            $return[0] = 'Select Activity';
+            $return[0] = get_string('select_activity', 'block_learnerscript');
             if (!empty($modinfo->cms)) {
                 foreach ($modinfo->cms as $k => $cm) {
                     if ($cm->visible == 1 && $cm->deletioninprogress == 0) {
@@ -633,17 +567,6 @@ switch ($action) {
         $finalcomponents = $ls->cr_serialize($components);
         $report->components = $finalcomponents;
         $DB->update_record('block_learnerscript', $report);
-        break;
-    case 'contextroles':
-        $report = $DB->get_record('block_learnerscript', ['id' => $reportid]);
-        if ($report->type) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-            $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-            $properties = new stdClass;
-            $reportclass = new $reportclassname($report, $properties);
-        }
-        $excludedroles = $reportclass->excludedroles;
-        $return = get_roles_in_context($contextlevel, $excludedroles);
         break;
     case 'disablecolumnstatus':
         $reportname = $DB->get_field('block_learnerscript', 'disabletable', ['id' => $reportid]);

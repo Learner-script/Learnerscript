@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script - Report Congiguration/Design for LearnerScript Reports
+/** Learner Script - Report Configuration/Design for LearnerScript Reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,9 +24,6 @@ require_once($CFG->libdir.'/adminlib.php');
 use block_learnerscript\local\ls as ls;
 
 $import = optional_param('import', 0, PARAM_INT);
-$reset = 0;
-$status = $reset ? 'reset' : 'import';
-
 require_login();
 
 $context = context_system::instance();
@@ -81,16 +78,13 @@ $renderer = $PAGE->get_renderer('block_learnerscript');
 echo $OUTPUT->header();
 $error = false;
 if ($error) {
-    echo $OUTPUT->box_start();
     foreach ($errordata as $errormsg) {
+        \core\notification::add(
+            $errormsg, \core\notification::ERROR
+        );
         echo html_writer::div($errormsg, "alert alert-error");;
     }
-    echo $OUTPUT->box_end();
-    echo html_writer::div(html_writer::link(new \moodle_url($CFG->wwwroot),
-    html_writer::tag('button', get_string('continue', 'block_learnerscript'), [])), "text-center");
-    echo $OUTPUT->footer();
-
-    exit;
+    redirect(new \moodle_url($CFG->wwwroot));
 }
 $importstatus = false;
 $total = 0;
@@ -111,7 +105,7 @@ if ($importstatus && !$lsreportconfigstatus) {
     $pluginsettings->config_write('lsreportconfigimport', 1);
 }
 
-
+$status = 'import';
 $plottabs = new \block_learnerscript\output\lsconfig($status, $importstatus);
 echo $renderer->render($plottabs);
 

@@ -22,8 +22,9 @@
  */
 define(['jquery',
     'core/ajax',
+    'core/str',
     'jqueryui'
-], function($, Ajax) {
+], function($, Ajax, Str) {
     var lsreportconfig = {
         slideIndex: 1,
         currentSlide: function(currentSlideIndex) {
@@ -36,11 +37,11 @@ define(['jquery',
             var i;
             var slides = document.getElementsByClassName("mySlides");
             if (currentSlideIndex > slides.length) {
- lsreportconfig.slideIndex = 1;
-}
+                lsreportconfig.slideIndex = 1;
+            }
             if (currentSlideIndex < 1) {
- lsreportconfig.slideIndex = slides.length;
-}
+                lsreportconfig.slideIndex = slides.length;
+            }
             for (i = 0; i < slides.length; i++) {
                 slides[i].style.display = "none";
             }
@@ -89,7 +90,9 @@ define(['jquery',
                     },
                 }]);
             promise[0].done(function(){
-                return "Message from onbeforeunload handler";
+                Str.get_string('messagehandler', 'block_learnerscript').then(function(s) {
+                    return s;
+                });
             });
         }
     };

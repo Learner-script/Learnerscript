@@ -30,41 +30,6 @@ class graphicalreport {
     public function __construct() {
     }
 
-    /**
-     * piechart Generated piechart with given data
-     * @param object $data graph data
-     * @param object $series series values(X axis and Y axis etc...)
-     * @param object $name
-     * @param array $head
-     * @param string $containerid div placeholder ID
-     * @return array pie chart markup with JS code
-     */
-    public function piechart($data, $series, $name, $head, $containerid = null) {
-        $containerid == null ? $containerid = $series['id'] : null;
-        $piedata = $this->get_piedata($data, $series, $head);
-        if (!empty($piedata['error']) && $piedata['error']) {
-            return $piedata;
-        } else {
-            empty($series['formdata']->serieslabel) ? $series['formdata']->serieslabel = $name->name : null;
-            if (isset($series['formdata']->percentage)) {
-                $tooltipvalue = '{point.percentage:.1f}%';
-            } else {
-                $tooltipvalue = '{point.y}';
-            }
-            $options = ['type' => 'pie',
-                        'containerid' => 'piecontainer' . $containerid . '',
-                        'title' => '' . $series['formdata']->chartname . '',
-                        'tooltip' => '' . $tooltipvalue . '',
-                        'datalabels' => '' . $series['formdata']->datalabels . '',
-                        'showlegend' => '' . $series['formdata']->showlegend . '',
-                        'serieslabel' => '' . $series['formdata']->serieslabel . '',
-                        'id' => $series['id'],
-                        'data' => $piedata,
-                    ];
-            return $options;
-        }
-    }
-
     /** Generates linechart/barchart with given data
      * @param object $data graph data
      * @param object $series series of values(X axis and Y axis etc...)
@@ -90,6 +55,7 @@ class graphicalreport {
             }
             $seriesdatalabels = isset($series['formdata']->datalabels) ? $series['formdata']->datalabels : 0;
             $categorylistcategorylist = isset($lbchartdata['categorylist']) ? $lbchartdata['categorylist'] : [];
+
             $container = $type . 'container' . $containerid;
             $options = ['type' => '' . $type . '',
                         'containerid' => '' . $container . '',
@@ -198,12 +164,26 @@ class graphicalreport {
         $comdata = [];
         if (!empty($graphdata)) {
             foreach ($graphdata as $k => $gdata) {
-                $comdata[] = ['data' => $gdata, 'name' => ucfirst($k), 'type' => 'column' ];
+                $bardata = [];
+                foreach ($gdata as $yaxisdata) {
+                    $bardata[] = $yaxisdata['y'];
+                }
+                $comdata[] = ['data' => $bardata, 'label' => ucfirst($k), 'type' => 'bar' ];
             }
         }
         if (!empty($graphdata1)) {
             foreach ($graphdata1 as $k => $gdata) {
-                $comdata[] = ['data' => $gdata, 'name' => ucfirst($k), 'type' => 'spline', 'yAxis' => 1];
+                $linedata = [];
+                foreach ($gdata as $yaxisdata) {
+                    $linedata[] = $yaxisdata['y'];
+                }
+                $comdata[] = ['data' => $linedata, 'label' => ucfirst($k), 'type' => 'line'];
+            }
+        }
+        if (!empty($categorylist)  && !empty($linedata)) {
+            if (count($categorylist) != count($linedata) ) {
+                $a = count($linedata) - 1;
+                $categorylist = array_slice($categorylist, 0, $a);
             }
         }
         $headseriesid = isset($head[$series['formdata']->serieid]) ? $head[$series['formdata']->serieid] : null;
@@ -220,43 +200,6 @@ class graphicalreport {
                     'ylabel' => $headseriesid,
                 ];
         return $options;
-
-    }
-
-    /** Get pie chart data
-     * @param object $data graph data
-     * @param object $series series of values(X axis and Y axis etc...)
-     * @param array  $head
-     * @return array
-     */
-    public function get_piedata($data, $series, $head) {
-        $error = [];
-        if (empty($head)) {
-            echo '';
-        } else {
-            if (!array_key_exists($series['formdata']->areaname, $head)) {
-                echo '';
-            } else if (!array_key_exists($series['formdata']->areavalue, $head)) {
-                echo '';
-            }
-            $graphdata = [];
-            if ($data) {
-                foreach ($data as $r) {
-                    $r[$series['formdata']->areavalue] = isset($r[$series['formdata']->areavalue])
-                    ? strip_tags($r[$series['formdata']->areavalue]) : '';
-                    if (is_numeric($r[$series['formdata']->areavalue])) {
-                        $graphdata[] = ['name' => strip_tags($r[$series['formdata']->areaname]),
-                        'y' => $r[$series['formdata']->areavalue], ];
-                    }
-
-                }
-            }
-        }
-        if (empty($error)) {
-            return $graphdata;
-        } else {
-            return ['error' => true, 'messages' => $error];
-        }
 
     }
     /** Get chart data
@@ -320,7 +263,16 @@ class graphicalreport {
             $j = 0;
             $comdata = [];
             foreach ($graphdata as $k => $gdata) {
-                $comdata[] = ['data' => $gdata, 'name' => $head[$heading[$j]], 'type' => $type];
+                $lbdata = [];
+                foreach ($gdata as $yaxisdata) {
+                    $lbdata[] = $yaxisdata['y'];
+                }
+                if ($type == 'spline') {
+                    $type = 'line';
+                } else if ($type == 'column') {
+                    $type = 'bar';
+                }
+                $comdata[] = ['data' => $lbdata, 'label' => $head[$heading[$j]], 'type' => $type];
                 $j++;
             }
         }

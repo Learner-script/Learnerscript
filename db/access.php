@@ -51,7 +51,7 @@ $capabilities = [
     ],
     'block/learnerscript:managesqlreports' => [
         'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_BLOCK,
         'archetypes' => [
             'manager' => CAP_ALLOW,
         ],
@@ -75,6 +75,16 @@ $capabilities = [
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'manager' => CAP_ALLOW,
+        ],
+    ],
+    'block/learnerscript:reportsaccess' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'user' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
         ],
     ],
 ];

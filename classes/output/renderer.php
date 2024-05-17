@@ -51,15 +51,6 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template('block_learnerscript/plotoption', $data);
     }
     /**
-     * Render report scheduled users
-     * @param  \block_learnerscript\output\scheduledusers $page
-     * @return bool|string
-     */
-    public function render_scheduledusers(\block_learnerscript\output\scheduledusers $page) {
-        $data = $page->export_for_template($this);
-        return parent::render_from_template('block_learnerscript/scheduledusers', $data);
-    }
-    /**
      * Render report graph tabs
      * @param  \block_learnerscript\output\plottabs $page
      * @return bool|string
@@ -138,7 +129,7 @@ class renderer extends plugin_renderer_base {
         'alt' => get_string('closegraph', 'block_learnerscript'),
         'title' => get_string('closegraph', 'block_learnerscript'), 'class' => 'icon', ]),
         'plotgraphcontainer hide pull-right', ['data-reportid' => $report->id]) .
-        html_writer::div($plotreportcontainer, 'ls-report_graph_container', ['id' => "plotreportcontainer$reportid"]);
+        html_writer::div($plotreportcontainer, 'ls-report_graph_container hide', ['id' => "plotreportcontainer$reportid"]);
         if (!empty($plotdata)) {
             echo '';
         }
@@ -229,7 +220,7 @@ class renderer extends plugin_renderer_base {
                 $buttons[] = html_writer::link(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
                 ['id' => $reportid, 'courseid' => $courseid, 'scheduleid' => $sreport->id, 'sesskey' => sesskey()]),
                 html_writer::empty_tag('img', ['src' => $this->output->image_url('t/edit'),
-                'alt' => get_string('edit'), 'class' => 'iconsmall', 'title' => 'Edit', ]));
+                'alt' => get_string('edit'), 'class' => 'iconsmall', 'title' => get_string('edit'), ]));
                 $buttons[] = html_writer::link(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
                 ['id' => $reportid, 'courseid' => $courseid,
                 'scheduleid' => $sreport->id, 'sesskey' => sesskey(), 'delete' => 1, ]),

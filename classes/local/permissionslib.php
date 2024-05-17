@@ -198,7 +198,7 @@ class permissionslib {
         $params['now2'] = $params['now1'];
         $role = $DB->get_field_sql("SELECT shortname FROM {role} WHERE id = :roleid",
                         ['roleid' => $this->roleid]);
-        $params['roleshortname'] = "'" . $role . "'";
+        $params['roleshortname'] = $role;
         $enroljoin = " JOIN (SELECT DISTINCT e.courseid
                                FROM {enrol} e
                                JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid1)

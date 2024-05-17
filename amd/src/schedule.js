@@ -125,25 +125,27 @@ define(['jquery',
             });
         },
         ViewSchUsersTable: function(args) {
-            $('#scheduledusers').dataTable({
-                "processing": true,
-                "serverSide": true,
-                "lengthMenu": [
-                    [5, 10, 25, 50, -1],
-                    [5, 10, 25, 50, "All"]
-                ],
-                "idisplaylength": 5,
-                'ordering': false,
-                "ajax": {
-                    "method": "GET",
-                    "url": M.cfg.wwwroot + "/blocks/learnerscript/components/scheduler/ajax.php",
-                    "data": {
-                        action: 'viewschusersdata',
-                        reportid: args.reportid,
-                        scheduleid: args.scheduleid,
-                        schuserslist: args.schuserslist
+            Str.get_string('all','block_learnerscript').then(function(s) {
+                $('#scheduledusers').dataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [5, 10, 25, 50, -1],
+                        [5, 10, 25, 50, s]
+                    ],
+                    "idisplaylength": 5,
+                    'ordering': false,
+                    "ajax": {
+                        "method": "GET",
+                        "url": M.cfg.wwwroot + "/blocks/learnerscript/components/scheduler/ajax.php",
+                        "data": {
+                            action: 'viewschusersdata',
+                            reportid: args.reportid,
+                            scheduleid: args.scheduleid,
+                            schuserslist: args.schuserslist
+                        }
                     }
-                }
+                });
             });
         },
         /**
@@ -321,161 +323,18 @@ define(['jquery',
             });
         },
         /**
-         * Manage more users to schedule report
-         * @param  {object} args reportid,scheduleid,selectedroleid and userslist
-         * @return Display popup with manage users for scheduled/Scheduling report
-         */
-        manageschusers: function(args) {
-            Str.get_string('manageschusers','block_learnerscript').then(function(s) {
-            var promise = Ajax.call([{
-                methodname: 'block_learnerscript_manageschusers',
-                args: {
-                    reportid: args.reportid,
-                    scheduleid: args.scheduleid,
-                    selectedroleid: JSON.stringify(args.selectedroleid),
-                    schuserslist: args.schuserslist,
-                    reportinstance: args.reportinstance
-                }
-            }]);
-
-            promise[0].done(function(response) {
-                response = $.parseJSON(response);
-                $('body').append("<div class='manageschusers'>" + response + "</div>");
-                var bodyattb = $('body').attr('id');
-                var position, my, at;
-                if(bodyattb == 'page-blocks-learnerscript-components-scheduler-schedule'){
-                    position = '#scheduleform';
-                    my = "center top";
-                    at = "center top";
-                }else{
-                    position = window;
-                    my = "center";
-                    at = "center";
-                }
-                var dlg = $(".manageschusers").dialog({
-                    resizable: true,
-                    autoOpen: false,
-                    width: "60%",
-                    title: s,
-                    modal: true,
-                    position: {
-                        my: my,
-                        at: at,
-                        of: position,
-                        within: position
-                    },
-                    close: function() {
-                        $(this).dialog('destroy').remove();
-                    },
-                    open: function() {
-                        $(this).closest(".ui-dialog")
-                            .find(".ui-dialog-titlebar-close")
-                            .removeClass("ui-dialog-titlebar-close")
-                            .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
-                            var Closebutton = $('.ui-icon-closethick').parent();
-                            $(Closebutton).attr({
-                                "title" : "Close"
-                            });
-                    }
-                });
-                if($(".manageschusers").hasClass("notschuserspage")){
-                    var parentdialog = $(".manageschusers").parent();
-                    parentdialog.addClass('notinschpage');
-                }
-                $(".selectrole" + args.reportid).select2();
-                dlg.dialog("open");
-            }).fail(function() {
-                // do something with the exception
-                //  console.log(ex);
-            });
-        });
-        },
-        /**
-         * Get users for selected roles in bulk user form while searching
-         * @param  {object} args reportid and selected roles
-         * @return object List of users for selected roles
-         */
-        getroleusers: function(args) {
-            var roles = $('.selectrole' + args.reportid).val();
-            var template = '';
-            this.validate_scheduled_reports_form({
-                reportid: args.reportid,
-                form: 'assignform',
-                reqclass: 'rolereq'
-            });
-            var bullkselectedusers = $('.removeselect').val();
-            if ($('#addselect_searchtext').val().length < 1) {
-                Str.get_string('entervalue', 'block_learnerscript').then(function(s) {
-                    template = "<optgroup label=" + s + "></optgroup>";
-                });
-                $('#' + args.type + 'select' + args.reportid).html(template);
-            } else {
-                var roleid = roles.split('_');
-                args.roleid = roleid[0];
-                args.contextlevel = roleid[1];
-                var promise = Ajax.call([{
-                    methodname: 'block_learnerscript_roleusers',
-                    args: {
-                        term: $('#addselect_searchtext').val(),
-                        type: args.type,
-                        reportid: args.reportid,
-                        roleid: args.roleid,
-                        contextlevel: args.contextlevel,
-                        scheduleid: args.scheduleid,
-                        bullkselectedusers: JSON.stringify(bullkselectedusers)
-                    },
-                }]);
-                promise[0].done(function(response) {
-                    response = $.parseJSON(response);
-                    if (response.total_count > 0) {
-                        $.each(response.items, function(index, value) {
-                            template += '<option value = ' + value.id + ' >' + value.fullname + '</option>';
-                        });
-                    } else {
-                        Str.get_string('entervalue', 'block_learnerscript').then(function(s) {
-                            template += "<optgroup label=" + s + "></optgroup>";
-                        });
-                    }
-                    $('#' + args.type + 'select' + args.reportid).html(template);
-                }).fail(function() {
-                    // do something with the exception
-                    // console.log(ex);
-                });
-            }
-        },
-        /**
-         * Add/remove bulk users to schedule reports
-         * @param  {object} args reportid
-         * @return Add/remove users to schedule report form
-         */
-        bulkmanageschusers: function(args) {
-            var bullkselectedusers = $.map($('.removeselect option'), function(e) {
-                return e.value;
-            });
-            $('#schuserslist' + args.reportinstance).val(bullkselectedusers);
-            var selectedusers = $('.removeselect').find('option').clone();
-            $('#id_users_data' + args.reportinstance).children('option').remove();
-            if (selectedusers.length > 10) {
-                var tenusers = selectedusers.slice(0, 10);
-                tenusers.attr('selected', 'selected').appendTo('#id_users_data' + args.reportinstance);
-                var opt = document.createElement('option');
-                opt.value = '-1';
-                opt.innerHTML = 'View More';
-                opt.selected = true;
-                document.getElementById('id_users_data' + args.reportinstance).appendChild(opt);
-            } else {
-                $('.removeselect').find('option').clone().attr('selected', 'selected').appendTo('#id_users_data' +
-                args.reportinstance);
-            }
-            $('.manageschusers').dialog('close');
-        },
-        /**
          * Preview selected users to schedule report
          * @param  {object} args reportid,scheduleid and userslist
          * @return Preview users in dialog
          */
         viewschusers: function(args) {
-            Str.get_string('viewschusers','block_learnerscript').then(function(s) {
+            Str.get_strings([{
+                key: 'viewschusers',
+                component: 'block_learnerscript'
+            }, {
+                key: 'close',
+                component: 'block_learnerscript'
+            }]).then(function(s) {
                 args.schuserslist = $('#schuserslist' + args.reportinstance).val();
                 var promise = ajax.call({
                     methodname: 'viewschuserstable',
@@ -493,7 +352,7 @@ define(['jquery',
                         resizable: true,
                         autoOpen: false,
                         width: "60%",
-                        title: s,
+                        title: s[0],
                         modal: true,
                         close: function() {
                             $(this).dialog('destroy').remove();
@@ -505,7 +364,7 @@ define(['jquery',
                                 .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
                                 var Closebutton = $('.ui-icon-closethick').parent();
                                 $(Closebutton).attr({
-                                    "title" : "Close"
+                                    "title" : s[1]
                                 });
                         }
                     });

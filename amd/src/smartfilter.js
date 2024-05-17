@@ -254,45 +254,47 @@ define(['jquery',
             }
         },
         UserCourses: function(args) {
+            str.get_string('selectcourse', 'block_learnerscript').then(function(s) {
             var currentcourse = $('#id_filter_courses').find(":selected").val();
-            $('#id_filter_courses').find('option')
-                .remove()
-                .end()
-                .append('<option value="">Select Course</option>');
-            if (args.userid >= 0) {
-                var promise = ajax.call({
-                    args: {
-                        action: 'usercourses',
-                        basicparam: true,
-                        userid: args.userid,
-                        reporttype: args.reporttype,
-                        reportid: args.reportid
-                    },
-                    url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
-                });
-                promise.done(function(response) {
-                    $.each(response, function(key, value) {
-                        if(key == 0){
-                            return true;
-                        }
-                        if ((key == Object.keys(response)[0] && args.firstelementactive == 1) ||
-                                (key == currentcourse && args.firstelementactive == 1)) {
-                            $('#id_filter_courses').append($("<option></option>")
-                                .attr("value", key)
-                                .attr('selected', 'selected')
-                                .text(value));
-                            if(typeof args.triggercourseactivities != 'undefined' && args.triggercourseactivities == true){
-                                smartfilter.CourseActivities({ courseid: key });
-                            }
-                        } else {
-                            $('#id_filter_courses').append($("<option></option>")
-                                .attr("value", key)
-                                .text(value));
-                        }
+                $('#id_filter_courses').find('option')
+                    .remove()
+                    .end()
+                    .append('<option value="">' + s + '</option>');
+                if (args.userid >= 0) {
+                    var promise = ajax.call({
+                        args: {
+                            action: 'usercourses',
+                            basicparam: true,
+                            userid: args.userid,
+                            reporttype: args.reporttype,
+                            reportid: args.reportid
+                        },
+                        url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
                     });
+                    promise.done(function(response) {
+                        $.each(response, function(key, value) {
+                            if(key == 0){
+                                return true;
+                            }
+                            if ((key == Object.keys(response)[0] && args.firstelementactive == 1) ||
+                                    (key == currentcourse && args.firstelementactive == 1)) {
+                                $('#id_filter_courses').append($("<option></option>")
+                                    .attr("value", key)
+                                    .attr('selected', 'selected')
+                                    .text(value));
+                                if(typeof args.triggercourseactivities != 'undefined' && args.triggercourseactivities == true){
+                                    smartfilter.CourseActivities({ courseid: key });
+                                }
+                            } else {
+                                $('#id_filter_courses').append($("<option></option>")
+                                    .attr("value", key)
+                                    .text(value));
+                            }
+                        });
 
-                });
-            }
+                    });
+                }
+            });
         },
         EnrolledUsers: function(args) {
             str.get_string('selectusers', 'block_learnerscript').then(function(s) {

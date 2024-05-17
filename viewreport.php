@@ -133,7 +133,6 @@ $PAGE->set_context($context);
 $PAGE->set_title($report->name);
 $PAGE->set_pagelayout('report');
 
-
 if ($delete && confirm_sesskey()) {
     $components = (new block_learnerscript\local\ls)->cr_unserialize($report->components);
     $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
@@ -214,7 +213,6 @@ $PAGE->set_url('/blocks/learnerscript/viewreport.php', ['id' => $id]);
 
 $download = ($download && $format && strpos($report->export, $format) !== false) ? true : false;
 
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->css('/blocks/reportdashboard/css/radioslider/radios-to-slider.min.css');
 $PAGE->requires->css('/blocks/reportdashboard/css/flatpickr.min.css');
 $PAGE->requires->css('/blocks/learnerscript/css/datatables/fixedHeader.dataTables.min.css');
@@ -273,11 +271,11 @@ if (!$download) {
     $event->trigger();
 
     echo $OUTPUT->header();
-    $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
     if ($report->type == 'sql' || $report->type == 'statistics') {
         echo $OUTPUT->heading($report->name."  ".
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'), 'title' => 'Help with ' . $report->name,
-                'alt' => 'help', 'href' => "javascript:void(0)",
+        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'),
+                'title' => get_string('helpwith', 'block_learnerscript') . $report->name,
+                'alt' => get_string('help'), 'href' => "javascript:void(0)",
         'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
 
     } else {
@@ -287,7 +285,8 @@ if (!$download) {
     echo html_writer::start_tag('div', ['id' => 'licenseresult']);
     $renderer = $PAGE->get_renderer('block_learnerscript');
     if ($drillid > 0) {
-        echo $OUTPUT->single_button($drillreporturl, 'Go back to:' . $drillreportname);
+        echo $OUTPUT->single_button($drillreporturl,
+            get_string('goback', 'block_learnerscript') . $drillreportname);
     }
     $disabletable = !empty($report->disabletable) ? $report->disabletable : 0;
     $renderer->viewreport($report, $context, $reportclass);

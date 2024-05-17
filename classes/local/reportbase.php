@@ -708,9 +708,6 @@ class reportbase {
                 $this->selectedcolumns = array_merge([$this->graphcolumns['formdata']->serieid] ,
                 $this->graphcolumns['formdata']->yaxis_line,
                 $this->graphcolumns['formdata']->yaxis_bar);
-            } else if ($this->graphcolumns['pluginname'] == 'pie') {
-                $this->selectedcolumns = [$this->graphcolumns['formdata']->areaname ,
-                $this->graphcolumns['formdata']->areavalue, ];
             } else {
                  $this->selectedcolumns = !empty($this->graphcolumns['formdata']->yaxis) ?
                                         array_merge([$this->graphcolumns['formdata']->serieid] ,

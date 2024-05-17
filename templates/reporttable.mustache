@@ -27,9 +27,7 @@
     <div id="printablediv">
         <div id="map_{{reportinstance}}" class="map_report_container">
             <div id="reportloading_{{reportinstance}}" style="display:none;">
-                {{#loading}}
-                <img src="{{loading}}" alt="{{#str}} loading, block_learnerscript {{/str}}" title="{{#str}} loading, block_learnerscript {{/str}}">
-                {{/loading}}
+                {{#pix}}loading, block_learnerscript, {{#str}}loading, block_reportdashboard{{/str}}{{/pix}}
             </div>
             <table {{#width}} width="{{width}}" {{/width}} {{#summary}} summary='{{summary}}' {{/summary}} {{#cellpadding}} cellpadding={{cellpadding}} {{/cellpadding}} {{#cellspacing}} cellspacing={{cellspacing}} {{/cellspacing}} class="{{class}} boxalign{{align}}" id="reporttable_{{reportinstance}}">
                 <caption>{{summary}}</caption>

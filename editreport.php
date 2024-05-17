@@ -58,7 +58,6 @@ if (!has_capability('block/learnerscript:managereports', $context)
 
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->jquery_plugin('ui-css');
 
 if ($id) {
@@ -144,7 +143,6 @@ if ($delete && confirm_sesskey()) {
         $PAGE->set_heading($title);
         $PAGE->set_cacheable(true);
         echo $OUTPUT->header();
-        $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
         $message = get_string('confirmdeletereport', 'block_learnerscript');
         $optionsyes = ['id' => $report->id, 'delete' => $delete, 'sesskey' => sesskey(), 'confirm' => 1];
         $optionsno = [];
@@ -213,8 +211,6 @@ $PAGE->set_heading($title);
 $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
-
 
 if ($id) {
     $renderer = $PAGE->get_renderer('block_learnerscript');

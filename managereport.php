@@ -110,8 +110,6 @@ $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
 
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
-
 if ($reports) {
     $table = new html_table();
     $table->width = "100%";

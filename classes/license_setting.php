@@ -59,7 +59,7 @@ class block_learnerscript_license_setting extends admin_setting_configtext {
         if (!$lsreportconfigstatus) {
             redirect($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1');
         } else {
-            $reportdashboardblockexists = $this->page->blocks->is_known_block_type('reportdashboard', false);
+            $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
             if ($reportdashboardblockexists) {
                 redirect($CFG->wwwroot . '/blocks/reportdashboard/dashboard.php');
             } else {
@@ -76,21 +76,20 @@ class block_learnerscript_license_setting extends admin_setting_configtext {
      * @return string
      */
     public function output_html($data, $query='') {
-        global $CFG;
+        global $CFG, $PAGE;
         $default = $this->get_defaultsetting();
-        $pagevariables = get_pagevariables();
         $pluginman = core_plugin_manager::instance();
         $reportdashboardpluginfo = $pluginman->get_plugin_info('block_reportdashboard');
         $reporttilespluginfo = $pluginman->get_plugin_info('block_reporttiles');
         $error = false;
         $errordata = [];
-        $reportdashboardblockexists = $pagevariables->blocks->is_known_block_type('reportdashboard', false);
+        $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
         // Make sure we know the plugin.
         if (is_null($reportdashboardpluginfo) || !$reportdashboardblockexists) {
             $error = true;
             $errordata[] = get_string('learnerscriptwidget', 'block_learnerscript');
         }
-        $reporttilesblockexists = $pagevariables->blocks->is_known_block_type('reporttiles', false);
+        $reporttilesblockexists = $PAGE->blocks->is_known_block_type('reporttiles', false);
         // Make sure we know the plugin.
         if (is_null($reporttilespluginfo) || !$reporttilesblockexists) {
             $error = true;

@@ -98,10 +98,12 @@ class plugin_coursescolumns extends pluginbase {
                 } else {
                     $avgcompletedlink = $progress;
                 }
-                $row->{$data->column} = html_writer::div($avgcompletedlink . '%', "spark-report",
-                                ['id' => html_writer::random_id(),
-                                'data-sparkline' => "$progress; progressbar",
-                                'data-labels' => 'inprogress, completed', ]);
+                $avgcompletedlink = empty($avgcompletedlink) ? 0 : round($avgcompletedlink);
+                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($avgcompletedlink .
+                '%', "progress-bar",
+                ['role' => "progressbar", 'aria-valuenow' => $avgcompletedlink,
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $avgcompletedlink . "%"]) .
+                html_writer::end_div();
                 break;
             case 'activities':
                 if (!isset($row->activities) && isset($data->subquery)) {

@@ -86,10 +86,8 @@ define(['jquery', 'core/config', 'core/log', 'core/modal_factory'], function($, 
         var request = this;
         if (unloading) {
             // No need to trigger an error because we are already navigating.
-            Log.error("Page unloaded.");
             Log.error(exception);
         } else {
-            Log.error("Page Not Responding.");
             Log.error(exception);
             request.deferred.reject(exception);
         }

@@ -127,8 +127,10 @@ define(['jquery',
                                 .removeClass("ui-dialog-titlebar-close")
                                 .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
                             var Closebutton = $('.ui-icon-closethick').parent();
-                            $(Closebutton).attr({
-                                "title": "Close"
+                            Str.get_string('close', 'block_learnerscript').then(function(s) {
+                                $(Closebutton).attr({
+                                    "title": s
+                                });
                             });
                         $(this).closest(".ui-dialog")
                                .find('.ui-dialog-title').html(title_img + self.args.title);

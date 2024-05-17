@@ -28,12 +28,9 @@ define(['jquery',
         'core/modal_events',
         'core/ajax',
         'core/notification',
-        'block_learnerscript/smartfilter',
-        'block_learnerscript/reportwidget',
-        'block_learnerscript/chart'
+        'block_learnerscript/smartfilter'
     ],
-    function($, ajax, AjaxForms, Str, ModalFactory, ModalEvents, Ajax, notification, smartfilter,
-                reportwidget, chart) {
+    function($, ajax, AjaxForms, Str, ModalFactory, ModalEvents, Ajax, notification, smartfilter) {
         var helper = {
             sendmessage: function(args, username) {
                     Str.get_strings([{
@@ -45,6 +42,18 @@ define(['jquery',
                 }, {
                     key: 'messagesent',
                     component: 'block_learnerscript'
+                }, {
+                    key: 'supplyvalue',
+                    component: 'block_learnerscript'
+                }, {
+                    key: 'messagesending',
+                    component: 'block_learnerscript'
+                }, {
+                    key: 'close',
+                    component: 'block_learnerscript'
+                }, {
+                    key: 'submit',
+                    component: 'moodle'
                 }]).then(function(s) {
                 var userid = args.userid;
                 var reportinstance = args.reportinstance;
@@ -54,7 +63,7 @@ define(['jquery',
                     $("#sendsms_" + reportinstance + '_' + userid).append('<div id="ls_sendsms_' + reportinstance + '_' +
                     userid + '" class="sendmessage"><div class="messageloading"></div><form id="' + formid +
                     '" ><textarea id="text_' + formid +
-                    '" type="text" name="message"></textarea><input type="submit" value = "Submit"></form></div>');
+                    '" type="text" name="message"></textarea><input type="submit" value = "' + s[6] + '"></form></div>');
                 }
                 var dlg = $('#ls_sendsms_' + reportinstance + '_' + userid).dialog({
                     resizable: true,
@@ -80,7 +89,7 @@ define(['jquery',
                             .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
                             var Closebutton = $('.ui-icon-closethick').parent();
                             $(Closebutton).attr({
-                                "title": "Close"
+                                "title": s[5]
                             });
                         $(".sendmessage").not(this).each(function() {
                             $(this).remove();
@@ -96,11 +105,11 @@ define(['jquery',
                     var helper = require('block_learnerscript/helper');
                     var emptymessage = document.getElementById("text_" + formid).value;
                     if (!emptymessage) {
-                        $('.messageloading').html('<div class="alert alert-danger">You must supply a value here</div>');
+                        $('.messageloading').html('<div class="alert alert-danger">' + s[3] + '</div>');
                     } else {
                         var url = require('core/url');
                         $('.messageloading').html('<center><img src="' + url.imageUrl("loader", "block_learnerscript") +
-                        '" alt="Message Sending" title="Message Sending"/></center>');
+                        '" alt="' + s[4] + '" title="' + s[4] + '"/></center>');
                         $("#" + formid).hide();
                         var promise = Ajax.call([{
                             methodname: 'core_message_send_instant_messages',
@@ -136,6 +145,12 @@ define(['jquery',
                 }, {
                     key: 'deleteallconfirm',
                     component: 'block_learnerscript'
+                }, {
+                    key: 'confirm',
+                    component: 'block_learnerscript'
+                }, {
+                    key: 'close',
+                    component: 'block_learnerscript'
                 }]).then(function(s) {
                     ModalFactory.create({
                         title: s[0],
@@ -143,7 +158,7 @@ define(['jquery',
                         body: s[1]
                     }).done(function(modal) {
                         this.modal = modal;
-                        modal.setSaveButtonText('Confirm');
+                        modal.setSaveButtonText(s[2]);
                         modal.getRoot().on(ModalEvents.save, function(e) {
                             e.preventDefault();
                             var helper = require('block_learnerscript/helper');
@@ -167,7 +182,7 @@ define(['jquery',
                             modal.destroy();
                         });
                         modal.show();
-                        $('.modal-header button.close').attr('title', 'Close');
+                        $('.modal-header button.close').attr('title', s[3]);
                     }.bind(this));
                 }.bind(this));
             },
@@ -188,142 +203,139 @@ define(['jquery',
              * @param {object} args Object with reportID and other required params
              */
             Select2Ajax: function(args) {
-                $("select[data-select2-ajax='1']").each(function() {
-                    var instanceid = $(this).data('instanceid');
-                    var reportinstance = instanceid ? instanceid : args.reportid;
-                    if (args.action == 'rolewiseusers') {
-                        args.reportid = $(this).data('reportid');
-                        args.courses = $('[name="filter_courses"]').val();
-                    }
-                    if (args.action === 'userlist') {
-                        args.setminimuminputlength = 2;
-                        args.courses = $('[name="filter_courses"]').val();
-                    }
-                    if (!$(this).hasClass('select2-hidden-accessible')) {
-                        var $blockname;
-                        var methodname2;
-                        $(this).select2({
-                            ajax: {
-                                data: function(params) {
-                                    var dataaction = $(this).data('action');
+                Str.get_strings([{
+                    key: 'selectonlyvalues',
+                    component: 'block_learnerscript'
+                }, {
+                    key: 'valuesnotsupported',
+                    component: 'block_learnerscript'
+                }]).then(function(s) {
+                    $("select[data-select2-ajax='1']").each(function() {
+                        var instanceid = $(this).data('instanceid');
+                        var reportinstance = instanceid ? instanceid : args.reportid;
+                        if (args.action == 'rolewiseusers') {
+                            args.reportid = $(this).data('reportid');
+                            args.courses = $('[name="filter_courses"]').val();
+                        }
+                        if (args.action === 'userlist') {
+                            args.setminimuminputlength = 2;
+                            args.courses = $('[name="filter_courses"]').val();
+                        }
+                        if (!$(this).hasClass('select2-hidden-accessible')) {
+                            var $blockname;
+                            var methodname2;
+                            $(this).select2({
+                                ajax: {
+                                    data: function(params) {
+                                        var dataaction = $(this).data('action');
 
-                                    if (dataaction == 'filterusers' || dataaction == 'filter_courses') {
-                                        args.action = dataaction;
-                                        args.basicparamdata = JSON.stringify(smartfilter.BasicparamsData(reportinstance));
-                                        args.fiterdata = JSON.stringify(smartfilter.FilterData(reportinstance));
-                                        args.reportinstanceid = instanceid;
-                                        args.courses = $('[name="filter_courses"]').val();
+                                        if (dataaction == 'filterusers' || dataaction == 'filter_courses') {
+                                            args.action = dataaction;
+                                            args.basicparamdata = JSON.stringify(smartfilter.BasicparamsData(reportinstance));
+                                            args.fiterdata = JSON.stringify(smartfilter.FilterData(reportinstance));
+                                            args.reportinstanceid = instanceid;
+                                            args.courses = $('[name="filter_courses"]').val();
 
-                                    }
-                                    if (args.action == 'rolewiseusers') {
-                                        delete args.schuserslist;
-                                        delete args.scheduleid;
-                                        args.roleid = $("#id_role" + reportinstance).val();
-                                        var roleid = args.roleid.split('_');
-                                        args.roleid = roleid[0];
-                                        args.contextlevel = roleid[1];
-                                        args.courses = $('[name="filter_courses"]').val();
-
-                                    }
-                                    $.extend(params, args);
-                                    methodname2 = args.action;
-                                    if (methodname2 === 'userlist') {
-                                        $blockname = 'block_reportdashboard_';
-                                    } else {
-                                        $blockname = 'block_learnerscript_';
-                                    }
-
-                                    return params;
-                                },
-                                transport: function(params, success) {
-                                    var promise = Ajax.call([{
-                                        methodname: $blockname + methodname2,
-                                        args: params.data
-                                    }]);
-                                    promise[0].done(function(data) {
-                                        data = $.parseJSON(data);
-                                        success(data);
-                                    });
-                                    promise[0].fail(function() {
-                                        // Do something with the exception
-                                    });
-                                },
-                                processResults: function(data, params) {
-                                    // Parse the results into the format expected by Select2
-                                    // since we are using custom formatting functions we do not need to
-                                    // alter the remote JSON data, except to indicate that infinite
-                                    // scrolling can be used
-                                    params.page = params.page || 1;
-                                    var pagination = false;
-                                    if (args.action === 'userlist' || args.action == 'filter_courses'
-                                    || args.action == 'filterusers') {
-                                        pagination = false;
-                                    } else {
-                                        pagination = (params.page * 10) < data.total_count;
-                                    }
-                                    return {
-                                        results: data.items,
-                                        pagination: {
-                                                more: pagination
                                         }
-                                    };
-                                }
-                            },
-                            escapeMarkup: function(markup) {
-                                return markup;
-                            }, // Let our custom formatter work
-                            minimumInputLength: args.setminimuminputlength || 1,
-                            maximumselectionlength: args.maximumselectionlength,
-                            language: {
-                                // You can find all of the options in the language files provided in the
-                                // build. They all must be functions that return the string that should be
-                                // displayed.
-                                maximumSelected: function(params) {
-                                    if (args.action == 'rolewiseusers') {
-                                        args.roleid = $("#id_role" + reportinstance).val();
-                                        args.schuserslist = $('#schuserslist' + reportinstance).val();
-                                        args.scheduleid = $("#scheduleid").val() || -1;
-                                        return "Click <a href='javascript:void(0);' class='seluser' id='addusers" + args.reportid +
-                                        "' data-reportid=" + args.reportid + " data-scheduleid = " + args.scheduleid +
-                                        "onclick = '(function(e){ require(\"block_learnerscript/schedule\").manageschusers(" +
-                                        "{reportinstance:" + reportinstance + ", reportid:" + args.reportid + ",scheduleid:" +
-                                        args.scheduleid + ",selectedroleid:" + args.roleid + ",schuserslist:\"" +
-                                        args.schuserslist + "\"}) })(event)' > here </a> to add more than " +
-                                        params.maximum + " users.";
-                                    } else if (args.action == 'filter_courses' || args.action == 'filterusers') {
-                                        return 'You can select only 5 values';
+                                        if (args.action == 'rolewiseusers') {
+                                            delete args.schuserslist;
+                                            delete args.scheduleid;
+                                            args.roleid = $("#id_role" + reportinstance).val();
+                                            var roleid = args.roleid.split('_');
+                                            args.roleid = roleid[0];
+                                            args.contextlevel = roleid[1];
+                                            args.courses = $('[name="filter_courses"]').val();
+
+                                        }
+                                        $.extend(params, args);
+                                        methodname2 = args.action;
+                                        if (methodname2 === 'userlist') {
+                                            $blockname = 'block_reportdashboard_';
+                                        } else {
+                                            $blockname = 'block_learnerscript_';
+                                        }
+
+                                        return params;
+                                    },
+                                    transport: function(params, success) {
+                                        var promise = Ajax.call([{
+                                            methodname: $blockname + methodname2,
+                                            args: params.data
+                                        }]);
+                                        promise[0].done(function(data) {
+                                            data = $.parseJSON(data);
+                                            success(data);
+                                        });
+                                        promise[0].fail(function() {
+                                            // Do something with the exception
+                                        });
+                                    },
+                                    processResults: function(data, params) {
+                                        // Parse the results into the format expected by Select2
+                                        // since we are using custom formatting functions we do not need to
+                                        // alter the remote JSON data, except to indicate that infinite
+                                        // scrolling can be used
+                                        params.page = params.page || 1;
+                                        var pagination = false;
+                                        if (args.action === 'userlist' || args.action == 'filter_courses'
+                                        || args.action == 'filterusers') {
+                                            pagination = false;
+                                        } else {
+                                            pagination = (params.page * 10) < data.total_count;
+                                        }
+                                        return {
+                                            results: data.items,
+                                            pagination: {
+                                                    more: pagination
+                                            }
+                                        };
                                     }
+                                },
+                                escapeMarkup: function(markup) {
+                                    return markup;
+                                }, // Let our custom formatter work
+                                minimumInputLength: args.setminimuminputlength || 1,
+                                maximumselectionlength: args.maximumselectionlength,
+                                language: {
+                                    // You can find all of the options in the language files provided in the
+                                    // build. They all must be functions that return the string that should be
+                                    // displayed.
+                                    maximumSelected: function() {
+                                        if (args.action == 'filter_courses' || args.action == 'filterusers') {
+                                            return s[0];
+                                        }
+                                    }
+                                },
+                                templateResult: function formatRepo(repo) {
+                                    var markup;
+                                    if (repo.loading) {
+                                        return repo.text || s[1];
+                                    }
+                                    markup = repo.text || s[1];
+                                    return markup;
+                                }, // Omitted for brevity, see the source of this page
+                                templateSelection: function formatRepoSelection(repo) {
+                                    var markup;
+                                    if (repo.id == -1 && args.action == 'rolewiseusers') {
+                                        var reportid = repo.element.form.dataset.reportid || 0;
+                                        var scheduleid = repo.element.form.dataset.scheduleid || -1;
+                                        markup = "<a href='javascript:void(0)' class='viewschusers'" +
+                                            "onclick='(function(e){ require(\"block_learnerscript/schedule\").viewschusers(" +
+                                            "{reportid:" + reportid + ",scheduleid:" + scheduleid + ", reportinstance:" +
+                                            reportinstance + "}) })(event);'>" + repo.text + "</a>";
+                                    } else {
+                                        markup = repo.text;
+                                    }
+                                    return markup;
+                                } // Omitted for brevity, see the source of this page
+                            }).on('select2:select', function() {
+                                if (args.action == 'reportlist') {
+                                    var reportid = $(this).val();
+                                    window.location = M.cfg.wwwroot + '/blocks/learnerscript/viewreport.php?id=' + reportid;
                                 }
-                            },
-                            templateResult: function formatRepo(repo) {
-                                var markup;
-                                if (repo.loading) {
-                                    return repo.text || "Values not supported";
-                                }
-                                markup = repo.text || "Values not supported";
-                                return markup;
-                            }, // Omitted for brevity, see the source of this page
-                            templateSelection: function formatRepoSelection(repo) {
-                                var markup;
-                                if (repo.id == -1 && args.action == 'rolewiseusers') {
-                                    var reportid = repo.element.form.dataset.reportid || 0;
-                                    var scheduleid = repo.element.form.dataset.scheduleid || -1;
-                                    markup = "<a href='javascript:void(0)' class='viewschusers'" +
-                                        "onclick='(function(e){ require(\"block_learnerscript/schedule\").viewschusers(" +
-                                        "{reportid:" + reportid + ",scheduleid:" + scheduleid + ", reportinstance:" +
-                                        reportinstance + "}) })(event);'>" + repo.text + "</a>";
-                                } else {
-                                    markup = repo.text;
-                                }
-                                return markup;
-                            } // Omitted for brevity, see the source of this page
-                        }).on('select2:select', function() {
-                            if (args.action == 'reportlist') {
-                                var reportid = $(this).val();
-                                window.location = M.cfg.wwwroot + '/blocks/learnerscript/viewreport.php?id=' + reportid;
-                            }
-                        });
-                    }
+                            });
+                        }
+                    });
                 });
             },
             getQueryParameters: function(str) {
@@ -381,10 +393,9 @@ define(['jquery',
                                 reporttype: response,
                                 basicparams: JSON.stringify(filter),
                                 lsfstartdate: 0,
-                                lsfenddate: $.now()
+                                lsfenddate: $.now(),
                             });
                         });
-                        chart.SparkLineReport();
                         if (reporttypes == 'table') {
                             dialogid = "reportcontainer";
                         } else {
@@ -427,7 +438,9 @@ define(['jquery',
             },
             PlotForm: function(args) {
                 var url = M.cfg.wwwroot + '/blocks/learnerscript/ajax.php';
-                args.title = (!args.title) ? 'Plot Graph' : args.title;
+                Str.get_string('plotgraph','block_learnerscript').then(function(s) {
+                    args.title = (!args.title) ? s : args.title;
+                });
                 AjaxForms.init(args, url);
             },
             dropdown: function(child) {
@@ -442,23 +455,6 @@ define(['jquery',
                 }
                 );
             },
-            rolesforcontext: function(contextlevel, reportid) {
-                var promise = ajax.call({
-                    args: {
-                        action: 'contextroles',
-                        contextlevel: contextlevel,
-                        reportid: reportid
-                    },
-                    url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
-                });
-                promise.done(function(response) {
-                    var template = '';
-                    $.each(response, function(key, value) {
-                        template += '<option value = ' + key + '>' + value + '</option>';
-                    });
-                    $("#id_roleid").find('option').remove().end().append(template);
-                });
-            }
         };
         return helper;
     });

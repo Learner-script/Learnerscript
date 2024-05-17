@@ -138,9 +138,6 @@ class ls {
         $highcharts = new graphicalreport();
         if (!empty($seriesvalues)) {
             switch ($graphdata['pluginname']) {
-                case 'pie':
-                    return $highcharts->piechart($reportclass->finalreport->table->data,
-                    $graphdata, $reportclass->config, $reportclass->finalreport->table->head, null);
                 case 'line':
                     return $highcharts->lbchart($reportclass->finalreport->table->data, $graphdata,
                     $reportclass->config, 'spline', $reportclass->finalreport->table->head, $blockinstanceid);
@@ -745,8 +742,10 @@ class ls {
         foreach ($schereports as $sch => $repo) {
             $scheduledate = date('Y-m-d H:i:s', $repo->nextschedule);
             $scheduletime = date('H', $repo->nextschedule);
-            if(($scheduledate == $date) && ($scheduletime == $hour)) {
-                $scheduledreports[] = ['id' => $repo->id, 'reportid' => $repo->reportid, 'frequency' => $repo->frequency, 'nextschedule' => $repo->nextschedule, 'exporttofilesystem' => $repo->exporttofilesystem, 'timemodified' => $repo->timemodified];
+            if (($scheduledate == $date) && ($scheduletime == $hour)) {
+                $scheduledreports[] = ['id' => $repo->id, 'reportid' => $repo->reportid, 'frequency' => $repo->frequency,
+                    'nextschedule' => $repo->nextschedule, 'exporttofilesystem' => $repo->exporttofilesystem,
+                    'timemodified' => $repo->timemodified];
             }
         }
         return $scheduledreports;
@@ -761,7 +760,8 @@ class ls {
         $schedule = new schedule;
         $scheduledreports = (new self)->schedulereportsquery($frequency);
         $totalschedulereports = count($scheduledreports);
-        mtrace(get_string('processing', 'block_learnerscript') . ' ' . $totalschedulereports . ' ' . get_string('scheduledreport', 'block_learnerscript'));
+        mtrace(get_string('processing', 'block_learnerscript') . ' ' . $totalschedulereports .
+                    ' ' . get_string('scheduledreport', 'block_learnerscript'));
         if ($totalschedulereports > 0) {
             foreach ($scheduledreports as $scheduled) {
                 switch ($scheduled->exporttofilesystem) {
@@ -787,24 +787,6 @@ class ls {
             }
         }
         return true;
-    }
-    /**
-     * PDF Report Export Header
-     * @return string Report Header
-     */
-    public function pdf_reportheader() {
-        $headerimagepath = get_reportheader_imagepath();
-        $headerimgpath = "";
-        if (@getimagesize($headerimagepath)) {
-            $headerimgpath = $headerimagepath;
-        }
-        if ($headerimgpath) {
-            $reportlogoimage =
-            '<img src="' . $headerimgpath . '" alt=' . get_string("altreportimage", "block_learnerscript") . ' height="80px">';
-        } else {
-            $reportlogoimage = "";
-        }
-        return $reportlogoimage;
     }
 
     /**
@@ -1607,5 +1589,43 @@ class ls {
             }
         }
         echo get_string('taskcomplete', 'block_learnerscript');
+    }
+
+
+    /**
+     * Learnerscript report view data
+     * @param object $reportdata Report data
+     * @return array
+     */
+    public function get_viewreportdata($reportdata) {
+        global $CFG;
+        $data = new stdClass();
+        $data->reportclass = $reportdata->reportclass;
+        $data->tablehead = $reportdata->tablehead;
+        $data->tableid = $reportdata->tableid;
+        $data->exports = $reportdata->exports;
+        $data->reportid = $reportdata->reportid;
+        $data->reportsql = $reportdata->reportsql;
+        $data->debugsql = $reportdata->debugsql;
+        $data->includeexport = $reportdata->includeexport;
+        $data->reportinstance = $reportdata->instanceid ? $reportdata->instanceid : $reportdata->reportid;
+        $data->reporttype = $reportdata->reporttype;
+        $data->path = $CFG->wwwroot;
+        $exportparams = '';
+        if (!empty($reportdata->reportclass->basicparams)) {
+            $exportfilters = array_merge($reportdata->reportclass->params, $reportdata->reportclass->basicparams);
+        } else {
+            $exportfilters = $reportdata->reportclass->params;
+        }
+        if (!empty($exportfilters)) {
+            foreach ($exportfilters as $key => $val) {
+                if (strpos($key, 'date') !== false) {
+                    $exportparams .= "&$key=$val";
+                }
+            }
+        }
+        $data->exportparams = $exportparams;
+        $arraydata = (array)$data + $reportdata->tableproperties;
+        return $arraydata;
     }
 }

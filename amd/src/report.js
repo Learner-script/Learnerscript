@@ -62,6 +62,7 @@ define(['jquery',
             $('.plotgraphcontainer').on('click', function() {
                 var reportid = $(this).data('reportid');
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
+                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + reportid).html('');
 
             });
@@ -145,8 +146,6 @@ define(['jquery',
                     if (BasicparamCourse.length > 0) {
                         FirstElementActive = true;
                     }
-                    // Smartfilter.UserCourses({ userid: userid, reporttype: args.reporttype, reportid: args.reportid,
-                    //                           firstelementactive: FirstElementActive, triggercourseactivities: true });
                 }
             });
 
@@ -226,13 +225,16 @@ define(['jquery',
                     $(".basicparamsform #id_filter_apply").trigger('click', [true]);
                 } else {
                     args.reporttype = $('.ls-plotgraphs_listitem.ui-tabs-active').data('cid');
-                    report.CreateReportPage({reportid: args.reportid, reporttype: args.reporttype, instanceid: args.reportid});
+                    report.CreateReportPage({reportid: args.reportid, reporttype: args.reporttype, instanceid: args.reportid,
+                        reportdashboard: false,
+                    });
                 }
                 $(".filterform select[data-select2='1']").select2("destroy").select2({theme: "classic"});
                 $(".filterform select[data-select2-ajax='1']").val('0').trigger('change');
                 $('.filterform')[0].reset();
                 $(".filterform #id_filter_clear").attr('disabled', 'disabled');
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
+                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + args.instanceid).html('');
             });
 
@@ -260,6 +262,7 @@ define(['jquery',
                         instanceid: args.instanceid, reportdashboard: false});
                 }
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
+                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + args.instanceid).html('');
             });
             /*
@@ -289,14 +292,6 @@ define(['jquery',
                 }
             }
 
-            /*
-             * Make sure will have vertical tabs for plotoptions for report
-             */
-            // $tabs = $('#report_plottabs').tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
-            // $("#report_plottabs li").removeClass("ui-corner-top").addClass("ui-corner-left");
-
-            // helper.tabsdraggable($tabs);
-
         },
         CreateReportPage: function(args) {
             var disabletable = 0;
@@ -314,6 +309,7 @@ define(['jquery',
                     'reporttype': args.reporttype
                 });
             } else if (disabletable == 0) {
+                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 require(['block_learnerscript/reportwidget'], function(reportwidget) {
                     reportwidget.CreateDashboardwidget({
                         reportid: args.reportid,
@@ -326,184 +322,176 @@ define(['jquery',
 
             }
         },
+
         /**
          * Generates graph widget with given Highcharts ajax response
          * @param {object} response Ajax response
          * @return Creates highchart widget with given response based on type of chart
          */
         generate_plotgraph: function(response) {
-            response.containerid = 'plotreportcontainer' + response.reportinstance;
+            var reportinstance = response.reportinstance || response.reportid;
+            response.containerid = 'plotreportcontainer' + reportinstance;
             switch (response.type) {
-                case 'pie':
-                    chart.piechart(response);
-                    break;
                 case 'spline':
                 case 'bar':
                 case 'column':
                     chart.lbchart(response);
                     break;
-                case 'solidgauge':
-                    chart.solidgauge(response);
-                    break;
                 case 'combination':
                     chart.combinationchart(response);
                     break;
-                case 'heatmap':
-                    chart.HeatMap(response);
-                    break;
             }
         },
+
         /**
          * Datatable serverside for all table type reports
          * @param {object} args reportid
          * @return Apply serverside datatable to report table
          */
         ReportDatatable: function(args) {
-            Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
-                var params = {};
-                var reportinstance = args.instanceid ? args.instanceid : args.reportid;
-                params.filters = args.filters;
-                params.basicparams = args.basicparams || JSON.stringify(smartfilter.BasicparamsData(reportinstance));
-                params.reportid = args.reportid;
-                params.columns = args.columns;
-                //
-                // Pipelining function for DataTables. To be used to the `ajax` option of DataTables
-                //
-                $.fn.dataTable.pipeline = function(opts) {
-                    // Configuration options
-                    var conf = $.extend({
-                        url: '', // Script url
-                        data: null, // Function or object with parameters to send to the server
-                        method: 'POST' // Ajax HTTP method
-                    }, opts);
+            var params = {};
+            var reportinstance = args.instanceid ? args.instanceid : args.reportid;
+            params.filters = args.filters;
+            params.basicparams = args.basicparams || JSON.stringify(smartfilter.BasicparamsData(reportinstance));
+            params.reportid = args.reportid;
+            params.columns = args.columns;
+            //
+            // Pipelining function for DataTables. To be used to the `ajax` option of DataTables
+            //
+            $.fn.dataTable.pipeline = function(opts) {
+                // Configuration options
+                var conf = $.extend({
+                    url: '', // Script url
+                    data: null, // Function or object with parameters to send to the server
+                    method: 'POST' // Ajax HTTP method
+                }, opts);
 
-                    return function(request, drawCallback, settings) {
-                        var ajax = true;
-                        var requestStart = request.start;
-                        var requestLength = request.length;
-                        var json;
-                        var cacheLastJson;
-                        var cacheLower;
-                        if (typeof args.data != 'undefined' && request.draw == 1) {
-                            json = args.data;
-                            json.draw = request.draw; // Update the echo for each response
-                            json.data.splice(0, requestStart);
-                            json.data.splice(requestLength, json.data.length);
-                            drawCallback(json);
-                        } else if (ajax) {
-                            // Need data from the server
-                            request.start = requestStart;
-                            request.length = requestLength;
-                            $.extend(request, conf.data);
+                return function(request, drawCallback, settings) {
+                    var ajax = true;
+                    var requestStart = request.start;
+                    var requestLength = request.length;
+                    var json;
+                    var cacheLastJson;
+                    var cacheLower;
+                    if (typeof args.data != 'undefined' && request.draw == 1) {
+                        json = args.data;
+                        json.draw = request.draw; // Update the echo for each response
+                        json.data.splice(0, requestStart);
+                        json.data.splice(requestLength, json.data.length);
+                        drawCallback(json);
+                    } else if (ajax) {
+                        // Need data from the server
+                        request.start = requestStart;
+                        request.length = requestLength;
+                        $.extend(request, conf.data);
 
-                            settings.jqXHR = $.ajax({
-                                "type": conf.method,
-                                "url": conf.url,
-                                "data": request,
-                                "dataType": "json",
-                                "cache": false,
-                                "success": function(json) {
-                                    drawCallback(json);
+                        settings.jqXHR = $.ajax({
+                            "type": conf.method,
+                            "url": conf.url,
+                            "data": request,
+                            "dataType": "json",
+                            "cache": false,
+                            "success": function(json) {
+                                drawCallback(json);
+                            }
+                        });
+                    } else {
+                        json = $.extend(true, {}, cacheLastJson);
+                        json.draw = request.draw; // Update the echo for each response
+                        json.data.splice(0, requestStart - cacheLower);
+                        json.data.splice(requestLength, json.data.length);
+                        drawCallback(json);
+                    }
+                };
+            };
+            if (args.reportname == 'Users profile' || args.reportname == 'Course profile') {
+                var lengthoptions = [
+                    [50, 100, -1],
+                    ["Show 50", "Show 100", "Show All"]
+                ];
+            } else {
+                var lengthoptions = [
+                    [10, 25, 50, 100, -1],
+                    ["Show 10", "Show 25", "Show 50", "Show 100", "Show All"]
+                ];
+            }
+
+            $('#reporttable_' + reportinstance).DataTable({
+                'processing': true,
+                'serverSide': true,
+                'destroy': true,
+                'dom': '<"co_report_header"Bf <"report_header_skew"  <"report_header_skew_content" Bl' +
+                '<"report_header_showhide" >' +
+                '<"report_calculation_showhide" >> > > tr <"co_report_footer"ip>',
+                'ajax': $.fn.dataTable.pipeline({
+                    "type": "POST",
+                    "url": M.cfg.wwwroot + '/blocks/learnerscript/components/datatable/server_processing.php?sesskey=' +
+                    M.cfg.sesskey,
+                    "data": params
+                }),
+                'columnDefs': args.columnDefs,
+                "fnDrawCallback": function() {
+                    helper.DrilldownReport();
+                },
+                "oScroll": {},
+                'responsive': true,
+                "fnInitComplete": function() {
+                    if (args.reportname == 'Users profile' || args.reportname == 'Course profile'
+                        || args.reportname == 'Statistic') {
+                        $("#reporttable_" + reportinstance + "_wrapper .co_report_header").remove();
+                        $("#reporttable_" + reportinstance + "_wrapper .co_report_footer").remove();
+                    }
+
+                    $('.download_menu' + reportinstance + ' li a').each(function() {
+                        var link = $(this).attr('href');
+                        if (typeof args.basicparams != 'undefined') {
+                            var basicparamsdata = JSON.parse(args.basicparams);
+                            $.each(basicparamsdata, function(key, value) {
+                                if (key.indexOf('filter_') == 0) {
+                                    link += '&' + key + '=' + value;
                                 }
                             });
-                        } else {
-                            json = $.extend(true, {}, cacheLastJson);
-                            json.draw = request.draw; // Update the echo for each response
-                            json.data.splice(0, requestStart - cacheLower);
-                            json.data.splice(requestLength, json.data.length);
-                            drawCallback(json);
                         }
-                    };
-                };
-                if (args.reportname == 'Users profile' || args.reportname == 'Course profile') {
-                    var lengthoptions = [
-                        [50, 100, -1],
-                        ["Show 50", "Show 100", "Show All"]
-                    ];
-                } else {
-                    var lengthoptions = [
-                        [10, 25, 50, 100, -1],
-                        ["Show 10", "Show 25", "Show 50", "Show 100", "Show All"]
-                    ];
-                }
-                $('#reporttable_' + reportinstance).DataTable({
-                    'processing': true,
-                    'serverSide': true,
-                    'destroy': true,
-                    'dom': '<"co_report_header"Bf <"report_header_skew"  <"report_header_skew_content" Bl' +
-                    '<"report_header_showhide" >' +
-                    '<"report_calculation_showhide" >> > > tr <"co_report_footer"ip>',
-                    'ajax': $.fn.dataTable.pipeline({
-                        "type": "POST",
-                        "url": M.cfg.wwwroot + '/blocks/learnerscript/components/datatable/server_processing.php?sesskey=' +
-                        M.cfg.sesskey,
-                        "data": params
-                    }),
-                    'columnDefs': args.columnDefs,
-                    "fnDrawCallback": function() {
-                        chart.SparkLineReport();
-                        helper.DrilldownReport();
-                    },
-                    "oScroll": {},
-                    'responsive': true,
-                    "fnInitComplete": function() {
-                        if (args.reportname == 'Users profile' || args.reportname == 'Course profile'
-                            || args.reportname == 'Statistic') {
-                            $("#reporttable_" + reportinstance + "_wrapper .co_report_header").remove();
-                            $("#reporttable_" + reportinstance + "_wrapper .co_report_footer").remove();
+                        if (typeof (args.filters) != 'undefined') {
+                            var filters = JSON.parse(args.filters);
+                            $.each(filters, function(key, value) {
+                                if (key.indexOf('filter_') == 0) {
+                                    link += '&' + key + '=' + value;
+                                }
+                                if (key.indexOf('lsf') == 0) {
+                                    link += '&' + key + '=' + value;
+                                }
+                            });
                         }
-
-                        $('.download_menu' + reportinstance + ' li a').each(function() {
-                            var link = $(this).attr('href');
-                            if (typeof args.basicparams != 'undefined') {
-                                var basicparamsdata = JSON.parse(args.basicparams);
-                                $.each(basicparamsdata, function(key, value) {
-                                    if (key.indexOf('filter_') == 0) {
-                                        link += '&' + key + '=' + value;
-                                    }
-                                });
-                            }
-                            if (typeof (args.filters) != 'undefined') {
-                                var filters = JSON.parse(args.filters);
-                                $.each(filters, function(key, value) {
-                                    if (key.indexOf('filter_') == 0) {
-                                        link += '&' + key + '=' + value;
-                                    }
-                                    if (key.indexOf('lsf') == 0) {
-                                        link += '&' + key + '=' + value;
-                                    }
-                                });
-                            }
-                            $(this).attr('href', link);
-                        });
+                        $(this).attr('href', link);
+                    });
+                },
+                "fnRowCallback": function(nRow) {
+                    $(nRow).children().each(function(index, td) {
+                        $(td).css("word-break", args.columnDefs[index].wrap);
+                        $(td).css("width", args.columnDefs[index].width);
+                    });
+                    return nRow;
+                },
+                "autoWidth": false,
+                'aaSorting': [],
+                'language': {
+                    'paginate': {
+                        'previous': '<',
+                        'next': '>'
                     },
-                    "fnRowCallback": function(nRow) {
-                        $(nRow).children().each(function(index, td) {
-                            $(td).css("word-break", args.columnDefs[index].wrap);
-                            $(td).css("width", args.columnDefs[index].width);
-                        });
-                        return nRow;
-                    },
-                    "autoWidth": false,
-                    'aaSorting': [],
-                    'language': {
-                        'paginate': {
-                            'previous': '<',
-                            'next': '>'
-                        },
-                        'sProcessing': "<img src='" + M.util.image_url('loading', 'block_learnerscript') + "'>",
-                        'search': "_INPUT_",
-                        'searchPlaceholder': "Search",
-                        'lengthMenu': "_MENU_",
-                        "emptyTable": "<div class='alert alert-info'>" + s + "</div>"
-                    },
-                    "lengthMenu": lengthoptions
-                });
-                $(".drilldown" + reportinstance + " .ui-dialog-title").html(args.reportname);
-                $("#page-blocks-learnerscript-viewreport #reporttable_" + args.reportid + "_wrapper div.report_header_showhide").
-                html($('#export_options' + args.reportid).html());
+                    'sProcessing': "<img src='" + M.util.image_url('loading', 'block_learnerscript') + "'>",
+                    'search': "_INPUT_",
+                    'searchPlaceholder': "Search",
+                    'lengthMenu': "_MENU_",
+                },
+                "lengthMenu": lengthoptions
             });
+            $(".drilldown" + reportinstance + " .ui-dialog-title").html(args.reportname);
+            $("#page-blocks-learnerscript-viewreport #reporttable_" + args.reportid + "_wrapper div.report_header_showhide").
+            html($('#export_options' + args.reportid).html());
         },
+
         AddExpressions: function(e, value) {
             $(e.target).on('select2:unselecting', function(e) {
                 $('#fitem_id_' + e.params.args.data.id + '').remove();
@@ -573,7 +561,7 @@ define(['jquery',
                     'action': 'generate_plotgraph',
                     'cols': args.cols,
                     'reporttype': args.reporttype,
-                    'filters': args.filters
+                    'filters': args.filters,
                 });
             }
         }

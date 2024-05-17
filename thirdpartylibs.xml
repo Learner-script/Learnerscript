@@ -1,62 +1,14 @@
 <?xml version="1.0"?>
 <libraries>
     <library>
-        <location>js/highcharts/exporting.js</location>
-        <name>Exporting</name>
-        <description>Highcharts JS exporting module</description>
-        <version>v11.4.0</version>
-        <license>www.highcharts.com/license</license>
-        <repository>https://code.highcharts.com/modules/exporting.js</repository>
+        <location>amd/src/charts/chart.js</location>
+        <name>Chart js</name>
+        <description>Chart JS</description>
+        <version>v4.4.2</version>
+        <license>MIT</license>
+        <repository>https://cdn.jsdelivr.net/npm/chart.js</repository>
         <copyrights>
-            <copyright>2010-2024 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highcharts/highcharts-more.js</location>
-        <name>Highcharts-more</name>
-        <description>Highcharts JS highcharts-more module</description>
-        <version>v11.4.0</version>
-        <license>www.highcharts.com/license</license>
-        <repository>https://code.highcharts.com/highcharts-more.js</repository>
-        <copyrights>
-            <copyright>2009-2024 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highmaps/heatmap.js</location>
-        <name>Heatmap</name>
-        <description>Highmaps JS heatmap module</description>
-        <version>v11.4.0</version>
-        <license>www.highcharts.com/license</license>
-        <repository>https://code.highcharts.com/modules/heatmap.js</repository>
-        <copyrights>
-            <copyright>2009-2024 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highmaps/map.js</location>
-        <name>Highmaps JS</name>
-        <description>Highmaps as a plugin for Highcharts or Highcharts Stock</description>
-        <version>v11.4.0</version>
-        <license>www.highcharts.com/license</license>
-        <repository>https://code.highcharts.com/maps/modules/map.js</repository>
-        <copyrights>
-            <copyright>2011-2024 Torstein Honsi</copyright>
-        </copyrights>
-        <customised/>
-    </library>
-    <library>
-        <location>js/highchart.js</location>
-        <name>highchart</name>
-        <description>Highcharts JS</description>
-        <version>v5.0.12</version>
-        <license>www.highcharts.com/license</license>
-        <repository></repository>
-        <copyrights>
-            <copyright>2009-2016 Torstein Honsi</copyright>
+            <copyright>2014-2024 Chart.js Contributors</copyright>
         </copyrights>
         <customised/>
     </library>

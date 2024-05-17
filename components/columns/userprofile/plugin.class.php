@@ -198,9 +198,11 @@ class plugin_userprofile extends pluginbase {
                 } else {
                     $progress = $row->{$data->column};
                 }
-                $progress = (!empty($progress)) ? $progress : 0;
-                $row->{$data->column} = html_writer::div($progress . '%', "spark-report", ['id' => "spark-report$row->id",
-                'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress', ]);
+                $progress = (!empty($progress)) ? round($progress) : 0;
+                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progress . '%', "progress-bar",
+                ['role' => "progressbar", 'aria-valuenow' => $progress,
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progress . "%"]) .
+                html_writer::end_div();
             break;
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted FROM {user} WHERE id = :id', ['id' => $row->id]);

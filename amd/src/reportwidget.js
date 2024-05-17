@@ -24,8 +24,9 @@ define(['jquery',
         'core/ajax',
         'block_learnerscript/report',
         'block_learnerscript/smartfilter',
-        'core/str'
-    ], function($, Ajax, report, smartfilter, Str) {
+        'core/str',
+        'core/templates'
+    ], function($, Ajax, report, smartfilter, Str, Templates) {
     var reportwidget = {
         /**
          * Creates dashboard widgets for configured widgets of dashboard depends on type
@@ -130,7 +131,7 @@ define(['jquery',
                             data.plot.messages + '</p>');
                         } else {
                             if (data.plot.data.length == 0) {
-                                $(data.plot.container).html("<div class='alert alert-info'>Data Not Available.</div>");
+                                $(data.plot.container).html("<div class='alert alert-info'>" + data.plot.messages + "</div>");
                             } else {
                                 data.plot.reportinstance = reportinstance;
                                 require(['block_learnerscript/report'], function(report) {
@@ -161,7 +162,7 @@ define(['jquery',
                             });
                         } else {
                                 $("#inst" + args.blockinstanceid + " .tiles_information table tr").html("<div " +
-                                "class='alert alert-info'> No Data Available.</div>");
+                                "class='alert alert-info'>" + data.plot.messages + "</div>");
                                 $("#inst" + args.blockinstanceid + " .dashboard_tiles").css('color', '#4B4B4B');
                         }
                         $("#reportloading_" + args.blockinstanceid).css('display', 'none');
@@ -181,8 +182,8 @@ define(['jquery',
             var reportinstance = args.instanceid || args.reportid;
             args.filters = args.filters || smartfilter.FilterData(reportinstance);
             args.columnDefs = '';
-            args.filters['lsfstartdate'] = $('#lsfstartdate' + args.instanceid).val();
-            args.filters['lsfenddate'] = $('#lsfenddate' + args.instanceid).val();
+            args.filters['lsfstartdate'] = $('#lsfstartdate' + args.instanceid).val() || $('#lsfstartdate').val();
+            args.filters['lsfenddate'] = $('#lsfenddate' + args.instanceid).val() || $('#lsfstartdate').val();
             if (typeof args.filters['filter_courses'] == 'undefined') {
                 var filter_courses = $('.report_courses').val();
                 if (filter_courses != 1) {
@@ -191,7 +192,10 @@ define(['jquery',
             }
             if (args.reporttype == 'table') {
             } else {
-                $('.plotgraphcontainer').removeClass('hide').addClass('show');
+                if (typeof args.lsfenddate == 'undefined') {
+                    $('.plotgraphcontainer').removeClass('hide').addClass('show');
+                    $('.ls-report_graph_container').removeClass('hide').addClass('show');
+                }
             }
             if (args.selectreport) {
                 $("#reportcontainer" + reportinstance).attr('data-reporttype', args.singleplot);
@@ -200,7 +204,6 @@ define(['jquery',
             }
 
             args.filters = JSON.stringify(args.filters);
-
             args.action = 'generate_plotgraph';
             $('.download_menu' + reportinstance + ' li a').each(function() {
                 var link = $(this).attr('href');
@@ -253,27 +256,28 @@ define(['jquery',
                 if (reporttype == 'table') {
                     if (typeof (chartdata.data) == 'undefined' && chartdata.emptydata) {
                         if (!$('#reporttable_' + args.reportid).length) {
-                            $("#reportcontainer" + reportinstance).html(chartdata.tdata);
+                            Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
+                                $("#reportcontainer" + reportinstance).html('<p class="alert alert-info">' +
+                                s + '</p>');
+                            });
                         }
                         $(document).ajaxStop(function() {
                             $("#reportloadingimage").remove();
-                        });
-                        args.reportname = chartdata.reportname;
-                        require(['block_learnerscript/report'], function(report) {
-                            report.ReportDatatable(args);
                         });
                     } else {
-                        if (!$('#reporttable_' + args.reportid).length) {
-                            $("#reportcontainer" + reportinstance).html(chartdata.tdata);
-                        }
-                        $(document).ajaxStop(function() {
-                            $("#reportloadingimage").remove();
-                        });
-                        args.columnDefs = chartdata.columnDefs;
-                        args.data = chartdata.data;
-                        args.reportname = chartdata.reportname;
-                        require(['block_learnerscript/report'], function(report) {
-                            report.ReportDatatable(args);
+                        Templates.render('block_learnerscript/reporttable', chartdata.tdata).done(function(html) {
+                            if (!$('#reporttable_' + args.reportid).length) {
+                                $("#reportcontainer" + reportinstance).html(html);
+                            }
+                            $(document).ajaxStop(function() {
+                                $("#reportloadingimage").remove();
+                            });
+                            args.columnDefs = chartdata.columnDefs;
+                            args.data = chartdata.data;
+                            args.reportname = chartdata.reportname;
+                            require(['block_learnerscript/report'], function(report) {
+                                report.ReportDatatable(args);
+                            });
                         });
                     }
                 } else {
@@ -290,10 +294,12 @@ define(['jquery',
                             chartdata.plot.reportinstance = reportinstance;
                             $(".drilldown" + reportinstance + " .ui-dialog-title").html(chartdata.reportname);
                             args.reportname = chartdata.reportname;
+                            $("#plotreportcontainer" + reportinstance).css('height', '500px');
                             require(['block_learnerscript/report'], function(report) {
                                 report.generate_plotgraph(chartdata.plot);
                             });
                         } else {
+                            $("#plotreportcontainer" + reportinstance).css('height', '100px');
                             Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
                                 $(chartdata.plot.container).html('<p class="alert alert-warning">' + s + '</p>');
                             });

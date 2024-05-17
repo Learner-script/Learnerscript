@@ -25,19 +25,19 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . "/blocks/learnerscript/lib.php");
 /** Observer class */
 class block_learnerscript_observer {
+
     /**
      * Store all actions about modules create/update/delete in own table.
      *
      */
     public static function ls_timestats() {
-        global $COURSE, $USER, $DB;
+        global $COURSE, $USER, $DB, $PAGE;
         $reluser = \core\session\manager::is_loggedinas() ? $USER->id : null;
         if ($USER && is_siteadmin($reluser) || $reluser) {
             return true;
         }
-        $pagevariables = get_pagevariables();
-        $activityid = $pagevariables->context->instanceid;
-        if ($pagevariables->context->contextlevel == 70 && $pagevariables->context->instanceid > 0) {
+        $activityid = $PAGE->context->instanceid;
+        if ($PAGE->context->contextlevel == 70 && $PAGE->context->instanceid > 0) {
             $modulename = $DB->get_field_sql("SELECT m.name
             FROM {course_modules} cm
             JOIN {modules} m ON m.id = cm.module
@@ -77,7 +77,7 @@ class block_learnerscript_observer {
                 $insertdata1->timemodified = 0;
                 $DB->insert_record('block_ls_coursetimestats', $insertdata1);
             }
-            if ($pagevariables->context->contextlevel == 70 && $insertdata->instanceid <> 0) {
+            if ($PAGE->context->contextlevel == 70 && $insertdata->instanceid <> 0) {
                 $record = $DB->get_record('block_ls_modtimestats', ['courseid' => $insertdata->courseid,
                                                                         'activityid' => $insertdata->activityid,
                                                                         'instanceid' => $insertdata->instanceid,
@@ -102,15 +102,15 @@ class block_learnerscript_observer {
 
         }
         $instance = 0;
-        if ($pagevariables->context->contextlevel == 70) {
-            $cm = get_coursemodule_from_id('', $pagevariables->context->instanceid);
+        if ($PAGE->context->contextlevel == 70) {
+            $cm = get_coursemodule_from_id('', $PAGE->context->instanceid);
             $instance = $cm->instance;
         }
         $_SESSION['courseid'] = $COURSE->id;
-        $_SESSION['pageurl_timeme'] = parse_url($_SERVER['REQUEST_URI'])['path'];
+        $_SESSION['pageurl_timeme'] = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'])['path'] : '';
         $_SESSION['instanceid'] = $instance;
-        $_SESSION['activityid'] = $pagevariables->context->instanceid;
-        $pagevariables->requires->js_call_amd('block_learnerscript/track', 'timeme');
+        $_SESSION['activityid'] = $PAGE->context->instanceid;
+        $PAGE->requires->js_call_amd('block_learnerscript/track', 'timeme');
         $_COOKIE['time_timeme'] = 0;
         unset($_COOKIE['time_timeme']);
     }

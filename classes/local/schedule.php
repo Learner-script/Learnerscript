@@ -137,7 +137,6 @@ class schedule {
             return $this;
         }
 
-        $this->changed = true;
         $frequency = $schedulereport->frequency;
         $schedule = $schedulereport->schedule;
         $usertz = $this->get_clean_timezone($USER->timezone);
@@ -480,24 +479,19 @@ class schedule {
         }
         switch ($format) {
             case 'ods':
-                $filename = $this->export_ods($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.ods';
                 break;
             case 'xls':
-                $filename = $this->export_xls($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.xls';
                 break;
             case 'csv':
-                $filename = $this->export_csv($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.csv';
                 break;
             case 'pdf':
-                $filename = $this->export_pdf($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.pdf';
                 break;
         }
 
-        $dir = get_config('block_learnerscript', 'exportfilesystempath') . DIRECTORY_SEPARATOR . $user->id;
         $reportfilename = $reportfilepathname;
         return $reportfilename;
     }
@@ -623,215 +617,6 @@ class schedule {
         return $CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $reportid;
     }
 
-    /**
-     * Export report in XLS format
-     *
-     * @param  object $reportclass Export report object
-     * @param  string $filename    Export report name
-     */
-    public function export_xls($reportclass, $filename) {
-        global $CFG;
-        require_once("$CFG->libdir/phpexcel/PHPExcel.php");
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $filename = $filename . '.xls';
-        // Creating a workbook.
-        $workbook = new PHPExcel();
-        $workbook->getActiveSheet()->setTitle(get_string('listofusers', 'block_learnerscript'));
-        $rownumber = 1;
-        $col = 'A';
-        foreach ($table->head as $key => $heading) {
-            $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-            str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                        ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
-            $col++;
-        }
-        // Loop through the result set.
-        $rownumber = 2;
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                $col = 'A';
-                foreach ($row as $key => $item) {
-                    $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-                    str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
-                    $col++;
-                }
-                $rownumber++;
-            }
-        }
-
-        // Freeze pane so that the heading line won't scroll.
-        $workbook->getActiveSheet()->freezePane('A2');
-
-        // Save as an Excel BIFF (xls) file.
-        $objwriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
-
-        $objwriter->save($filename);
-    }
-    /**
-     * Export report in ODS format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $filename    Export report name
-     */
-    public function export_ods($reportclass, $filename = null) {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/lib/odslib.class.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $filename = $filename . '.ods';
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-        $workbook = new MoodleODSWorkbook($filename);
-
-        $myxls = [];
-
-        $myxls[0] = $workbook->add_worksheet('');
-        foreach ($matrix as $ri => $col) {
-            foreach ($col as $ci => $cv) {
-                $myxls[0]->write($ri, $ci, $cv);
-            }
-        }
-        $writer = new MoodleODSWriter($myxls);
-        $contents = $writer->get_file_content();
-        $handle = fopen($filename, 'w');
-        fwrite($handle, $contents);
-        fclose($handle);
-    }
-    /**
-     * Export report in PDF format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $fname       Exprt file name
-     * @return [type]              [description]
-     */
-    public function export_pdf($reportclass, $fname = '') {
-        global $DB, $CFG;
-        require_once($CFG->libdir . '/pdflib.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $fname == '' ? $filename = 'report' : $filename = $fname . '.pdf';
-
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-        $table = "";
-
-        $table .= "<table border=\"1\" cellpadding=\"5\"><thead><tr>";
-        $s = count($matrix);
-        reset($matrix);
-        $firstkey = key($matrix);
-        for ($i = $firstkey; $i < ($firstkey + 1); $i++) {
-            foreach ($matrix[$i] as $col) {
-                $table .= "<td><b>$col</b></td>";
-            }
-        }
-        $table .= "</tr></thead><tbody>";
-        for ($i = ($firstkey + 1); $i < count($matrix); $i++) {
-            $table .= "<tr>";
-            foreach ($matrix[$i] as $col) {
-                $table .= "<td>$col</td>";
-            }
-            $table .= "</tr>";
-        }
-        $table .= "</tbody></table>";
-        $table .= "";
-        $doc = new pdf;
-        $doc->setPrintHeader(false);
-        $doc->setPrintFooter(false);
-        $doc->AddPage();
-
-        $doc->writeHTML($table);
-
-        if ($fname == '') {
-            $doc->Output();
-            exit;
-        } else {
-            $doc->Output($filename, 'F');
-        }
-    }
-    /**
-     * Export report in CSV format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $filename    Export report filename
-     */
-    public function export_csv($reportclass, $filename = '') {
-        global $CFG;
-        require_once($CFG->libdir . '/csvlib.class.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $filename = '' ? $filename = 'report.csv' : $filename . '.csv';
-
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-
-        $csvexport = new csv_export_writer();
-        $csvexport->set_filename($filename);
-
-        foreach ($matrix as $ri => $col) {
-            $csvexport->add_data($col);
-        }
-        if ($filename) {
-            $fp = fopen($filename, "w");
-            fwrite($fp, $csvexport->print_csv_data(true));
-            fclose($fp);
-        } else {
-            $csvexport->download_file();
-            exit;
-        }
-    }
     /**
      * Getting users by using role wise and searching parameter string
      * @param  string   $roleid  List of roleids

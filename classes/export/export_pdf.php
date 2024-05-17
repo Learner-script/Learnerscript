@@ -141,16 +141,15 @@ class export_pdf {
         $doc->setJPEGQuality(75);
 
         $head = get_config('block_learnerscript', 'analytics_color');
-        $header = (new ls)->pdf_reportheader();
-
-        $headerimgpath = get_reportheader_imagepath();
+        $header = $this->pdf_reportheader();
 
         $filename = $reportname->name;
         $doc->writeHTMLCell($w = 0, $h = 10, $x = '10', $y = '10', $header, $border = 0, $ln = 1,
         $fill = 0, $reseth = true, $align = '', $autopadding = true);
         $doc->writeHTMLCell($w = 100, $h = 10, $x = '120', $y = '20', '<h1><b>' . $reportname->name .
         '</b></h1>', $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25', '<h4>Filters</h4>', $border = 0,
+        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25', '<h4>' .
+        get_string('filters', 'block_learnerscript') . '</h4>', $border = 0,
         $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
         $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '30', $finalfilterdata, $border = 0,
         $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
@@ -163,5 +162,24 @@ class export_pdf {
         }
 
         $doc->Output($filename, 'I');
+    }
+
+    /**
+     * PDF Report Export Header
+     * @return string Report Header
+     */
+    public function pdf_reportheader() {
+        $headerimagepath = block_learnerscript_get_reportheader_imagepath();
+        $headerimgpath = "";
+        if (@getimagesize($headerimagepath)) {
+            $headerimgpath = $headerimagepath;
+        }
+        if ($headerimgpath) {
+            $reportlogoimage =
+            '<img src="' . $headerimgpath . '" alt=' . get_string("altreportimage", "block_learnerscript") . ' height="80px">';
+        } else {
+            $reportlogoimage = "";
+        }
+        return $reportlogoimage;
     }
 }
