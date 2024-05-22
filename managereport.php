@@ -24,7 +24,7 @@ use block_learnerscript\form\import_form;
 use block_learnerscript\local\ls as ls;
 
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
-$importurl = optional_param('importurl', '', PARAM_RAW);
+$importurl = optional_param('importurl', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 10, PARAM_INT);
 if (!$course = $DB->get_record("course", ["id" => $courseid])) {
     throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));

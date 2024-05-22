@@ -33,11 +33,6 @@ $rawjson = file_get_contents('php://input');
 
 $requests = json_decode($rawjson, true);
 
-foreach ($requests as $key => $val) {
-    if (strpos($key, 'filter_') !== false) {
-        $_POST[$key] = $val;
-    }
-}
 if (empty($requests['scheduleid'])) {
     $scheduleid = 0;
 } else {
@@ -67,11 +62,6 @@ if (empty($requests['schuserslist'])) {
     $schuserslist = '';
 } else {
     $schuserslist = $requests['schuserslist'];
-}
-if (empty($requests['bullkselectedusers'])) {
-    $bullkselectedusers = '';
-} else {
-    $bullkselectedusers = $requests['bullkselectedusers'];
 }
 if (empty($requests['validdate'])) {
     $validdate = 0;
@@ -201,13 +191,12 @@ if (empty($requests['reportid'])) {
 $action = $requests['action'];
 $reportid = optional_param('reportid', $reportid, PARAM_INT);
 $scheduleid = optional_param('scheduleid', $scheduleid, PARAM_INT);
-$selectedroleid = optional_param('selectedroleid', $selectedroleid, PARAM_RAW);
-$roles = optional_param('roleid', $roles, PARAM_RAW);
+$selectedroleid = optional_param('selectedroleid', $selectedroleid, PARAM_INT);
+$roles = optional_param('roleid', $roles, PARAM_INT);
 $search = optional_param('search', $search, PARAM_TEXT);
 $type = optional_param('type', $type, PARAM_TEXT);
 $schuserslist = optional_param('schuserslist', $schuserslist, PARAM_RAW);
-$bullkselectedusers = optional_param('bullkselectedusers', $bullkselectedusers, PARAM_RAW);
-$expireddate = optional_param('validdate', $validdate, PARAM_RAW);
+$expireddate = optional_param('validdate', $validdate, PARAM_INT);
 $page = optional_param('page', $page, PARAM_INT);
 $start = optional_param('start', $start, PARAM_INT);
 $length = optional_param('length', $length, PARAM_INT);
@@ -219,18 +208,18 @@ $status = optional_param('status', $status, PARAM_TEXT);
 $userid = optional_param('userid', $userid, PARAM_INT);
 $components = optional_param('components', $components, PARAM_RAW);
 $component = optional_param('component', $component, PARAM_RAW);
-$pname = optional_param('pname', $pname, PARAM_RAW);
-$jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_RAW);
+$pname = optional_param('pname', $pname, PARAM_TEXT);
+$jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_TEXT);
 $conditionsdata = optional_param('conditions', $conditionsdata, PARAM_RAW);
 $export = optional_param('export', $export, PARAM_RAW);
 $lsfstartdate = optional_param('lsfstartdate', $lsfstartdate, PARAM_INT);
 $lsfenddate = optional_param('lsfenddate', $lsfenddate, PARAM_INT);
-$cid = optional_param('cid', $cid, PARAM_RAW);
-$reporttype = optional_param('reporttype', $reporttype, PARAM_RAW);
+$cid = optional_param('cid', $cid, PARAM_INT);
+$reporttype = optional_param('reporttype', $reporttype, PARAM_TEXT);
 $categoryid = optional_param('categoryid', $categoryid, PARAM_INT);
-$filters = optional_param('filters', $filters, PARAM_RAW);
+$filters = optional_param('filters', $filters, PARAM_TEXT);
 $filters = json_decode($filters, true);
-$basicparams = optional_param('basicparams', $basicparams, PARAM_RAW);
+$basicparams = optional_param('basicparams', $basicparams, PARAM_TEXT);
 $basicparams = json_decode($basicparams, true);
 $elementsorder = optional_param('elementsorder', $elementsorder, PARAM_RAW);
 $contextlevel = optional_param('contextlevel', $contextlevel, PARAM_INT);

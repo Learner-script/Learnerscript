@@ -42,11 +42,11 @@ $courses = optional_param('filter_courses', $courseid, PARAM_TEXT);
 $cmid = optional_param('cmid', 0, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
-$lsstartdate = optional_param('lsfstartdate', '', PARAM_RAW);
-$lsenddate = optional_param('lsfenddate', '', PARAM_RAW);
-$filters = optional_param('filters', '', PARAM_RAW);
+$lsstartdate = optional_param('lsfstartdate', '', PARAM_INT);
+$lsenddate = optional_param('lsfenddate', '', PARAM_INT);
+$filters = optional_param('filters', '', PARAM_TEXT);
 $filters = json_decode($filters, true);
-$basicparams = optional_param('basicparams', '', PARAM_RAW);
+$basicparams = optional_param('basicparams', '', PARAM_TEXT);
 $basicparams = json_decode($basicparams, true);
 $reportclass = (new block_learnerscript\local\ls)->create_reportclass($reportid, $reportclass);
 

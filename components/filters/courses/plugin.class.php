@@ -100,7 +100,7 @@ class plugin_courses extends pluginbase {
     public function filter_data($selectoption = true, $request = []) {
         $filtercourses = '';
         $fcourses = isset($request['filter_courses']) ? $request['filter_courses'] : 0;
-        $filtercourses = optional_param('filter_courses', $fcourses, PARAM_RAW);
+        $filtercourses = optional_param('filter_courses', $fcourses, PARAM_INT);
         if (empty($this->reportclass->basicparams)) {
             $courseoptions = [get_string('filter_courses', 'block_learnerscript')];
         }
@@ -181,7 +181,7 @@ class plugin_courses extends pluginbase {
         }
         $mform->setType('filter_courses', PARAM_INT);
         $mform->addElement('hidden', 'filter_courses_type', $this->filtertype);
-        $mform->setType('filter_courses_type', PARAM_RAW);
+        $mform->setType('filter_courses_type', PARAM_TEXT);
 
     }
 }

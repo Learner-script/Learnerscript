@@ -76,7 +76,6 @@ class scheduled_reports_form extends moodleform {
             'onchange' => '(function(e){ require("block_learnerscript/schedule").rolewiseusers({reportid: ' . $reportid . ',
                 reportinstance : ' . $reportinstance . '}) })(event);',
             'data-placeholder' => get_string('selectroles', 'block_learnerscript'), ]);
-        $mform->setType('role', PARAM_RAW);
         $mform->addRule('role', get_string('pleaseselectrole', 'block_learnerscript'),
         'required', null, 'client', false, false);
 
@@ -92,7 +91,7 @@ class scheduled_reports_form extends moodleform {
 
         $mform->addElement('hidden', 'schuserslist', $schusersids, ['class' => 'schuserslist',
         'id' => 'schuserslist' . $reportinstance, ]);
-        $mform->setType('schuserslist', PARAM_RAW);
+        $mform->setType('schuserslist', PARAM_TEXT);
         $mform->addElement('select', 'exportformat', get_string('export', 'block_learnerscript'),
         $exportoptions);
 

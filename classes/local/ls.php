@@ -368,7 +368,7 @@ class ls {
     /**
      * Reports data unserialize
      * @param  string $var Variable
-     * @return string|null
+     * @return object|null
      */
     public function cr_unserialize($var) {
         if (!empty($var)) {
@@ -740,12 +740,10 @@ class ls {
                  WHERE u.confirmed = :confirmed AND u.suspended = :suspended AND u.deleted = :deleted $frequencyquery";
         $schereports = $DB->get_records_sql($sql, ['confirmed' => 1, 'suspended' => 0, 'deleted' => 0]);
         foreach ($schereports as $sch => $repo) {
-            $scheduledate = date('Y-m-d H:i:s', $repo->nextschedule);
-            $scheduletime = date('H', $repo->nextschedule);
+            $scheduledate = userdate($repo->nextschedule, '%Y-%m-%d');
+            $scheduletime = userdate($repo->nextschedule, '%H');
             if (($scheduledate == $date) && ($scheduletime == $hour)) {
-                $scheduledreports[] = ['id' => $repo->id, 'reportid' => $repo->reportid, 'frequency' => $repo->frequency,
-                    'nextschedule' => $repo->nextschedule, 'exporttofilesystem' => $repo->exporttofilesystem,
-                    'timemodified' => $repo->timemodified];
+                $scheduledreports[] = $repo;
             }
         }
         return $scheduledreports;
@@ -766,13 +764,13 @@ class ls {
             foreach ($scheduledreports as $scheduled) {
                 switch ($scheduled->exporttofilesystem) {
                     case REPORT_EXPORT_AND_EMAIL:
-                        mtrace(get_string('reportexportemail', 'block_learnerscript', $schedule));
+                        mtrace(get_string('reportexportemail', 'block_learnerscript', $scheduled));
                         break;
                     case REPORT_EXPORT:
-                        mtrace(get_string('reportexport', 'block_learnerscript', $schedule));
+                        mtrace(get_string('reportexport', 'block_learnerscript', $scheduled));
                         break;
                     case REPORT_EMAIL:
-                        mtrace(get_string('reportemail', 'block_learnerscript', $schedule));
+                        mtrace(get_string('reportemail', 'block_learnerscript', $scheduled));
                         break;
                 }
                 $schedule->scheduledreport_send_scheduled_report($scheduled);

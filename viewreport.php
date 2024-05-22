@@ -99,10 +99,14 @@ $urlfilterparams = ['filter_courses' => $paramcourses,
 $urlrequests = array_filter($urlfilterparams);
 foreach ($urlrequests as $key => $val) {
     if (strpos($key, 'filter_') !== false) {
-        $filterrequests[$key] = optional_param($key, $val, PARAM_RAW);
+        if ($key == 'filter_status') {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
+        } else {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
+        }
     }
     if (strpos($key, 'date') !== false) {
-        $datefilterrequests[$key] = optional_param($key, $val, PARAM_RAW);
+        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
     }
 }
 if (!$report = $DB->get_record('block_learnerscript', ['id' => $id])) {

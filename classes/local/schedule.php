@@ -139,7 +139,7 @@ class schedule {
 
         $frequency = $schedulereport->frequency;
         $schedule = $schedulereport->schedule;
-        $usertz = $this->get_clean_timezone($USER->timezone);
+        $usertz = \core_date::normalise_timezone($USER->timezone);
         if (is_null($timestamp)) {
             $datetime = new DateTime('now', new DateTimeZone($usertz));
             $timestamp = strtotime($datetime->format('Y-m-d H:i:s'));
@@ -232,144 +232,6 @@ class schedule {
                 break;
         }
         return $out;
-    }
-
-    /**
-     * gets a list of bad timezones with the most likely proper named location zone
-     * @return array a bad timezone list key=>bad value=>replacement
-     */
-    public function get_bad_timezone_list() {
-        $zones = [];
-        // Unsupported but common abbreviations.
-        $zones['EST'] = 'America/New_York';
-        $zones['EDT'] = 'America/New_York';
-        $zones['EST5EDT'] = 'America/New_York';
-        $zones['CST'] = 'America/Chicago';
-        $zones['CDT'] = 'America/Chicago';
-        $zones['CST6CDT'] = 'America/Chicago';
-        $zones['MST'] = 'America/Denver';
-        $zones['MDT'] = 'America/Denver';
-        $zones['MST7MDT'] = 'America/Denver';
-        $zones['PST'] = 'America/Los_Angeles';
-        $zones['PDT'] = 'America/Los_Angeles';
-        $zones['PST8PDT'] = 'America/Los_Angeles';
-        $zones['HST'] = 'Pacific/Honolulu';
-        $zones['WET'] = 'Europe/London';
-        $zones['GMT'] = 'Europe/London';
-        $zones['EET'] = 'Europe/Kiev';
-        $zones['FET'] = 'Europe/Minsk';
-        $zones['CET'] = 'Europe/Amsterdam';
-
-        // Moodle offset zones.
-        $zones['-13.0'] = 'Pacific/Apia';
-        $zones['-12.5'] = 'Pacific/Apia';
-        $zones['-12.0'] = 'Pacific/Kwajalein';
-        $zones['-11.5'] = 'Pacific/Niue';
-        $zones['-11.0'] = 'Pacific/Midway';
-        $zones['-10.5'] = 'Pacific/Rarotonga';
-        $zones['-10.0'] = 'Pacific/Honolulu';
-        $zones['-9.5'] = 'Pacific/Marquesas';
-        $zones['-9.0'] = 'America/Anchorage';
-        $zones['-8.5'] = 'America/Anchorage';
-        $zones['-8.0'] = 'America/Los_Angeles';
-        $zones['-7.5'] = 'America/Los_Angeles';
-        $zones['-7.0'] = 'America/Denver';
-        $zones['-6.5'] = 'America/Denver';
-        $zones['-6.0'] = 'America/Chicago';
-        $zones['-5.5'] = 'America/Chicago';
-        $zones['-5.0'] = 'America/New_York';
-        $zones['-4.5'] = 'America/Caracas';
-        $zones['-4.0'] = 'America/Santiago';
-        $zones['-3.5'] = 'America/St_Johns';
-        $zones['-3.0'] = 'America/Sao_Paulo';
-        $zones['-2.5'] = 'America/Sao_Paulo';
-        $zones['-2.0'] = 'Atlantic/South_Georgia';
-        $zones['-1.5'] = 'Atlantic/Cape_Verde';
-        $zones['-1.0'] = 'Atlantic/Cape_Verde';
-        $zones['-0.5'] = 'Europe/London';
-        $zones['0.0'] = 'Europe/London';
-        $zones['0.5'] = 'Europe/London';
-        $zones['1.0'] = 'Europe/Amsterdam';
-        $zones['1.5'] = 'Europe/Amsterdam';
-        $zones['2.0'] = 'Europe/Helsinki';
-        $zones['2.5'] = 'Europe/Minsk';
-        $zones['3.0'] = 'Asia/Riyadh';
-        $zones['3.5'] = 'Asia/Tehran';
-        $zones['4.0'] = 'Asia/Dubai';
-        $zones['4.5'] = 'Asia/Kabul';
-        $zones['5.0'] = 'Asia/Karachi';
-        $zones['5.5'] = 'Asia/Kolkata';
-        $zones['6.0'] = 'Asia/Dhaka';
-        $zones['6.5'] = 'Asia/Rangoon';
-        $zones['7.0'] = 'Asia/Bangkok';
-        $zones['7.5'] = 'Asia/Singapore';
-        $zones['8.0'] = 'Australia/Perth';
-        $zones['8.5'] = 'Australia/Perth';
-        $zones['9.0'] = 'Asia/Tokyo';
-        $zones['9.5'] = 'Australia/Adelaide';
-        $zones['10.0'] = 'Australia/Sydney';
-        $zones['10.5'] = 'Australia/Lord_Howe';
-        $zones['11.0'] = 'Pacific/Guadalcanal';
-        $zones['11.5'] = 'Pacific/Norfolk';
-        $zones['12.0'] = 'Pacific/Auckland';
-        $zones['12.5'] = 'Pacific/Auckland';
-        $zones['13.0'] = 'Pacific/Apia';
-        return $zones;
-    }
-
-    /**
-     * Get clean timezone
-     * @todo MDL-5678 Gets a clean timezone attempting to compensate for some Moodle 'special' timezones
-     *       where the returned zone is compatible with PHP DateTime, DateTimeZone etc functions
-     * @param string/float $tz either a location identifier string or, in some Moodle special cases, a number
-     * @return string a clean timezone that can be used safely
-     */
-    public function get_clean_timezone($tz = null) {
-        global $CFG, $DB;
-
-        $cleanzones = DateTimeZone::listIdentifiers();
-        if (empty($tz)) {
-            $tz = \core_date::get_user_timezone();
-
-        }
-
-        // If already a good zone, return.
-        if (in_array($tz, $cleanzones, true)) {
-            return $tz;
-        }
-        // For when all else fails.
-        $default = 'Europe/London';
-        // ...try to handle UTC offsets, and numbers including '99' (server local time).
-        // ...note: some old versions of moodle had GMT offsets stored as floats.
-        if (is_numeric($tz)) {
-            if (intval($tz) == 99) {
-                // Check various config settings to try and resolve to something useful.
-                if (isset($CFG->forcetimezone) && $CFG->forcetimezone != 99) {
-                    $tz = $CFG->forcetimezone;
-                } else if (isset($CFG->timezone) && $CFG->timezone != 99) {
-                    $tz = $CFG->timezone;
-                }
-            }
-            if (intval($tz) == 99) {
-                // No useful CFG settings, try a system call.
-                $tz = date_default_timezone_get();
-            }
-            // Do we have something useful yet?.
-            if (in_array($tz, $cleanzones, true)) {
-                return $tz;
-            }
-            // Check the bad timezone replacement list.
-            if (is_float($tz)) {
-                $tz = number_format($tz, 1);
-            }
-            $badzones = $this->get_bad_timezone_list();
-            // Does this exist in our replacement list?.
-            if (in_array($tz, array_keys($badzones))) {
-                return $badzones[$tz];
-            }
-        }
-        // Everything has failed, set to London.
-        return $default;
     }
 
     /**
@@ -479,19 +341,28 @@ class schedule {
         }
         switch ($format) {
             case 'ods':
+                (new \block_learnerscript\export\export_ods)->export_ods_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.ods';
                 break;
             case 'xls':
+                (new \block_learnerscript\export\export_xls)->export_xls_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.xls';
                 break;
             case 'csv':
+                (new \block_learnerscript\export\export_csv)->export_csv_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.csv';
                 break;
             case 'pdf':
+                (new \block_learnerscript\export\export_pdf)->export_pdf_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.pdf';
                 break;
         }
 
+        get_config('block_learnerscript', 'exportfilesystempath') . DIRECTORY_SEPARATOR . $user->id;
         $reportfilename = $reportfilepathname;
         return $reportfilename;
     }
@@ -745,7 +616,7 @@ class schedule {
         global $DB;
 
         if (!$reportid) {
-            throw new moodle_exception('Missing Report ID.');
+            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
         }
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
@@ -852,7 +723,7 @@ class schedule {
      * Get report roles
      *
      * @param  int $selectedroleid Selected report id
-     * @param  int    $reportid Report ID
+     * @param  int $reportid Report ID
      * @return array
      */
     public function reportroles($selectedroleid = '', $reportid = 0) {

@@ -76,4 +76,49 @@ class export_csv {
         $writer->addRows($datarow);
         $writer->close();
     }
+
+    /**
+     * CSV report export attachment
+     * @param object $reportclass Report data
+     * @param string $filename File name
+     */
+    public function export_csv_attachment($reportclass, $filename = '') {
+        global $CFG;
+        require_once($CFG->libdir . '/csvlib.class.php');
+        $report = $reportclass->finalreport;
+        $table = $report->table;
+        $matrix = [];
+        $filename = '' ? $filename = 'report.csv' : $filename . '.csv';
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $heading) {
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+            }
+        }
+
+        if (!empty($table->data)) {
+            foreach ($table->data as $rkey => $row) {
+                foreach ($row as $key => $item) {
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+                }
+            }
+        }
+
+        $csvexport = new \csv_export_writer();
+        $csvexport->set_filename($filename);
+
+        foreach ($matrix as $ri => $col) {
+            $csvexport->add_data($col);
+        }
+        if ($filename) {
+            $fp = fopen($filename, "w");
+            fwrite($fp, $csvexport->print_csv_data(true));
+            fclose($fp);
+        } else {
+            $csvexport->download_file();
+            exit;
+        }
+    }
 }

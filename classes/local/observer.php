@@ -14,18 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * A Moodle block to create customizable reports.
- *
- * @package   block_learnerscript
- * @copyright 2023 Moodle India Information Solutions Private Limited
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . "/blocks/learnerscript/lib.php");
-/** Observer class */
-class block_learnerscript_observer {
+namespace block_learnerscript\local;
 
+/**
+ * Class observer
+ *
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India Information Solutions Private Limited
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class observer {
     /**
      * Store all actions about modules create/update/delete in own table.
      *
@@ -50,13 +48,13 @@ class block_learnerscript_observer {
             }
         }
         // Used $_SESSION to get loggedin user information to calculate the timespent.
-        $insertdata = new stdClass();
+        $insertdata = new \stdClass();
         $insertdata->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
         $insertdata->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
         $insertdata->instanceid = isset($_SESSION['instanceid']) ? $_SESSION['instanceid'] : 0;
         $insertdata->activityid = isset($_SESSION['activityid']) ? $_SESSION['activityid'] : 0;
         $insertdata->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';
-        $insertdata1 = new stdClass();
+        $insertdata1 = new \stdClass();
         $insertdata1->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
         $insertdata1->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
         $insertdata1->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';

@@ -74,7 +74,7 @@ class plugin_users extends pluginbase {
      */
     public function execute($finalelements, $data) {
 
-        $filterusers = optional_param('filter_users', 0, PARAM_RAW);
+        $filterusers = optional_param('filter_users', 0, PARAM_INT);
         if (!$filterusers) {
             return $finalelements;
         }
@@ -101,7 +101,7 @@ class plugin_users extends pluginbase {
         global $DB;
         $filterusers = '';
         $fusers = isset($request['filter_users']) ? $request['filter_users'] : 0;
-        $filterusers = optional_param('filter_users', $fusers, PARAM_RAW);
+        $filterusers = optional_param('filter_users', $fusers, PARAM_INT);
         if (empty($this->reportclass->basicparams)) {
             $usersoptions = [get_string('filter_user', 'block_learnerscript')];
         }
@@ -174,6 +174,6 @@ class plugin_users extends pluginbase {
         $mform->setType('filter_users', PARAM_INT);
 
         $mform->addElement('hidden', 'filter_users_type', $this->filtertype);
-        $mform->setType('filter_users_type', PARAM_RAW);
+        $mform->setType('filter_users_type', PARAM_TEXT);
     }
 }

@@ -65,14 +65,6 @@ class report_statistics extends reportbase {
         $this->config->debug = (strpos($sql, '%%DEBUG%%') !== false) ? true : false;
         $sessiontimeout = $DB->get_field('config', 'value', ['name' => 'sessiontimeout']);
 
-        // Pass special custom undefined variable as filter.
-        // Security warning !!! can be used for sql injection.
-        // Use %%FILTER_VAR%% in your sql code with caution.
-        $filtervar = optional_param('filtervar', '', PARAM_RAW);
-        if (!empty($filtervar)) {
-            $sql = str_replace('%%FILTER_VAR%%', $filtervar, $sql);
-        }
-
         $sql = str_replace('%%SESSIONTIMEOUT%%', $sessiontimeout, $sql);
         $sql = str_replace('%%USERID%%', $this->userid, $sql);
         $sql = str_replace('%%COURSEID%%', $this->courseid, $sql);

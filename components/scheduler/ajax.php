@@ -32,9 +32,9 @@ $search = optional_param_array('search', [], PARAM_RAW);
 $start = optional_param('start', 0, PARAM_INT);
 $length = optional_param('length', 5, PARAM_INT);
 $courseid = optional_param('courseid', 1, PARAM_INT);
-$schuserslist = optional_param('schuserslist', '', PARAM_RAW);
-$component = optional_param('component', $requests['component'], PARAM_RAW);
-$pname = optional_param('pname', $requests['pname'], PARAM_RAW);
+$schuserslist = optional_param('schuserslist', '', PARAM_TEXT);
+$component = optional_param('component', $requests['component'], PARAM_TEXT);
+$pname = optional_param('pname', $requests['pname'], PARAM_TEXT);
 
 $context = context_system::instance();
 require_login();

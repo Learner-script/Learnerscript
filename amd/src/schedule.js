@@ -108,20 +108,22 @@ define(['jquery',
                 theme: "classic"
             });
             this.SelectRoleUsers();
-            $('#scheduledtimings').dataTable({
-                "processing": true,
-                "serverSide": true,
-                "lengthMenu": [
-                    [5, 10, 25, 50, -1],
-                    [5, 10, 25, 50, "All"]
-                ],
-                "idisplaylength": 5,
-                'ordering': false,
-                "ajax": {
-                    "method": "GET",
-                    "url": M.cfg.wwwroot + "/blocks/learnerscript/components/scheduler/ajax.php",
-                    "data": args
-                }
+            Str.get_string('all','block_learnerscript').then(function(s) {
+                $('#scheduledtimings').dataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [5, 10, 25, 50, -1],
+                        [5, 10, 25, 50, s]
+                    ],
+                    "idisplaylength": 5,
+                    'ordering': false,
+                    "ajax": {
+                        "method": "GET",
+                        "url": M.cfg.wwwroot + "/blocks/learnerscript/components/scheduler/ajax.php",
+                        "data": args
+                    }
+                });
             });
         },
         ViewSchUsersTable: function(args) {

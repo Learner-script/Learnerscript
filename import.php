@@ -21,11 +21,9 @@
  */
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
-use block_learnerscript_license_setting;
 use html_writer;
 
 $import = optional_param('import', 0, PARAM_INT);
-$reset = optional_param('reset', 0, PARAM_INT);
 
 require_login();
 
@@ -118,13 +116,13 @@ if ($reportdashboardblockexists) {
 }
 
 if ($importstatus && !$lsreportconfigstatus) {
-    $pluginsettings = new block_learnerscript_license_setting('block_learnerscript/lsreportconfigimport',
+    $pluginsettings = new block_learnerscript\local\license_setting('block_learnerscript/lsreportconfigimport',
                 'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);
     $pluginsettings->config_write('lsreportconfigimport', 1);
 
     echo html_writer::div('', "", ['id' => 'progressbar']);
     echo '<center style="display:none">' . html_writer::div(html_writer::link(new moodle_url($redirecturl),
-    '<button>Continue</button>'),
+    html_writer::tag('button', get_string('continue', 'block_learnerscript'), [])),
     "", ['id' => 'reportdashboardnav']) . '</center>';
     $usertours = $CFG->dirroot . '/blocks/learnerscript/usertours/';
     $totalusertours = count(glob($usertours . '*.json'));

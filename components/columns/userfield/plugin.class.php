@@ -82,22 +82,7 @@ class plugin_userfield extends pluginbase {
         global $DB, $CFG, $OUTPUT, $USER, $SESSION;
         $context = context_system::instance();
         $row->id = isset($row->userid) ? $row->userid : $row->id;
-        if (strpos($data->column, 'profile_') === 0) {
-            $sql = "SELECT d.*, f.shortname, f.datatype
-                      FROM {user_info_data} d ,{user_info_field} f
-                     WHERE f.id = d.fieldid AND d.userid = ?";
-            if ($profiledata = $DB->get_records_sql($sql, [$row->id])) {
-                foreach ($profiledata as $p) {
-                    if ($p->datatype == 'checkbox') {
-                        $p->data = ($p->data) ? get_string('yes') : get_string('no');
-                    }
-                    if ($p->datatype == 'datetime') {
-                        $p->data = userdate($p->data);
-                    }
-                    $row->{'profile_' . $p->shortname} = $p->data;
-                }
-            }
-        }
+
         $userprofilereport = $DB->get_field('block_learnerscript', 'id', ['type' => 'userprofile'], IGNORE_MULTIPLE);
         $userrecord = $DB->get_record('user', ['id' => $row->id]);
         $userrecord->fullname = html_writer::start_span('userdp_name', []);
@@ -122,89 +107,74 @@ class plugin_userfield extends pluginbase {
             $userrecord->fullname .= html_writer::end_span();
             $userrecord->fullname .= '</sup>';
         }
-        if (isset($userrecord->{$data->column})) {
-            switch ($data->column) {
-                case 'email':
-                    $userrecord->{$data->column} = html_writer::tag('a', $userrecord->{$data->column},
-                    ['href' => 'mailto:'.$userrecord->{$data->column}.'' ]);
+        switch ($data->column) {
+            case 'email':
+                $userrecord->{$data->column} = html_writer::tag('a', $userrecord->{$data->column},
+                ['href' => 'mailto:'.$userrecord->{$data->column}.'' ]);
+            break;
+            case 'firstaccess':
+            case 'lastaccess':
+            case 'currentlogin':
+            case 'timemodified':
+            case 'lastlogin':
+            case 'timecreated':
+                $userrecord->{$data->column} = ($userrecord->{$data->column}) ? userdate($userrecord->{$data->column}) : '--';
                 break;
-                case 'firstaccess':
-                case 'lastaccess':
-                case 'currentlogin':
-                case 'timemodified':
-                case 'lastlogin':
-                case 'timecreated':
-                    $userrecord->{$data->column} = ($userrecord->{$data->column}) ? userdate($userrecord->{$data->column}) : '--';
-                    break;
-                case 'url':
-                case 'description':
-                case 'imagealt':
-                case 'lastnamephonetic':
-                case 'firstnamephonetic':
-                case 'middlename':
-                case 'alternatename':
-                case 'secret':
-                case 'lang':
-                case 'theme':
-                case 'icq':
-                case 'skype':
-                case 'yahoo':
-                case 'aim':
-                case 'msn':
-                case 'phone1':
-                case 'phone2':
-                case 'department':
-                case 'address':
-                case 'institution':
-                case 'idnumber':
-                    if ($userrecord->{$data->column} == null) {
-                        $userrecord->{$data->column} = "--";
-                    } else if ($userrecord->{$data->column}) {
-                        $userrecord->{$data->column} = $userrecord->{$data->column};
-                    } else {
-                        $userrecord->{$data->column} = "--";
-                    }
-                    break;
-                case 'country':
-                    if ($userrecord->{$data->column} == null) {
-                        $userrecord->{$data->column} = "--";
-                    } else if ($userrecord->{$data->column}) {
-                        $userrecord->{$data->column} = get_string(strtoupper($userrecord->{$data->column}), 'countries');
-                    } else {
-                        $userrecord->{$data->column} = "--";
-                    }
-                    break;
-                case 'confirmed':
-                case 'policyagreed':
-                case 'maildigest':
-                case 'ajax':
-                case 'autosubscribe':
-                case 'trackforums':
-                case 'screenreader':
-                case 'emailstop':
-                case 'picture':
-                    $userrecord->{$data->column} = ($userrecord->{$data->column}) ? get_string('yes') : get_string('no');
-                    break;
-                case 'deleted':
-                case 'suspended':
-                    $userrecord->{$data->column} = $userrecord->{$data->column} > 0 ?
-                                                    '<span class="label label-warning">' .  get_string('yes') . '</span>' :
-                                                    '<span class="label label-success">' . get_string('no') . '</span>';
+            case 'url':
+            case 'description':
+            case 'imagealt':
+            case 'lastnamephonetic':
+            case 'firstnamephonetic':
+            case 'middlename':
+            case 'alternatename':
+            case 'secret':
+            case 'lang':
+            case 'theme':
+            case 'icq':
+            case 'skype':
+            case 'yahoo':
+            case 'aim':
+            case 'msn':
+            case 'phone1':
+            case 'phone2':
+            case 'department':
+            case 'address':
+            case 'institution':
+            case 'idnumber':
+                if ($userrecord->{$data->column} == null) {
+                    $userrecord->{$data->column} = "--";
+                } else if ($userrecord->{$data->column}) {
+                    $userrecord->{$data->column} = $userrecord->{$data->column};
+                } else {
+                    $userrecord->{$data->column} = "--";
+                }
                 break;
-            }
-        } else {
-            $columnshortname = str_replace("profile_", "", $data->column);
-            $result = $DB->get_record_sql("SELECT uid.data, uif.datatype
-                                FROM {user_info_data} uid
-                                join {user_info_field} uif on uif.id = uid.fieldid
-                                WHERE uif.shortname = :columnshortname and uid.userid = :userid",
-                                ['columnshortname' => $columnshortname, 'userid' => $row->id]);
-            if ($result->datatype == 'datetime' && $result->data > 0) {
-                $advdata = userdate($result->data, get_string('strftimedaydate', 'core_langconfig'));
-            } else {
-                $advdata = $result->data;
-            }
-            $userrecord->{$data->column} = !empty($advdata) ? $advdata : '--';
+            case 'country':
+                if ($userrecord->{$data->column} == null) {
+                    $userrecord->{$data->column} = "--";
+                } else if ($userrecord->{$data->column}) {
+                    $userrecord->{$data->column} = get_string(strtoupper($userrecord->{$data->column}), 'countries');
+                } else {
+                    $userrecord->{$data->column} = "--";
+                }
+                break;
+            case 'confirmed':
+            case 'policyagreed':
+            case 'maildigest':
+            case 'ajax':
+            case 'autosubscribe':
+            case 'trackforums':
+            case 'screenreader':
+            case 'emailstop':
+            case 'picture':
+                $userrecord->{$data->column} = ($userrecord->{$data->column}) ? get_string('yes') : get_string('no');
+                break;
+            case 'deleted':
+            case 'suspended':
+                $userrecord->{$data->column} = $userrecord->{$data->column} > 0 ?
+                                                '<span class="label label-warning">' .  get_string('yes') . '</span>' :
+                                                '<span class="label label-success">' . get_string('no') . '</span>';
+            break;
         }
         return (isset($userrecord->{$data->column})) ? $userrecord->{$data->column} : '';
     }

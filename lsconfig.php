@@ -100,7 +100,7 @@ if ($import) {
     $lastreportposition = $lsconfigreports['lastreportposition'];
 }
 if ($importstatus && !$lsreportconfigstatus) {
-    $pluginsettings = new block_learnerscript_license_setting('block_learnerscript/lsreportconfigimport',
+    $pluginsettings = new block_learnerscript\local\license_setting('block_learnerscript/lsreportconfigimport',
                 'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);
     $pluginsettings->config_write('lsreportconfigimport', 1);
 }

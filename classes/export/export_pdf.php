@@ -182,4 +182,67 @@ class export_pdf {
         }
         return $reportlogoimage;
     }
+
+    /**
+     * PDF report export attachment
+     * @param object $reportclass Report data
+     * @param string $fname File name
+     */
+    public function export_pdf_attachment($reportclass, $fname = '') {
+        global $CFG;
+        require_once($CFG->libdir . '/pdflib.php');
+        $report = $reportclass->finalreport;
+        $table = $report->table;
+        $matrix = [];
+        $fname == '' ? $filename = 'report' : $filename = $fname . '.pdf';
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $heading) {
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+            }
+        }
+
+        if (!empty($table->data)) {
+            foreach ($table->data as $rkey => $row) {
+                foreach ($row as $key => $item) {
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+                }
+            }
+        }
+        $table = "";
+
+        $table .= "<table border=\"1\" cellpadding=\"5\"><thead><tr>";
+        reset($matrix);
+        $fkey = key($matrix);
+        for ($i = $fkey; $i < ($fkey + 1); $i++) {
+            foreach ($matrix[$i] as $col) {
+                $table .= "<td><b>$col</b></td>";
+            }
+        }
+        $table .= "</tr></thead><tbody>";
+        for ($i = ($fkey + 1); $i < count($matrix); $i++) {
+            $table .= "<tr>";
+            foreach ($matrix[$i] as $col) {
+                $table .= "<td>$col</td>";
+            }
+            $table .= "</tr>";
+        }
+        $table .= "</tbody></table>";
+        $table .= "";
+        $doc = new \pdf;
+        $doc->setPrintHeader(false);
+        $doc->setPrintFooter(false);
+        $doc->AddPage();
+
+        $doc->writeHTML($table);
+
+        if ($fname == '') {
+            $doc->Output();
+            exit;
+        } else {
+            $doc->Output($filename, 'F');
+        }
+    }
 }

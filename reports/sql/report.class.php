@@ -107,14 +107,6 @@ class report_sql extends reportbase {
         // Enable debug mode from SQL query.
         $this->config->debug = (strpos($sql, '%%DEBUG%%') !== false) ? true : false;
 
-        // Pass special custom undefined variable as filter.
-        // Security warning !!! can be used for sql injection.
-        // Use %%FILTER_VAR%% in your sql code with caution.
-        $filtervar = optional_param('filtervar', '', PARAM_RAW);
-        if (!empty($filtervar)) {
-            $sql = str_replace('%%FILTER_VAR%%', $filtervar, $sql);
-        }
-
         $sql = str_replace('%%USERID%%', $this->userid, $sql);
         $sql = str_replace('%%COURSEID%%', $COURSE->id, $sql);
         $sql = str_replace('%%CATEGORYID%%', $COURSE->category, $sql);

@@ -349,147 +349,158 @@ define(['jquery',
          * @return Apply serverside datatable to report table
          */
         ReportDatatable: function(args) {
-            var params = {};
-            var reportinstance = args.instanceid ? args.instanceid : args.reportid;
-            params.filters = args.filters;
-            params.basicparams = args.basicparams || JSON.stringify(smartfilter.BasicparamsData(reportinstance));
-            params.reportid = args.reportid;
-            params.columns = args.columns;
-            //
-            // Pipelining function for DataTables. To be used to the `ajax` option of DataTables
-            //
-            $.fn.dataTable.pipeline = function(opts) {
-                // Configuration options
-                var conf = $.extend({
-                    url: '', // Script url
-                    data: null, // Function or object with parameters to send to the server
-                    method: 'POST' // Ajax HTTP method
-                }, opts);
+            Str.get_strings([{
+                key: 'show',
+                component: 'block_learnerscript'
+            }, {
+                key: 'showall',
+                component: 'block_learnerscript'
+            }, {
+                key: 'search',
+                component: 'block_learnerscript'
+            }]).then(function(s){
+                var params = {};
+                var reportinstance = args.instanceid ? args.instanceid : args.reportid;
+                params.filters = args.filters;
+                params.basicparams = args.basicparams || JSON.stringify(smartfilter.BasicparamsData(reportinstance));
+                params.reportid = args.reportid;
+                params.columns = args.columns;
+                //
+                // Pipelining function for DataTables. To be used to the `ajax` option of DataTables
+                //
+                $.fn.dataTable.pipeline = function(opts) {
+                    // Configuration options
+                    var conf = $.extend({
+                        url: '', // Script url
+                        data: null, // Function or object with parameters to send to the server
+                        method: 'POST' // Ajax HTTP method
+                    }, opts);
 
-                return function(request, drawCallback, settings) {
-                    var ajax = true;
-                    var requestStart = request.start;
-                    var requestLength = request.length;
-                    var json;
-                    var cacheLastJson;
-                    var cacheLower;
-                    if (typeof args.data != 'undefined' && request.draw == 1) {
-                        json = args.data;
-                        json.draw = request.draw; // Update the echo for each response
-                        json.data.splice(0, requestStart);
-                        json.data.splice(requestLength, json.data.length);
-                        drawCallback(json);
-                    } else if (ajax) {
-                        // Need data from the server
-                        request.start = requestStart;
-                        request.length = requestLength;
-                        $.extend(request, conf.data);
+                    return function(request, drawCallback, settings) {
+                        var ajax = true;
+                        var requestStart = request.start;
+                        var requestLength = request.length;
+                        var json;
+                        var cacheLastJson;
+                        var cacheLower;
+                        if (typeof args.data != 'undefined' && request.draw == 1) {
+                            json = args.data;
+                            json.draw = request.draw; // Update the echo for each response
+                            json.data.splice(0, requestStart);
+                            json.data.splice(requestLength, json.data.length);
+                            drawCallback(json);
+                        } else if (ajax) {
+                            // Need data from the server
+                            request.start = requestStart;
+                            request.length = requestLength;
+                            $.extend(request, conf.data);
 
-                        settings.jqXHR = $.ajax({
-                            "type": conf.method,
-                            "url": conf.url,
-                            "data": request,
-                            "dataType": "json",
-                            "cache": false,
-                            "success": function(json) {
-                                drawCallback(json);
-                            }
-                        });
-                    } else {
-                        json = $.extend(true, {}, cacheLastJson);
-                        json.draw = request.draw; // Update the echo for each response
-                        json.data.splice(0, requestStart - cacheLower);
-                        json.data.splice(requestLength, json.data.length);
-                        drawCallback(json);
-                    }
+                            settings.jqXHR = $.ajax({
+                                "type": conf.method,
+                                "url": conf.url,
+                                "data": request,
+                                "dataType": "json",
+                                "cache": false,
+                                "success": function(json) {
+                                    drawCallback(json);
+                                }
+                            });
+                        } else {
+                            json = $.extend(true, {}, cacheLastJson);
+                            json.draw = request.draw; // Update the echo for each response
+                            json.data.splice(0, requestStart - cacheLower);
+                            json.data.splice(requestLength, json.data.length);
+                            drawCallback(json);
+                        }
+                    };
                 };
-            };
-            if (args.reportname == 'Users profile' || args.reportname == 'Course profile') {
-                var lengthoptions = [
-                    [50, 100, -1],
-                    ["Show 50", "Show 100", "Show All"]
-                ];
-            } else {
-                var lengthoptions = [
-                    [10, 25, 50, 100, -1],
-                    ["Show 10", "Show 25", "Show 50", "Show 100", "Show All"]
-                ];
-            }
+                if (args.reportname == 'Users profile' || args.reportname == 'Course profile') {
+                    var lengthoptions = [
+                        [50, 100, -1],
+                        [s[0] + "50", s[0] + "100", s[1]]
+                    ];
+                } else {
+                    var lengthoptions = [
+                        [10, 25, 50, 100, -1],
+                        [s[0] + "10", s[0] + "25", s[0] + "50", s[0] + "100", s[1]]
+                    ];
+                }
 
-            $('#reporttable_' + reportinstance).DataTable({
-                'processing': true,
-                'serverSide': true,
-                'destroy': true,
-                'dom': '<"co_report_header"Bf <"report_header_skew"  <"report_header_skew_content" Bl' +
-                '<"report_header_showhide" >' +
-                '<"report_calculation_showhide" >> > > tr <"co_report_footer"ip>',
-                'ajax': $.fn.dataTable.pipeline({
-                    "type": "POST",
-                    "url": M.cfg.wwwroot + '/blocks/learnerscript/components/datatable/server_processing.php?sesskey=' +
-                    M.cfg.sesskey,
-                    "data": params
-                }),
-                'columnDefs': args.columnDefs,
-                "fnDrawCallback": function() {
-                    helper.DrilldownReport();
-                },
-                "oScroll": {},
-                'responsive': true,
-                "fnInitComplete": function() {
-                    if (args.reportname == 'Users profile' || args.reportname == 'Course profile'
-                        || args.reportname == 'Statistic') {
-                        $("#reporttable_" + reportinstance + "_wrapper .co_report_header").remove();
-                        $("#reporttable_" + reportinstance + "_wrapper .co_report_footer").remove();
-                    }
-
-                    $('.download_menu' + reportinstance + ' li a').each(function() {
-                        var link = $(this).attr('href');
-                        if (typeof args.basicparams != 'undefined') {
-                            var basicparamsdata = JSON.parse(args.basicparams);
-                            $.each(basicparamsdata, function(key, value) {
-                                if (key.indexOf('filter_') == 0) {
-                                    link += '&' + key + '=' + value;
-                                }
-                            });
-                        }
-                        if (typeof (args.filters) != 'undefined') {
-                            var filters = JSON.parse(args.filters);
-                            $.each(filters, function(key, value) {
-                                if (key.indexOf('filter_') == 0) {
-                                    link += '&' + key + '=' + value;
-                                }
-                                if (key.indexOf('lsf') == 0) {
-                                    link += '&' + key + '=' + value;
-                                }
-                            });
-                        }
-                        $(this).attr('href', link);
-                    });
-                },
-                "fnRowCallback": function(nRow) {
-                    $(nRow).children().each(function(index, td) {
-                        $(td).css("word-break", args.columnDefs[index].wrap);
-                        $(td).css("width", args.columnDefs[index].width);
-                    });
-                    return nRow;
-                },
-                "autoWidth": false,
-                'aaSorting': [],
-                'language': {
-                    'paginate': {
-                        'previous': '<',
-                        'next': '>'
+                $('#reporttable_' + reportinstance).DataTable({
+                    'processing': true,
+                    'serverSide': true,
+                    'destroy': true,
+                    'dom': '<"co_report_header"Bf <"report_header_skew"  <"report_header_skew_content" Bl' +
+                    '<"report_header_showhide" >' +
+                    '<"report_calculation_showhide" >> > > tr <"co_report_footer"ip>',
+                    'ajax': $.fn.dataTable.pipeline({
+                        "type": "POST",
+                        "url": M.cfg.wwwroot + '/blocks/learnerscript/components/datatable/server_processing.php?sesskey=' +
+                        M.cfg.sesskey,
+                        "data": params
+                    }),
+                    'columnDefs': args.columnDefs,
+                    "fnDrawCallback": function() {
+                        helper.DrilldownReport();
                     },
-                    'sProcessing': "<img src='" + M.util.image_url('loading', 'block_learnerscript') + "'>",
-                    'search': "_INPUT_",
-                    'searchPlaceholder': "Search",
-                    'lengthMenu': "_MENU_",
-                },
-                "lengthMenu": lengthoptions
+                    "oScroll": {},
+                    'responsive': true,
+                    "fnInitComplete": function() {
+                        if (args.reportname == 'Users profile' || args.reportname == 'Course profile'
+                            || args.reportname == 'Statistic') {
+                            $("#reporttable_" + reportinstance + "_wrapper .co_report_header").remove();
+                            $("#reporttable_" + reportinstance + "_wrapper .co_report_footer").remove();
+                        }
+
+                        $('.download_menu' + reportinstance + ' li a').each(function() {
+                            var link = $(this).attr('href');
+                            if (typeof args.basicparams != 'undefined') {
+                                var basicparamsdata = JSON.parse(args.basicparams);
+                                $.each(basicparamsdata, function(key, value) {
+                                    if (key.indexOf('filter_') == 0) {
+                                        link += '&' + key + '=' + value;
+                                    }
+                                });
+                            }
+                            if (typeof (args.filters) != 'undefined') {
+                                var filters = JSON.parse(args.filters);
+                                $.each(filters, function(key, value) {
+                                    if (key.indexOf('filter_') == 0) {
+                                        link += '&' + key + '=' + value;
+                                    }
+                                    if (key.indexOf('lsf') == 0) {
+                                        link += '&' + key + '=' + value;
+                                    }
+                                });
+                            }
+                            $(this).attr('href', link);
+                        });
+                    },
+                    "fnRowCallback": function(nRow) {
+                        $(nRow).children().each(function(index, td) {
+                            $(td).css("word-break", args.columnDefs[index].wrap);
+                            $(td).css("width", args.columnDefs[index].width);
+                        });
+                        return nRow;
+                    },
+                    "autoWidth": false,
+                    'aaSorting': [],
+                    'language': {
+                        'paginate': {
+                            'previous': '<',
+                            'next': '>'
+                        },
+                        'sProcessing': "<img src='" + M.util.image_url('loading', 'block_learnerscript') + "'>",
+                        'search': "_INPUT_",
+                        'searchPlaceholder': s[2],
+                        'lengthMenu': "_MENU_",
+                    },
+                    "lengthMenu": lengthoptions
+                });
+                $(".drilldown" + reportinstance + " .ui-dialog-title").html(args.reportname);
+                $("#page-blocks-learnerscript-viewreport #reporttable_" + args.reportid + "_wrapper div.report_header_showhide").
+                html($('#export_options' + args.reportid).html());
             });
-            $(".drilldown" + reportinstance + " .ui-dialog-title").html(args.reportname);
-            $("#page-blocks-learnerscript-viewreport #reporttable_" + args.reportid + "_wrapper div.report_header_showhide").
-            html($('#export_options' + args.reportid).html());
         },
 
         AddExpressions: function(e, value) {

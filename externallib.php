@@ -25,7 +25,7 @@ use core_external\external_value;
 use block_learnerscript\local\ls as ls;
 use block_learnerscript\local\reportbase as reportbase;
 use block_learnerscript\local\schedule;
-use block_learnerscript_license_setting as lssetting;
+use block_learnerscript\local\license_setting as lssetting;
 
 /**
  * Learnerscript external functions
@@ -46,8 +46,8 @@ class block_learnerscript_external extends external_api {
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
                 'contextlevel' => new external_value(PARAM_INT, 'contextlevel of role', VALUE_DEFAULT),
                 'page' => new external_value(PARAM_INT, 'Current page number to request', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'reportid' => new external_value(PARAM_RAW, 'Report id of report', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
@@ -120,7 +120,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function rolewiseusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * View Schedule Users parameters description
@@ -131,7 +131,7 @@ class block_learnerscript_external extends external_api {
             [
                 'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
                 'scheduleid' => new external_value(PARAM_INT, 'selected schedule for report', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_RAW, 'list of scheduled users', VALUE_DEFAULT),
+                'schuserslist' => new external_value(PARAM_TEXT, 'list of scheduled users', VALUE_DEFAULT),
             ]
         );
     }
@@ -175,7 +175,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function viewschuserstable_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Schedule Report Form parameters description
@@ -186,7 +186,7 @@ class block_learnerscript_external extends external_api {
             [
                 'reportid' => new external_value(PARAM_INT, 'report id of report', VALUE_DEFAULT),
                 'instance' => new external_value(PARAM_INT, 'Instance', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_RAW, 'List of scheduled users', VALUE_DEFAULT),
+                'schuserslist' => new external_value(PARAM_TEXT, 'List of scheduled users', VALUE_DEFAULT),
             ]
         );
     }
@@ -246,7 +246,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function schreportform_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Generate Plotgraph parameters description
@@ -259,19 +259,19 @@ class block_learnerscript_external extends external_api {
                 'courseid' => new external_value(PARAM_INT, 'course id of course', VALUE_DEFAULT),
                 'cmid' => new external_value(PARAM_INT, 'The course module id for the course', VALUE_DEFAULT),
                 'status' => new external_value(PARAM_TEXT, 'status', VALUE_DEFAULT),
-                'userid' => new external_value(PARAM_RAW, 'user id', VALUE_DEFAULT),
-                'lsfstartdate' => new external_value(PARAM_RAW, 'start date for date filter', VALUE_DEFAULT),
-                'lsfenddate' => new external_value(PARAM_RAW, 'end date for date filter', VALUE_DEFAULT),
-                'reporttype' => new external_value(PARAM_RAW, 'type of report', VALUE_DEFAULT),
-                'action' => new external_value(PARAM_RAW, 'action', VALUE_DEFAULT),
-                'singleplot' => new external_value(PARAM_RAW, 'single plot', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'user id', VALUE_DEFAULT),
+                'lsfstartdate' => new external_value(PARAM_INT, 'start date for date filter', VALUE_DEFAULT),
+                'lsfenddate' => new external_value(PARAM_INT, 'end date for date filter', VALUE_DEFAULT),
+                'reporttype' => new external_value(PARAM_TEXT, 'type of report', VALUE_DEFAULT),
+                'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
+                'singleplot' => new external_value(PARAM_INT, 'single plot', VALUE_DEFAULT),
                 'cols' => new external_value(PARAM_RAW, 'columns', VALUE_DEFAULT),
                 'instanceid' => new external_value(PARAM_RAW, 'id of instance', VALUE_DEFAULT),
-                'container' => new external_value(PARAM_RAW, 'container', VALUE_DEFAULT),
-                'filters' => new external_value(PARAM_RAW, 'applied filters', VALUE_DEFAULT),
-                'basicparams' => new external_value(PARAM_RAW, 'basic params required to generate graph', VALUE_DEFAULT),
+                'container' => new external_value(PARAM_TEXT, 'container', VALUE_DEFAULT),
+                'filters' => new external_value(PARAM_TEXT, 'applied filters', VALUE_DEFAULT),
+                'basicparams' => new external_value(PARAM_TEXT, 'basic params required to generate graph', VALUE_DEFAULT),
                 'columnDefs' => new external_value(PARAM_RAW, 'column definitions', VALUE_DEFAULT),
-                'reportdashboard' => new external_value(PARAM_RAW, 'report dashboard', VALUE_DEFAULT, true),
+                'reportdashboard' => new external_value(PARAM_BOOL, 'report dashboard', VALUE_DEFAULT, true),
             ]
         );
     }
@@ -289,7 +289,7 @@ class block_learnerscript_external extends external_api {
      * @param int $singleplot Singleplot
      * @param array $cols Report columns
      * @param int $instanceid Report instance ID
-     * @param int $container Report container
+     * @param string $container Report container
      * @param string $filters Report filters list
      * @param string $basicparams Mandatory filters list
      * @param array $columndefs Column definations
@@ -308,7 +308,7 @@ class block_learnerscript_external extends external_api {
         'container' => $container, 'filters' => $filters, 'basicparams' => $basicparams,
         'columnDefs' => $columndefs, 'reportdashboard' => $reportdashboard, ]);
 
-        $context = \context_system::instance();
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:reportsaccess', $context, $userid);
 
@@ -528,7 +528,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function frequency_schedule_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Report Object paramerters description
@@ -570,7 +570,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function reportobject_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * [Delete Component description]
@@ -580,10 +580,10 @@ class block_learnerscript_external extends external_api {
         return new external_function_parameters(
             [
                 'reportid' => new external_value(PARAM_INT, 'ReportID', VALUE_DEFAULT),
-                'action' => new external_value(PARAM_TEXT, 'The context id for the course', VALUE_DEFAULT),
-                'comp' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
-                'pname' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
-                'cid' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
+                'action' => new external_value(PARAM_TEXT, 'Action.', VALUE_DEFAULT),
+                'comp' => new external_value(PARAM_TEXT, 'Report component', VALUE_DEFAULT),
+                'pname' => new external_value(PARAM_TEXT, 'Plugin name', VALUE_DEFAULT),
+                'cid' => new external_value(PARAM_INT, 'Component ID', VALUE_DEFAULT),
                 'delete' => new external_value(PARAM_INT, 'Confirm Delete', VALUE_DEFAULT),
             ]
         );
@@ -652,8 +652,8 @@ class block_learnerscript_external extends external_api {
     public static function deletecomponenet_returns() {
         return new external_single_structure(
             [
-                'success' => new external_value(PARAM_RAW, 'success message'),
-                'disabledelete' => new external_value(PARAM_RAW, 'message'),
+                'success' => new external_value(PARAM_BOOL, 'success message'),
+                'disabledelete' => new external_value(PARAM_BOOL, 'message'),
             ]
         );
     }
@@ -679,8 +679,8 @@ class block_learnerscript_external extends external_api {
     }
     /**
      * Report Filter Form
-     * @param int $action Action
-     * @param object $reportid Report ID
+     * @param string $action Action
+     * @param int $reportid Report ID
      * @param int $instance Report instance
      */
     public static function reportfilterform($action, $reportid, $instance) {
@@ -714,7 +714,7 @@ class block_learnerscript_external extends external_api {
             [
                 'total' => new external_value(PARAM_INT, 'Total reports', VALUE_DEFAULT, 0),
                 'current' => new external_value(PARAM_INT, 'Current Report Position', VALUE_DEFAULT, 0),
-                'errorreportspositiondata' => new external_value(PARAM_RAW, 'error report positions', VALUE_DEFAULT, 0),
+                'errorreportspositiondata' => new external_value(PARAM_TEXT, 'error report positions', VALUE_DEFAULT, 0),
                 'lastreportposition' => new external_value(PARAM_INT, 'Last Report Position', VALUE_DEFAULT, 0),
             ]
         );
@@ -723,7 +723,7 @@ class block_learnerscript_external extends external_api {
      * Import Reports description
      * @param int $total Total reports count
      * @param int $current Report position
-     * @param int $errorreportspositiondata Error in report position data
+     * @param string $errorreportspositiondata Error in report position data
      * @param int $lastreportposition Last report position
      */
     public static function importreports($total, $current, $errorreportspositiondata, $lastreportposition = 0) {
@@ -818,7 +818,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function importreports_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
 
     /**
@@ -851,7 +851,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function lsreportconfigimport_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Filter Courses parameters description
@@ -863,11 +863,11 @@ class block_learnerscript_external extends external_api {
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'fiterdata' => new external_value(PARAM_RAW, 'fiterdata', VALUE_DEFAULT),
-                'basicparamdata' => new external_value(PARAM_RAW, 'basicparamdata', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'fiterdata' => new external_value(PARAM_TEXT, 'fiterdata', VALUE_DEFAULT),
+                'basicparamdata' => new external_value(PARAM_TEXT, 'basicparamdata', VALUE_DEFAULT),
                 'reportinstanceid' => new external_value(PARAM_INT, 'reportid', VALUE_DEFAULT),
-                'courses' => new external_value(PARAM_RAW, 'Course id of report', VALUE_DEFAULT),
+                'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
             ]
         );
     }
@@ -927,7 +927,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function filter_courses_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Filter users parameters description
@@ -939,9 +939,9 @@ class block_learnerscript_external extends external_api {
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'fiterdata' => new external_value(PARAM_RAW, 'fiterdata', VALUE_DEFAULT),
-                'basicparamdata' => new external_value(PARAM_RAW, 'basicparamdata', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'fiterdata' => new external_value(PARAM_TEXT, 'fiterdata', VALUE_DEFAULT),
+                'basicparamdata' => new external_value(PARAM_TEXT, 'basicparamdata', VALUE_DEFAULT),
                 'reportinstanceid' => new external_value(PARAM_INT, 'reportinstanceid', VALUE_DEFAULT),
                 'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
             ]
@@ -1005,6 +1005,6 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function filterusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
 }
