@@ -70,9 +70,9 @@ class block_learnerscript_external extends external_api {
     public static function rolewiseusers($roleid, $term, $contextlevel, $page,
     $type, $reportid, $action, $maximumselectionlength, $courses) {
         global $DB, $CFG;
-        $context = context_system::instance(SITEID);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
         $roles = $roleid;
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::rolewiseusers_parameters(), ['roleid' => $roleid, 'term' => $term,
@@ -144,7 +144,7 @@ class block_learnerscript_external extends external_api {
     public static function viewschuserstable($reportid, $scheduleid, $schuserslist) {
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
         self::validate_parameters(self::viewschuserstable_parameters(), ['reportid' => $reportid,
         'scheduleid' => $scheduleid, 'schuserslist' => $schuserslist, ]);
 
@@ -200,7 +200,7 @@ class block_learnerscript_external extends external_api {
         global $CFG, $DB;
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::schreportform_parameters(), ['reportid' => $reportid,
@@ -516,7 +516,7 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
         if (empty($return)) {
             $return = [null => get_string('selectall', 'block_reportdashboard')];
         }
@@ -610,7 +610,7 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
 
         $components = (new ls)->cr_unserialize($report->components);
         $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
@@ -730,7 +730,7 @@ class block_learnerscript_external extends external_api {
         global $CFG, $DB;
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::importreports_parameters(),
@@ -837,7 +837,7 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
+        require_capability('block/learnerscript:managereports', $context);
 
         $pluginsettings = new lssetting('block_learnerscript/lsreportconfigimport',
                     'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);

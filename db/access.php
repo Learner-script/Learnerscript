@@ -43,6 +43,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/my:manageblocks',
     ],
     'block/learnerscript:managereports' => [
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
@@ -50,6 +51,7 @@ $capabilities = [
         ],
     ],
     'block/learnerscript:managesqlreports' => [
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_BLOCK,
         'archetypes' => [
@@ -57,6 +59,7 @@ $capabilities = [
         ],
     ],
     'block/learnerscript:manageownreports' => [
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_BLOCK,
         'archetypes' => [
@@ -64,20 +67,15 @@ $capabilities = [
         ],
     ],
     'block/learnerscript:viewreports' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'manager' => CAP_ALLOW,
         ],
     ],
-    'block/learnerscript:designreport' => [
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-        ],
-    ],
     'block/learnerscript:reportsaccess' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
