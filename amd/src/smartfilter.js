@@ -67,11 +67,11 @@ define(['jquery',
                     reportwidget.CreateDashboardwidget({reporttype: reporttype, container:'#reporttype_'+instanceid,
                                                     reportid:reportid, instanceid:instanceid,reportdashboard:1,
                                                     selectreport: true});
-                });
-                    if($('#reportcontainer'+instanceid).html().length > 0 ){
-                        $('#plotreportcontainer'+instanceid).data('reporttype',reporttype);
-                    }else{
-                        $('#reportcontainer'+instanceid).data('reporttype',reporttype);
+                    });
+                    if ($('#reportcontainer'+instanceid).html().length > 0 ) {
+                        $('#plotreportcontainer'+instanceid).data('reporttype', reporttype);
+                    } else {
+                        $('#reportcontainer'+instanceid).data('reporttype', reporttype);
                     }
                     $('#reportcontenttypes'+instanceid).trigger('click');
                 });
@@ -332,8 +332,6 @@ define(['jquery',
                         }
                     });
                     if (!response.hasOwnProperty(currentuser)) {
-                        // nearelement.select2('destroy').select2({ theme: 'classic' });
-                        // nearelement.select2('val', 0);
                     } else {
                         nearelement.select2('val', "");
                         var basicparamuserlen = nearelement.parents('.basicparamsform').length;

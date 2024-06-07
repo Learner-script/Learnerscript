@@ -99,13 +99,13 @@ class plugin_userfield extends pluginbase {
         $userrecord->fullname .= html_writer::end_span();
         $userfullname = $userrecord->fullname;
         if ($CFG->messaging) {
-            $userrecord->fullname .= "<sup id='communicate'>";
+            $userrecord->fullname .= html_writer::start_tag('sup', ['id' => 'communicate']);
             $userrecord->fullname .= html_writer::start_span('ls icon sendsms',
             ['id' => "sendsms_" . $this->reportinstance . "_" . $row->id,
             'onclick' => '(function(e) {require("block_learnerscript/helper").sendmessage({userid: '.$row->id.',
             reportinstance: ' . $this->reportinstance . '}, \''.$userfullname.'\');e.stopImmediatePropagation(); }) (event)', ]);
             $userrecord->fullname .= html_writer::end_span();
-            $userrecord->fullname .= '</sup>';
+            $userrecord->fullname .= html_writer::end_tag('sup');
         }
         switch ($data->column) {
             case 'email':
@@ -172,8 +172,8 @@ class plugin_userfield extends pluginbase {
             case 'deleted':
             case 'suspended':
                 $userrecord->{$data->column} = $userrecord->{$data->column} > 0 ?
-                                                '<span class="label label-warning">' .  get_string('yes') . '</span>' :
-                                                '<span class="label label-success">' . get_string('no') . '</span>';
+                    html_writer::tag('span', get_string('yes'), ['class' => 'label label-warning']) :
+                    html_writer::tag('span', get_string('no'), ['class' => 'label label-success']);
             break;
         }
         return (isset($userrecord->{$data->column})) ? $userrecord->{$data->column} : '';

@@ -107,5 +107,5 @@ $functions = [
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Filter users',
         'ajax' => true,
-],
+    ],
 ];

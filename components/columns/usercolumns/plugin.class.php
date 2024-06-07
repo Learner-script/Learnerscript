@@ -189,11 +189,23 @@ class plugin_usercolumns extends pluginbase {
                 FROM {user}
                 WHERE id = :id', ['id' => $row->id]);
                 if ($userstatus->suspended) {
-                    $userstaus = '<span class="badge badge-warning">' . get_string('suspended') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('suspended'),
+                        ['class' => 'badge badge-warning']
+                    );
                 } else if ($userstatus->deleted) {
-                    $userstaus = '<span class="badge badge-warning">' . get_string('deleted') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('deleted'),
+                        ['class' => 'badge badge-warning']
+                    );
                 } else {
-                    $userstaus = '<span class="badge badge-success">' . get_string('active') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('active'),
+                        ['class' => 'badge badge-success']
+                    );
                 }
                 $row->{$data->column} = $userstaus;
 

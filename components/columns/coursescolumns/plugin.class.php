@@ -79,7 +79,7 @@ class plugin_coursescolumns extends pluginbase {
         ['type' => 'usercourses', 'name' => 'Learners activity summary'], IGNORE_MULTIPLE);
         $competencyreportid = $DB->get_field('block_learnerscript', 'id',
         ['type' => 'coursecompetency'], IGNORE_MULTIPLE);
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
+        $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         switch ($data->column) {
             case 'progress':
                 if (!isset($row->progress) && isset($data->subquery)) {
@@ -139,7 +139,7 @@ class plugin_coursescolumns extends pluginbase {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $competencyreportid, 'filter_courses' => $row->id,
-                    'filter_status' => get_string('all', 'block_learnerscript')]),
+                    'filter_status' => get_string('all', 'block_learnerscript'), ]),
                     $competencies.$searchicon, ["target" => "_blank"]);
                 }
 
@@ -158,7 +158,7 @@ class plugin_coursescolumns extends pluginbase {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
-                    'filter_status' => get_string('all', 'block_learnerscript')]),
+                    'filter_status' => get_string('all', 'block_learnerscript'), ]),
                     $enrolments.$searchicon, ["target" => "_blank"]);
                 }
 
@@ -178,7 +178,7 @@ class plugin_coursescolumns extends pluginbase {
                     $row->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
-                    'filter_status' => get_string('completed', 'block_learnerscript')]),
+                    'filter_status' => get_string('completed', 'block_learnerscript'), ]),
                     $completed.$searchicon, ["target" => "_blank"]);
                 }
             break;
@@ -247,16 +247,16 @@ class plugin_coursescolumns extends pluginbase {
                 } else {
                     return html_writer::link(new \moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_courses' => $row->id,
-                    'filter_status' => get_string('completed', 'block_learnerscript')]),
+                    'filter_status' => get_string('completed', 'block_learnerscript'), ]),
                     $OUTPUT->pix_icon('views', '', 'block_reportdashboard', ['target' => '_blank']));
                 }
             break;
             case 'status':
                 $coursestatus = $DB->get_field_sql('SELECT visible FROM {course} WHERE id = :rowid', ['rowid' => $row->id]);
                 if ($coursestatus == 1) {
-                    $coursestat = '<span class="label label-success">' . get_string('active') .'</span>';
+                    $coursestat = html_writer::tag('span', get_string('active'), ['class' => 'label label-success']);
                 } else if ($coursestatus == 0) {
-                    $coursestat = '<span class="label label-warning">' . get_string('inactive') .'</span>';
+                    $coursestat = html_writer::tag('span', get_string('inactive'), ['class' => 'label label-warning']);
                 }
                 $row->{$data->column} = $coursestat;
                 break;

@@ -76,6 +76,7 @@ class lsconfig implements renderable, templatable {
 
     /**
      * Learnerscript configuration slide images
+     * @return array
      */
     public function lsconfigslideshowimages() {
         global $CFG;

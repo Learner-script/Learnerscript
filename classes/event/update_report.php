@@ -36,6 +36,7 @@ class update_report extends \core\event\base {
 
     /**
      * Gets the updated report name
+     * @return string
      */
     public static function get_name() {
         return get_string('eventupdate_report', 'block_learnerscript');
@@ -43,6 +44,7 @@ class update_report extends \core\event\base {
 
     /**
      * Gets the updated report description
+     * @return string
      */
     public function get_description() {
         return "The user with id {$this->userid} Updated report with id {$this->objectid}.";
@@ -50,6 +52,7 @@ class update_report extends \core\event\base {
 
     /**
      * Gets the updated report URL
+     * @return string
      */
     public function get_url() {
         return new \moodle_url('/blocks/learnerscript/editreport.php', ['id' => $this->objectid]);

@@ -43,7 +43,7 @@ class querylib {
     public function get_rolecourses($userid, $role, $contextlevel,
     $courseid = SITEID, $concatsql = '', $limitconcat = '', $count = false,
     $check = false, $datefiltersql = '', $menu = false) {
-        GLOBAL $DB, $SESSION;
+        global $DB, $SESSION;
         $params = ['courseid' => $courseid];
         $params['contextlevel'] = isset($SESSION->ls_contextlevel) ? $SESSION->ls_contextlevel : $contextlevel;
         $params['userid'] = $userid;
@@ -162,10 +162,13 @@ class querylib {
                         $courselist = array_intersect($courselist, $rolecourses);
                     }
                     $courseids = implode(',', $courselist);
+                    list($csql, $cparams) = $DB->get_in_or_equal($rolewisecourses, SQL_PARAMS_NAMED);
+                    $cparams['siteid'] = SITEID;
+                    $cparams['visible'] = 1;
+                    $cparams['searchvalue'] = '%' . $searchvalue . '%';
                     $courses = $DB->get_records_select('course', "id > :siteid AND visible=:visible
-                    AND " . $DB->sql_like('fullname', ":searchvalue", false). " AND id IN ($courseids)" . $concatsql,
-                    ['siteid' => SITEID, 'visible' => 1, 'searchvalue' => '%' . $searchvalue . '%'],
-                    '', 'id, fullname', 0, $limitnum);
+                    AND " . $DB->sql_like('fullname', ":searchvalue", false). " AND id $csql" . $concatsql,
+                    $cparams, '', 'id, fullname', 0, $limitnum);
                 } else {
                     $courses = [];
                 }
@@ -234,7 +237,7 @@ class querylib {
         if ($pluginclass->report->type != 'sql') {
             $pluginclass->report->components = isset($pluginclass->report->components) ? $pluginclass->report->components : '';
             $components = (new \block_learnerscript\local\ls)->cr_unserialize($pluginclass->report->components);
-            if (!empty($components['conditions']['elements'])) {
+            if (!empty($components->conditions->elements)) {
                 $conditions = $components['conditions'];
                 $reportclassname = 'block_learnerscript\lsreports\report_' . $pluginclass->report->type;
                 $properties = new \stdClass();
@@ -254,7 +257,7 @@ class querylib {
                 && $filterdata['filter_users_type'] == 'custom') {
                     $courseid = $filterdata['filter_courses'];
                     $role = 'student';
-                    $concatsql1 .= " AND c.id IN ($courseid) ";
+                    $concatsql1 .= " AND c.id = $coureid ";
                 }
                 if (!empty($filterusers) && !$search) {
                     $concatsql .= " AND u.id = $filterusers";

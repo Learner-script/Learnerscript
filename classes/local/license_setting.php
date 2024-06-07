@@ -96,11 +96,11 @@ class license_setting extends \admin_setting_configtext {
             ['title' => get_string('installplugin', 'block_learnerscript')]), "alert alert-notice");
             $disabled = 'disabled';
         }
+
         $return .= format_admin_setting($this, $this->visiblename,
-        html_writer::div(html_writer::tag('input', '', ['type' => "text", 'size' => $this->size,
-        'id' => $this->get_id(), 'name' => "'"
-        . $this->get_full_name() . "'", 'value' => "'" . s($data) . "'" . $disabled, ]), "form-text defaultsnext"),
-        $this->description, true, '', $default, $query);
+            html_writer::div(html_writer::tag('input', '', ['type' => 'text', 'size' => $this->size,
+            'id' => $this->get_id(), 'name' => $this->get_full_name(), 'value' => s($data) . $disabled])),
+            $this->description, true, '', $default, $query);
         return $return;
     }
 }

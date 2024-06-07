@@ -89,7 +89,7 @@ if ($error) {
 $importstatus = false;
 $total = 0;
 $current = 0;
-$errorreportspositiondata = serialize([]);
+$errorreportspositiondata = json_encode([]);
 $lastreportposition = 0;
 if ($import) {
     $lsconfigreports = (new ls)->lsconfigreports();

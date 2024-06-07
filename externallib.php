@@ -310,7 +310,7 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context, $userid);
+        require_capability('block/learnerscript:reportsaccess', $context);
 
         $filters = json_decode($filters, true);
         $basicparams = json_decode($basicparams, true);
@@ -421,20 +421,20 @@ class block_learnerscript_external extends external_api {
             }
         } else {
             if ($report->type != 'statistics') {
-                $seriesvalues = (isset($reportclass->componentdata['plot']['elements'])) ?
-                $reportclass->componentdata['plot']['elements'] : [];
+                $seriesvalues = (isset($reportclass->componentdata->plot->elements)) ?
+                $reportclass->componentdata->plot->elements : [];
                 $i = 0;
                 $reporttitle = get_string('report_' . $report->type, 'block_learnerscript');
                 $return['reportname'] = (new ls)->get_reporttitle($reporttitle, $basicparams);
                 foreach ($seriesvalues as $g) {
-                    if (($reporttype != '' && $g['id'] == $reporttype) || $i == 0) {
+                    if (($reporttype != '' && $g->id == $reporttype) || $i == 0) {
                         $return['plot'] = (new ls)->generate_report_plot($reportclass, $g);
-                        if ($reporttype != '' && $g['id'] == $reporttype) {
+                        if ($reporttype != '' && $g->id == $reporttype) {
                             break;
                         }
                     }
-                    $return['plotoptions'][] = ['id' => $g['id'],
-                    'title' => $g['formdata']->chartname, 'pluginname' => $g['pluginname'], ];
+                    $return['plotoptions'][] = ['id' => $g->id,
+                    'title' => $g->formdata->chartname, 'pluginname' => $g->pluginname, ];
                     $i++;
                 }
             } else {
@@ -573,7 +573,7 @@ class block_learnerscript_external extends external_api {
         return new external_value(PARAM_TEXT, 'data');
     }
     /**
-     * [Delete Component description]
+     * Delete component parameters function
      * @return external_function_parameters
      */
     public static function deletecomponenet_parameters() {
@@ -613,13 +613,13 @@ class block_learnerscript_external extends external_api {
         require_capability('block/learnerscript:managereports', $context);
 
         $components = (new ls)->cr_unserialize($report->components);
-        $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
+        $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
         if (count($elements) == 1 && $report->disabletable == 1) {
             $success['success'] = true;
             $success['disabledelete'] = true;
         } else {
             foreach ($elements as $index => $e) {
-                if ($e['id'] == $cid) {
+                if ($e->id == $cid) {
                     if ($delete) {
                         unset($elements[$index]);
                         break;
@@ -632,7 +632,7 @@ class block_learnerscript_external extends external_api {
                     break;
                 }
             }
-            $components[$comp]['elements'] = $elements;
+            $components->$comp->elements = $elements;
             $report->components = (new ls)->cr_serialize($components);
             try {
                 $DB->update_record('block_learnerscript', $report);
@@ -741,7 +741,7 @@ class block_learnerscript_external extends external_api {
         $learnerscriptreports = glob($path . '*.xml');
         $course = get_course(SITEID);
         if ($lastreportposition > 0) {
-            $errorreportsposition = unserialize($errorreportspositiondata);
+            $errorreportsposition = json_decode($errorreportspositiondata);
             foreach ($learnerscriptreports as $k => $learnerscriptreport) {
                 if ((!empty($errorreportsposition) && in_array($k, $errorreportsposition)) || $k >= $lastreportposition) {
                     $finalreports[$k] = $learnerscriptreport;

@@ -407,10 +407,10 @@ switch ($action) {
         $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
         $properties = new stdClass();
         $reportclass = new $reportclassname($report, $properties);
-        $comp = (array) $ls->cr_unserialize($reportclass->config->components);
+        $comp = (object) $ls->cr_unserialize($reportclass->config->components);
         $components = json_decode($components, true);
-        $comp['columns']['elements'] = $components['columns']['elements'];
-        $comp['filters']['elements'] = $components['filters']['elements'];
+        $comp->columns->elements = $components->columns->elements;
+        $comp->filters->elements = $components->filters->elements;
         $comparray = ['columns', 'filters'];
         foreach ($comparray as $c) {
             foreach ($comp[$c]['elements'] as $k => $d) {
@@ -470,7 +470,6 @@ switch ($action) {
                     $rolecourses = explode(',', $reportclass->rolewisecourses);
                     $courselist = array_intersect($courselist, $rolecourses);
                 }
-                $courseids = implode(',', $courselist);
                 list($coursesql, $params) = $DB->get_in_or_equal($courselist, SQL_PARAMS_NAMED);
                 $params['siteid'] = SITEID;
                 $params['visible'] = 1;
@@ -577,7 +576,7 @@ switch ($action) {
         $properties = new stdClass();
         $reportclass = new $reportclassname($report, $properties);
         $reportclass->create_report();
-        $components = unserialize($reportclass->config->components);
+        $components = json_decode($reportclass->config->components);
 
         $return['columns'] = $components['columns'];
         $uniqueid = random_string(15);
@@ -604,7 +603,7 @@ switch ($action) {
     break;
 }
 
-    $json = json_encode($return, JSON_NUMERIC_CHECK);
+$json = json_encode($return, JSON_NUMERIC_CHECK);
 if ($json) {
     echo $json;
 } else {

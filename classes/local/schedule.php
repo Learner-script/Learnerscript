@@ -589,7 +589,7 @@ class schedule {
             case 'remove':
                 $userslistsql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
                         FROM {user} as u
-                        JOIN {block_ls_schedule} as bcs ON u.id IN (bcs.sendinguserid)
+                        JOIN {block_ls_schedule} as bcs ON u.id = bcs.sendinguserid)
                         WHERE bcs.reportid = :reportid $searchsql  AND u.confirmed = 1
                         AND u.suspended = 0 AND u.deleted = 0 ";
 
@@ -733,7 +733,7 @@ class schedule {
         $reportinstance = (new ls)->cr_get_reportinstance($reportid);
 
         $components = (new ls)->cr_unserialize($reportinstance->components);
-        $permissions = (isset($components['permissions'])) ? $components['permissions'] : [];
+        $permissions = (isset($components->permissions)) ? $components->permissions : '';
         $roles[-1] = 'admin';
         if (!empty($permissions['elements'])) {
             foreach ($permissions['elements'] as $p) {

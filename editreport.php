@@ -165,7 +165,7 @@ if (!empty($report)) {
 
 if (!empty($report)) {
     $components = (new ls)->cr_unserialize($reportclass->config->components);
-    $sqlconfig = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : [];
+    $sqlconfig = (isset($components->customsql->config)) ? $components->customsql->config : new stdClass();
     if (!empty($sqlconfig->querysql)) {
         $report->querysql = $sqlconfig->querysql;
     }
@@ -186,7 +186,7 @@ if ($editform->is_cancelled()) {
         $data->courseid = $courseid;
         $data->visible = 1;
         if ($data->type == 'sql' && !has_capability('block/learnerscript:managesqlreports', $context)) {
-            throw new moodle_exception('nosqlpermissions');
+            throw new moodle_exception('nosqlpermissions', 'block_learnerscript');
         }
         $data->id = (new ls)->add_report($data, $context);
     } else {

@@ -205,7 +205,7 @@ class report_userbadges extends reportbase implements report {
 
     /**
      * Get report data rows
-     * @param  array  $badges [description]
+     * @param  array  $badges Badges
      * @return array
      */
     public function get_rows($badges) {

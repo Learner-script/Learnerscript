@@ -416,14 +416,16 @@ define(['jquery',
                             },
                             open: function() {
                                 $(this).closest(".ui-dialog")
-                                    .find(".ui-dialog-titlebar-close")
-                                    .removeClass("ui-dialog-titlebar-close")
-                                    .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
-                                    var Closebutton = $('.ui-icon-closethick').parent();
+                                .find(".ui-dialog-titlebar-close")
+                                .removeClass("ui-dialog-titlebar-close")
+                                .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>");
+                                var Closebutton = $('.ui-icon-closethick').parent();
+                                Str.get_string('close','block_learnerscript').then(function(s) {
                                     $(Closebutton).attr({
-                                        "title": "Close"
+                                        "title": s
                                     });
-                                Str.get_string('viewmore', 'block_learnerscript').then(function(s) {
+                                });
+                                Str.get_string('viewmore','block_learnerscript').then(function(s) {
                                     $(".drilldown" + reportid).append('<a href=' + args.url +
                                     '><span class="reportdashboard_right">' + s + '</span></a>');
                                 });

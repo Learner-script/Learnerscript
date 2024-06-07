@@ -207,11 +207,23 @@ class plugin_userprofile extends pluginbase {
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted FROM {user} WHERE id = :id', ['id' => $row->id]);
                 if ($userstatus->suspended) {
-                    $userstaus = '<span class="label label-warning">' . get_string('suspended') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('suspended'),
+                        ['class' => 'label label-warning']
+                    );
                 } else if ($userstatus->deleted) {
-                    $userstaus = '<span class="label label-warning">' . get_string('deleted') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('deleted'),
+                        ['class' => 'label label-warning']
+                    );
                 } else {
-                    $userstaus = '<span class="label label-success">' . get_string('active') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('active'),
+                        ['class' => 'label label-success']
+                    );
                 }
                 $row->{$data->column} = $userstaus;
 

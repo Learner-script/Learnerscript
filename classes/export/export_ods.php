@@ -37,6 +37,7 @@ class export_ods {
      * Export data in ODS format.
      * @package block_learnerscript
      * @param object $reportclass
+     * @return mixed
      */
     public function export_report($reportclass) {
         global $CFG;

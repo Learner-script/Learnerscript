@@ -35,7 +35,6 @@ use block_learnerscript\local\schedule;
  * @param  array  $options       File options
  */
 function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
-    global $CFG;
     if ($filearea == 'logo') {
         $itemid = (int) array_shift($args);
 
@@ -212,7 +211,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
  * @param array $args Send emails arguments
  */
 function block_learnerscript_sendreportemail_ajaxform($args) {
-    global $CFG, $DB, $OUTPUT, $PAGE, $USER;
+    global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SESSION;
 
     $args = (object) $args;
     $o = '';

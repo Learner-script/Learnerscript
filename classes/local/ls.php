@@ -121,7 +121,7 @@ class ls {
         $reportproperties = new stdclass();
         $reportclass = new $reportclassname($report->id, $reportproperties);
         $components = self::cr_unserialize($reportclass->config->components);
-        $components['customsql']['config'] = $report;
+        $components->customsql->config = $report;
         $reportclass->config->components = (new ls)->cr_serialize($components);
         $DB->update_record('block_learnerscript', $reportclass->config);
     }
@@ -134,10 +134,10 @@ class ls {
     public function generate_report_plot($reportclass, $graphdata, $blockinstanceid = null) {
         global $CFG;
         $components = (new ls)->cr_unserialize($reportclass->config->components);
-        $seriesvalues = (isset($components['plot']['elements'])) ? $components['plot']['elements'] : [];
+        $seriesvalues = (isset($components->plot->elements)) ? $components->plot->elements : [];
         $highcharts = new graphicalreport();
         if (!empty($seriesvalues)) {
-            switch ($graphdata['pluginname']) {
+            switch ($graphdata->pluginname) {
                 case 'line':
                     return $highcharts->lbchart($reportclass->finalreport->table->data, $graphdata,
                     $reportclass->config, 'spline', $reportclass->finalreport->table->head, $blockinstanceid);
@@ -170,7 +170,7 @@ class ls {
             throw new \moodle_exception(get_string('noreportexists', 'block_learnerscript'));
         }
         $elements = (new ls)->cr_unserialize($report->components);
-        $elements = isset($elements[$component]['elements']) ? $elements[$component]['elements'] : [];
+        $elements = isset($elements->$component->elements) ? $elements->$component->elements : [];
 
         require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/component.class.php');
         $componentclassname = 'component_' . $component;
@@ -180,7 +180,7 @@ class ls {
             $currentplugins = [];
             if ($elements) {
                 foreach ($elements as $e) {
-                    $currentplugins[] = $e['pluginname'];
+                    $currentplugins[] = $e->pluginname;
                 }
             }
             $plugins = get_list_of_plugins('blocks/learnerscript/components/' . $component);
@@ -363,7 +363,7 @@ class ls {
      * @return string
      */
     public function cr_serialize($var) {
-        return serialize((new self)->urlencode_recursive($var));
+        return json_encode((new self)->urlencode_recursive($var));
     }
     /**
      * Reports data unserialize
@@ -372,7 +372,7 @@ class ls {
      */
     public function cr_unserialize($var) {
         if (!empty($var)) {
-            return (new self)->urldecode_recursive(unserialize($var));
+            return (new self)->urldecode_recursive(json_decode($var));
         }
     }
     /**
@@ -423,6 +423,7 @@ class ls {
      * @return array Plugin options
      */
     public function cr_get_export_plugins() {
+        $pluginoptions = [];
         $plugins = get_list_of_plugins('blocks/learnerscript/pix');
         if ($plugins) {
             foreach ($plugins as $p) {
@@ -539,11 +540,11 @@ class ls {
                     $val[0]['#'] = base64_decode(trim($val[0]['#']));
                     // Fix url_encode " and ' when importing SQL queries.
                     $tempcomponents = (new self)->cr_unserialize($val[0]['#']);
-                    if (isset($tempcomponents['customsql'])) {
-                        $tempcomponents['customsql']['config']->querysql = str_replace("\'", "'",
-                        $tempcomponents['customsql']['config']->querysql);
-                        $tempcomponents['customsql']['config']->querysql = str_replace('\"', '"',
-                        $tempcomponents['customsql']['config']->querysql);
+                    if (isset($tempcomponents->customsql)) {
+                        $tempcomponents->customsql->config->querysql = str_replace("\'", "'",
+                        $tempcomponents->customsql->config->querysql);
+                        $tempcomponents->customsql->config->querysql = str_replace('\"', '"',
+                        $tempcomponents->customsql->config->querysql);
                     }
                     $val[0]['#'] = (new self)->cr_serialize($tempcomponents);
 
@@ -674,15 +675,15 @@ class ls {
         $components = (new self)->cr_unserialize($reportcomponents);
 
         $reportcontenttypes = [];
-        if (isset($components['plot'])) {
-            foreach ($components['plot']['elements'] as $key => $value) {
-                if (isset($value['formdata'])) {
+        if (isset($components->plot)) {
+            foreach ($components->plot->elements as $key => $value) {
+                if (isset($value->formdata)) {
                     if ($componentdata) {
-                        $reportcontenttypes[$value['id']] = ucfirst($value['formdata']->chartname);
+                        $reportcontenttypes[$value->id] = ucfirst($value->formdata->chartname);
                     } else {
-                        $reportcontenttypes[] = ['pluginname' => $value['pluginname'],
-                        'chartname' => ucfirst($value['formdata']->chartname), 'chartid' => $value['id'],
-                        'title' => get_string($value['pluginname'], 'block_learnerscript'), ];
+                        $reportcontenttypes[] = ['pluginname' => $value->pluginname,
+                        'chartname' => ucfirst($value->formdata->chartname),
+                        'chartid' => $value->id, 'title' => get_string($value->pluginname, 'block_learnerscript'), ];
                     }
                 }
             }
@@ -798,7 +799,7 @@ class ls {
         require_once($CFG->dirroot.'/blocks/learnerscript/reports/'.$report->type.'/report.class.php');
 
         $elements = (new self)->cr_unserialize($report->components);
-        $elements = isset($elements[$comp]['elements']) ? $elements[$comp]['elements'] : [];
+        $elements = isset($elements->$comp->elements) ? $elements->$comp->elements : [];
 
         require_once($CFG->dirroot.'/blocks/learnerscript/components/'.$comp.'/component.class.php');
         $componentclassname = 'component_'.$comp;
@@ -807,7 +808,7 @@ class ls {
             $currentplugins = [];
             if ($elements) {
                 foreach ($elements as $e) {
-                    $currentplugins[] = $e['pluginname'];
+                    $currentplugins[] = $e->pluginname;
                 }
             }
             $plugins = get_list_of_plugins('blocks/learnerscript/components/'.$comp);
@@ -881,14 +882,14 @@ class ls {
         }
         $reportcomponents = $DB->get_field('block_learnerscript', 'components', ['id' => $reportid]);
         $components = (new ls)->cr_unserialize($reportcomponents);
-        $permissions = (isset($components['permissions'])) ? $components['permissions'] : [];
+        $permissions = (isset($components->permissions)) ? $components->permissions : new stdclass;
 
-        if (empty($permissions['elements'])) {
+        if (empty($permissions->elements)) {
             return false;
         } else {
-            foreach ($permissions['elements'] as $p) {
-                if ($p['pluginname'] == 'roleincourse') {
-                    if ($roleid == $p['formdata']->roleid && $SESSION->ls_contextlevel == $p['formdata']->contextlevel) {
+            foreach ($permissions->elements as $p) {
+                if ($p->pluginname == 'roleincourse') {
+                    if ($roleid == $p->formdata->roleid && $SESSION->ls_contextlevel == $p->formdata->contextlevel) {
                         return true;
                     }
                 }
@@ -927,7 +928,7 @@ class ls {
                 $params['global'] = 1;
                 $params['visible'] = 1;
                 $params['type'] = 'statistics';
-                $reportlist = $DB->get_records_select_menu('block_learnerscript', "global = :globala AND visible = :visible
+                $reportlist = $DB->get_records_select_menu('block_learnerscript', "global = :global AND visible = :visible
                 AND id $ssql AND type = :type", $params, '', 'id, name');
             } else {
                 $params['global'] = 1;
@@ -1073,7 +1074,7 @@ class ls {
         $lsimportlogs = [];
         $lastreport = 0;
         foreach ($lsimportlogs as $lsimportlog) {
-            $lslog = unserialize($lsimportlog);
+            $lslog = json_decode($lsimportlog);
             if ($lslog['status'] == false) {
                 $errorreportsposition[$lslog['position']] = $lslog['position'];
             }
@@ -1110,7 +1111,7 @@ class ls {
                 $importstatus = true;
             }
         }
-        $errorreportspositiondata = serialize($errorreportsposition);
+        $errorreportspositiondata = json_encode($errorreportsposition);
         return compact('importstatus', 'total', 'current', 'errorreportspositiondata',
             'lastreportposition');
     }

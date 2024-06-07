@@ -35,7 +35,7 @@ class reporttable implements renderable, templatable {
      */
     public $reportclass;
     /**
-     * @var $tableproperties
+     * @var array $tableproperties
      */
     public $tableproperties;
     /**
@@ -74,6 +74,7 @@ class reporttable implements renderable, templatable {
      * @var $reporttype
      */
     public $reporttype;
+
     /**
      * Construct
      * @param  array $reportclass Report data

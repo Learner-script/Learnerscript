@@ -67,18 +67,18 @@ class plugin_roleincourse extends pluginbase {
      */
     public function execute($userid, $context, $data) {
         global $DB;
-        $permissions = (isset($this->reportclass->componentdata['permissions']))
-        ? $this->reportclass->componentdata['permissions'] : [];
+        $permissions = (isset($this->reportclass->componentdata->permissions))
+        ? $this->reportclass->componentdata->permissions : [];
         if (!empty($this->role)) {
             $currentroleid = $DB->get_field('role', 'id', ['shortname' => $this->role]);
             $return = [];
-            foreach ($permissions['elements'] as $p) {
+            foreach ($permissions->elements as $p) {
                 $currentroleid = $DB->get_field('role', 'id', ['shortname' => $this->role]);
-                if ($p['pluginname'] == 'roleincourse'
-                && isset($p['formdata']->contextlevel)
-                && $p['formdata']->roleid == $currentroleid) {
-                    $permissionslib = new permissionslib($p['formdata']->contextlevel,
-                    $p['formdata']->roleid, $userid);
+                if ($p->pluginname == 'roleincourse'
+                && isset($p->formdata->contextlevel)
+                && $p->formdata->roleid == $currentroleid) {
+                    $permissionslib = new permissionslib($p->formdata->contextlevel,
+                    $p->formdata->roleid, $userid);
                     if ($permissionslib->has_permission()) {
                             $return[] = true;
                     }

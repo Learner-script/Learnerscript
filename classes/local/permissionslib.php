@@ -245,7 +245,7 @@ class permissionslib {
         $thiscachekey = null;
         if (!empty($requiredcapability)) {
             $requiredcapability = (array)$requiredcapability;
-            $thiscachekey = 'catlist:'. serialize($requiredcapability);
+            $thiscachekey = 'catlist:'. json_encode($requiredcapability);
             if ($baselist !== false && ($thislist = $coursecatcache->get($thiscachekey)) !== false) {
                 $thislist = preg_split('|,|', $thislist, -1, PREG_SPLIT_NO_EMPTY);
             }

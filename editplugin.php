@@ -103,13 +103,13 @@ if (!$cid) {
     }
 } else {
     $components = (new ls)->cr_unserialize($report->components);
-    $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
+    $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
 
     if ($elements) {
         foreach ($elements as $e) {
-            if ($e['id'] == $cid) {
+            if ($e->id == $cid) {
                 $cdata = $e;
-                $plugin = $e['pluginname'];
+                $plugin = $e->pluginname;
                 break;
             }
         }
@@ -128,7 +128,7 @@ if (!$cid) {
                 break;
             }
         }
-        $components[$comp]['elements'] = $elements;
+        $components->$comp->elements = $elements;
         $report->components = (new ls)->cr_serialize($components);
         $DB->update_record('block_learnerscript', $report);
         redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
@@ -160,7 +160,7 @@ if (isset($pluginclass->form) && $pluginclass->form) {
     $editform = new $classname($formurl, compact('comp', 'cid', 'id', 'pluginclass', 'compclass', 'report', 'reportclass'));
 
     if (!empty($cdata)) {
-        $editform->set_data($cdata['formdata']);
+        $editform->set_data($cdata->formdata);
     }
 
     if ($editform->is_cancelled()) {
@@ -176,19 +176,19 @@ if (isset($pluginclass->form) && $pluginclass->form) {
             $data->contextlevel = data_submitted()->contextlevel;
         }
         if (!empty($cdata)) {
-            $cdata['formdata'] = $data;
-            $cdata['summary'] = $pluginclass->summary($data);
+            $cdata->formdata = $data;
+            $cdata->summary = $pluginclass->summary($data);
             $elements = (new ls)->cr_unserialize($report->components);
-            $elements = isset($elements[$comp]['elements']) ? $elements[$comp]['elements'] : [];
+            $elements = isset($elements->$comp->elements) ? $elements->$comp->elements : [];
             if ($elements) {
                 foreach ($elements as $key => $e) {
-                    if ($e['id'] == $cid) {
+                    if ($e->id == $cid) {
                         $elements[$key] = $cdata;
                         break;
                     }
                 }
             }
-            $allelements[$comp]['elements'] = $elements;
+            $allelements->$comp->elements = $elements;
 
             $report->components = (new ls)->cr_serialize($allelements);
             if (!$DB->update_record('block_learnerscript', $report)) {
@@ -202,9 +202,9 @@ if (isset($pluginclass->form) && $pluginclass->form) {
             while (strpos($report->components, $uniqueid) !== false) {
                 $uniqueid = random_string(15);
             }
-            if (isset($allelements['permissions']['elements'])) {
-                foreach ($allelements['permissions']['elements'] as $existpermission) {
-                    if (!array_diff_assoc((array)$existpermission['formdata'], (array)$data)) {
+            if (isset($allelements->permissions->elements)) {
+                foreach ($allelements->permissions->elements as $existpermission) {
+                    if (!array_diff_assoc((array)$existpermission->formdata, (array)$data)) {
                         redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
                         exit;
                     }
@@ -213,8 +213,8 @@ if (isset($pluginclass->form) && $pluginclass->form) {
             $cdata = ['id' => $uniqueid, 'formdata' => $data,
             'pluginname' => $pname, 'pluginfullname' => $pluginclass->fullname,
             'summary' => $pluginclass->summary($data), ];
-            $allelements[$comp]['elements'][] = $cdata;
-            $report->components = (new ls)->cr_serialize($allelements, false);
+            $allelements->$comp->elements[] = $cdata;
+            $report->components = (new ls)->cr_serialize($allelements);
             if (!$DB->update_record('block_learnerscript', $report)) {
                 throw new moodle_exception(get_string('errorsaving', 'block_learnerscript'));
             } else {
@@ -235,7 +235,7 @@ if (isset($pluginclass->form) && $pluginclass->form) {
     'pluginname' => $pname, 'pluginfullname' => $pluginclass->fullname,
     'summary' => $pluginclass->summary(new stdclass), ];
 
-    $allelements[$comp]['elements'][] = $cdata;
+    $allelements->$comp->elements[] = $cdata;
     $report->components = (new ls)->cr_serialize($allelements);
     if (!$DB->update_record('block_learnerscript', $report)) {
         throw new moodle_exception(get_string('errorsaving', 'block_learnerscript'));

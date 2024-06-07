@@ -35,7 +35,7 @@ $delete = optional_param('delete', 0, PARAM_INT);
 $cid = optional_param('cid', '', PARAM_ALPHANUM);
 $comp = optional_param('comp', '', PARAM_ALPHA);
 $pname = optional_param('pname', '', PARAM_ALPHA);
-global $USER, $CFG;
+global $USER, $CFG, $SESSION;
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
@@ -139,9 +139,9 @@ $PAGE->set_pagelayout('report');
 
 if ($delete && confirm_sesskey()) {
     $components = (new block_learnerscript\local\ls)->cr_unserialize($report->components);
-    $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
+    $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
     foreach ($elements as $index => $e) {
-        if ($e['id'] == $cid) {
+        if ($e->id == $cid) {
             if ($delete) {
                 unset($elements[$index]);
                 break;
@@ -153,7 +153,7 @@ if ($delete && confirm_sesskey()) {
             break;
         }
     }
-    $components[$comp]['elements'] = $elements;
+    $components->$comp->elements = $elements;
     $report->components = (new block_learnerscript\local\ls)->cr_serialize($components);
     $DB->update_record('block_learnerscript', $report);
     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $id, 'courseid' => $courseid]));

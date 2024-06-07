@@ -220,8 +220,8 @@ class report_sql extends reportbase {
 
         $components = (new ls)->cr_unserialize($this->config->components);
 
-        $config = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : new stdclass;
-        $reportfilters = (isset($components['filters']['elements'])) ? $components['filters']['elements'] : [];
+        $config = (isset($components->customsql->config)) ? $components->customsql->config : new stdclass;
+        $reportfilters = (isset($components->filters->elements)) ? $components->filters->elements : [];
 
         $sql = '';
 
@@ -242,7 +242,7 @@ class report_sql extends reportbase {
             }
 
             $this->sql = $this->prepare_sql($sql);
-            $columns = (isset($components['columns']['elements'])) ? $components['columns']['elements'] : [];
+            $columns = (isset($components->columns->elements)) ? $components->columns->elements : [];
             $selectedcolumns = [];
             $tablehead = [];
             $tablesize = [];
@@ -250,12 +250,12 @@ class report_sql extends reportbase {
             $tablealign = [];
             $finaltable = [];
             foreach ($columns as $c) {
-                $selectedcolumns[$c['formdata']->column] = $c['formdata']->column;
-                $tablehead[$c['formdata']->column] = $c['formdata']->columname;
+                $selectedcolumns[$c->formdata->column] = $c->formdata->column;
+                $tablehead[$c->formdata->column] = $c->formdata->columname;
 
-                $tablealign[] = $c['formdata']->align;
-                $tablesize[] = $c['formdata']->size;
-                $tablewrap[] = $c['formdata']->wrap;
+                $tablealign[] = $c->formdata->align;
+                $tablesize[] = $c->formdata->size;
+                $tablewrap[] = $c->formdata->wrap;
             }
 
             if ($rs = $this->get_all_elements()) {
@@ -290,8 +290,8 @@ class report_sql extends reportbase {
 
     /**
      * This function creates the SQL reports
-     * @param array $blockinstanceid [description]
-     * @return boolean
+     * @param array $blockinstanceid Instance id
+     * @return bool
      */
     public function create_report($blockinstanceid = null) {
         $this->check_filters_request();

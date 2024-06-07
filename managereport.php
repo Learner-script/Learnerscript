@@ -22,6 +22,7 @@
 require_once("../../config.php");
 use block_learnerscript\form\import_form;
 use block_learnerscript\local\ls as ls;
+global $SESSION;
 
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $importurl = optional_param('importurl', '', PARAM_TEXT);

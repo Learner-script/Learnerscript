@@ -41,8 +41,8 @@ class graphicalreport {
      */
     public function lbchart($data, $series, $name, $type, $head, $containerid = null) {
         $i = 0;
-        $containerid == null ? $containerid = $series['id'] : null;
-        empty($series['formdata']->serieslabel) ? $series['formdata']->serieslabel = $name->name : null;
+        $containerid == null ? $containerid = $series->id : null;
+        empty($series->formdata->serieslabel) ? $series->formdata->serieslabel = $name->name : null;
         $lbchartdata = $this->get_lbchartdata($data, $series, $type, $head, $name);
         $lbchartdata['dataLabels'] = ['enabled' => true];
         $lbchartdata['borderRadius'] = 5;
@@ -50,24 +50,24 @@ class graphicalreport {
             return $lbchartdata;
         } else {
             $yaxistext = null;
-            if ($series['formdata']->calcs) {
-                $yaxistext = get_string($series['formdata']->calcs, 'block_learnerscript');
+            if ($series->formdata->calcs) {
+                $yaxistext = get_string($series->formdata->calcs, 'block_learnerscript');
             }
-            $seriesdatalabels = isset($series['formdata']->datalabels) ? $series['formdata']->datalabels : 0;
+            $seriesdatalabels = isset($series->formdata->datalabels) ? $series->formdata->datalabels : 0;
             $categorylistcategorylist = isset($lbchartdata['categorylist']) ? $lbchartdata['categorylist'] : [];
 
             $container = $type . 'container' . $containerid;
             $options = ['type' => '' . $type . '',
                         'containerid' => '' . $container . '',
-                        'title' => '' . $series['formdata']->chartname . '',
-                        'showlegend' => '' . $series['formdata']->showlegend . '',
-                        'serieslabel' => '' . $series['formdata']->serieslabel . '',
+                        'title' => '' . $series->formdata->chartname . '',
+                        'showlegend' => '' . $series->formdata->showlegend . '',
+                        'serieslabel' => '' . $series->formdata->serieslabel . '',
                         'categorydata' => $categorylistcategorylist,
-                        'id' => $series['id'],
+                        'id' => $series->id,
                         'data' => $lbchartdata['comdata'],
                         'datalabels' => '' . $seriesdatalabels . '',
                         'yaxistext' => $yaxistext,
-                        'ylabel' => $head[$series['formdata']->serieid],
+                        'ylabel' => $head[$series->formdata->serieid],
                     ];
             return $options;
         }
@@ -84,17 +84,17 @@ class graphicalreport {
      * @return array
      */
     public function combination_chart($data, $series, $name, $type, $head, $seriesvalues, $containerid = null) {
-        $containerid == null ? $containerid = $series['id'] : null;
-        empty($series['formdata']->serieslabel) ? $series['formdata']->serieslabel = $name->name : null;
+        $containerid == null ? $containerid = $series->id : null;
+        empty($series->formdata->serieslabel) ? $series->formdata->serieslabel = $name->name : null;
         $yaxistext = null;
         $graphdata = null;
         $i = 0;
-        foreach ($series['formdata']->yaxis_bar as $yaxis) {
+        foreach ($series->formdata->yaxis_bar as $yaxis) {
             if (array_key_exists($yaxis, $head)) {
                 if ($data) {
                     $categorylist = [];
                     foreach ($data as $r) {
-                        if ($r[$series['formdata']->serieid] == '') {
+                        if ($r[$series->formdata->serieid] == '') {
                             continue;
                         }
                         $r[$yaxis] = isset($r[$yaxis]) ? strip_tags($r[$yaxis]) : 0;
@@ -113,9 +113,9 @@ class graphicalreport {
                             $totaltime = $totaltime / 3600;
                             $graphdata[$yaxis][] = ['y' => $totaltime, 'label' => $label];
                         }
-                        $seriesdata[] = $r[$series['formdata']->serieid];
-                        if (empty($series['formdata']->calcs)) {
-                            $categorylist[] = strip_tags($r[$series['formdata']->serieid]);
+                        $seriesdata[] = $r[$series->formdata->serieid];
+                        if (empty($series->formdata->calcs)) {
+                            $categorylist[] = strip_tags($r[$series->formdata->serieid]);
                         } else {
                             $categorylist = [];
                         }
@@ -126,11 +126,11 @@ class graphicalreport {
             }
         }
         $categorylist = [];
-        foreach ($series['formdata']->yaxis_line as $yaxis) {
+        foreach ($series->formdata->yaxis_line as $yaxis) {
             if (array_key_exists($yaxis, $head)) {
                 if ($data) {
                     foreach ($data as $r) {
-                        if ($r[$series['formdata']->serieid] == '') {
+                        if ($r[$series->formdata->serieid] == '') {
                             continue;
                         }
                         $r[$yaxis] = isset($r[$yaxis]) ? strip_tags($r[$yaxis]) : 0;
@@ -149,9 +149,9 @@ class graphicalreport {
                             $totaltime = $totaltime / 3600;
                             $graphdata1[$yaxis][] = ['y' => $totaltime, 'label' => $label];
                         }
-                        $seriesdata[] = $r[$series['formdata']->serieid];
-                        if (empty($series['formdata']->calcs)) {
-                            $categorylist[] = strip_tags($r[$series['formdata']->serieid]);
+                        $seriesdata[] = $r[$series->formdata->serieid];
+                        if (empty($series->formdata->calcs)) {
+                            $categorylist[] = strip_tags($r[$series->formdata->serieid]);
                         } else {
                             $categorylist = [];
                         }
@@ -186,16 +186,16 @@ class graphicalreport {
                 $categorylist = array_slice($categorylist, 0, $a);
             }
         }
-        $headseriesid = isset($head[$series['formdata']->serieid]) ? $head[$series['formdata']->serieid] : null;
+        $headseriesid = isset($head[$series->formdata->serieid]) ? $head[$series->formdata->serieid] : null;
         $options = ['type' => '' . $type . '',
                     'containerid' => '' . $containerid . '',
-                    'title' => '' . $series['formdata']->chartname . '',
-                    'showlegend' => '' . $series['formdata']->showlegend . '',
-                    'serieslabel' => '' . $series['formdata']->serieslabel . '',
+                    'title' => '' . $series->formdata->chartname . '',
+                    'showlegend' => '' . $series->formdata->showlegend . '',
+                    'serieslabel' => '' . $series->formdata->serieslabel . '',
                     'categorydata' => $categorylist,
-                    'id' => $series['id'],
+                    'id' => $series->id,
                     'data' => $comdata,
-                    'datalabels' => '' . $series['formdata']->datalabels . '',
+                    'datalabels' => '' . $series->formdata->datalabels . '',
                     'yaxistext' => $yaxistext,
                     'ylabel' => $headseriesid,
                 ];
@@ -207,7 +207,7 @@ class graphicalreport {
      * @param object $series series of values(X axis and Y axis etc...)
      * @param string  $type
      * @param array  $head
-     * @param object  $report
+     * @param object $report
      * @return array
      */
     public function get_lbchartdata($data, $series, $type, $head, $report) {
@@ -218,12 +218,12 @@ class graphicalreport {
         if (empty($head)) {
             $error[] = get_string('nodataavailable', 'block_learnerscript');
         } else {
-            foreach ($series['formdata']->yaxis as $yaxis) {
+            foreach ($series->formdata->yaxis as $yaxis) {
                 if (array_key_exists($yaxis, $head)) {
                     if ($data) {
                         $categorylist = [];
                         foreach ($data as $r) {
-                            if ($r[$series['formdata']->serieid] == '') {
+                            if ($r[$series->formdata->serieid] == '') {
                                 continue;
                             }
                             if (array_key_exists($yaxis, $r)) {
@@ -248,9 +248,9 @@ class graphicalreport {
                                 $graphdata[$yaxis][] = ['y' => $totaltime, 'label' => $label];
                                 $calcdata[$yaxis][] = $totaltime;
                             }
-                            $seriesdata[] = $r[$series['formdata']->serieid];
-                            if (empty($series['formdata']->calcs)) {
-                                $categorylist[] = strip_tags($r[$series['formdata']->serieid]);
+                            $seriesdata[] = $r[$series->formdata->serieid];
+                            if (empty($series->formdata->calcs)) {
+                                $categorylist[] = strip_tags($r[$series->formdata->serieid]);
                             } else {
                                 $categorylist = [];
                             }

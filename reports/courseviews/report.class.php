@@ -92,7 +92,7 @@ class report_courseviews extends reportbase implements report {
      */
     public function select() {
         $this->sql = "SELECT DISTINCT lsl.userid AS userid, COUNT(lsl.id) AS views";
-        if (in_array('learner', $this->selectedcolumns)) {
+        if (!empty($this->selectedcolumns) && in_array('learner', $this->selectedcolumns)) {
             $this->sql .= ", CONCAT(u.firstname, ' ', u.lastname) AS learner";
         }
     }

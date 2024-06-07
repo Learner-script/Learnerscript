@@ -37,6 +37,7 @@ class export_csv {
      * Export data in csv format.
      * @package block_learnerscript
      * @param object $reportclass
+     * @return mixed
      */
     public function export_report($reportclass) {
         global $CFG;
