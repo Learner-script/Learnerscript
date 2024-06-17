@@ -66,7 +66,7 @@ class license_setting extends \admin_setting_configtext {
      */
     public function output_html($data, $query='') {
         global $CFG, $PAGE;
-        $default = $PAGE->get_defaultsetting();
+        $default = $this->get_defaultsetting();
         $pluginman = \core_plugin_manager::instance();
         $reportdashboardpluginfo = $pluginman->get_plugin_info('block_reportdashboard');
         $reporttilespluginfo = $pluginman->get_plugin_info('block_reporttiles');

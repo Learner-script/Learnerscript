@@ -143,12 +143,12 @@ class ls {
                     $reportclass->config, 'spline', $reportclass->finalreport->table->head, $blockinstanceid);
                 case 'bar':
                     return $highcharts->lbchart($reportclass->finalreport->table->data,
-                    $graphdata, $reportclass->config, 'bar', $blockinstanceid,
-                    $reportclass->finalreport->table->head);
+                    $graphdata, $reportclass->config, 'bar', $reportclass->finalreport->table->head,
+                    $blockinstanceid);
                 case 'column':
                     return $highcharts->lbchart($reportclass->finalreport->table->data,
-                    $graphdata, $reportclass->config, 'column', $blockinstanceid,
-                    $reportclass->finalreport->table->head);
+                    $graphdata, $reportclass->config, 'column', $reportclass->finalreport->table->head,
+                    $blockinstanceid);
                 case 'combination':
                     return $highcharts->combination_chart($reportclass->finalreport->table->data,
                     $graphdata, $reportclass->config, 'combination',
@@ -441,7 +441,7 @@ class ls {
         global $DB;
         $reportconfig = $DB->get_record('block_learnerscript', ['id' => $reportid]);
         if ($reportconfig->export) {
-            $exportoptions = array_filter(explode(', ', $reportconfig->export));
+            $exportoptions = array_filter(explode(',', $reportconfig->export));
         } else {
             $exportoptions = false;
         }
@@ -1510,7 +1510,7 @@ class ls {
             return "00:{$matches[1]}:{$matches[2]}";
         },
         $strtime
-        );;
+        );
         sscanf($strtime, "%d:%d:%d", $hours, $minutes, $seconds);
         $timeseconds = $hours * 3600 + $minutes * 60 + $seconds;
         return $timeseconds;
@@ -1546,28 +1546,32 @@ class ls {
                         WHERE ra.contextid = ctx.id AND ctx.contextlevel = 50 AND c.visible = 1");
 
         foreach ($users as $user) {
-            $timestampdiff = [];
-            foreach ($weekdaysdate as $key => $weekdate) {
-                for ($i = 0; $i <= 7; $i++) {
-                    $currenttime = explode('-', $timings[$i]);
+            $j = 0;
+            $sessionsdata = [];
+            foreach ($timings as $sessiontime) {
+                $timestampdiff = [];
+                for ($i = 0; $i <= count($weekdaysdate) - 1; $i++) {
+                    $currenttime = explode('-', $sessiontime);
                     if (is_numeric($currenttime[0])) {
-                        $starttime = strtotime($weekdate . ' ' . $currenttime[0] . ':00:00');
+                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0] . ':00:00');
                     } else {
-                        $starttime = strtotime($weekdate . ' ' . $currenttime[0]);
+                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0]);
                     }
-                    $endtime = strtotime($weekdate . ' ' . $currenttime[1] . ':00:00');
+                    $endtime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[1] . ':00:00');
                     $accesscount = $DB->get_records_sql("SELECT id FROM {logstore_standard_log} WHERE action = :action
                                 AND userid = :userid AND timecreated BETWEEN :starttime AND :endtime",
                                     ['action' => 'loggedin', 'userid' => $user->id, 'starttime' => $starttime,
                                     'endtime' => $endtime, ]);
-                    $timestampdiff[] = [$key, $i, count($accesscount)];
+                    $timestampdiff[] = count($accesscount);
                 }
+                $sessionsdata[] = ['label' => $timingslist[$j], 'data' => $timestampdiff];
+                $j++;
             }
-            $options = ["type" => "heatmap",
+            $options = ["type" => "radar",
                             "title" => get_string('lmsaccess', 'block_learnerscript'),
                             "xAxis" => $weekdayslist,
                             "yAxis" => $timingslist,
-                            "data" => $timestampdiff,
+                            "data" => $sessionsdata,
                             ];
             $logindata = json_encode($options, JSON_NUMERIC_CHECK);
             $insertdata = new stdClass();

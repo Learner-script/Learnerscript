@@ -192,10 +192,7 @@ define(['jquery',
             }
             if (args.reporttype == 'table') {
             } else {
-                if (typeof args.lsfenddate == 'undefined') {
-                    $('.plotgraphcontainer').removeClass('hide').addClass('show');
-                    $('.ls-report_graph_container').removeClass('hide').addClass('show');
-                }
+                $('.plotgraphcontainer').removeClass('hide').addClass('show');
             }
             if (args.selectreport) {
                 $("#reportcontainer" + reportinstance).attr('data-reporttype', args.singleplot);
@@ -294,7 +291,6 @@ define(['jquery',
                             chartdata.plot.reportinstance = reportinstance;
                             $(".drilldown" + reportinstance + " .ui-dialog-title").html(chartdata.reportname);
                             args.reportname = chartdata.reportname;
-                            $("#plotreportcontainer" + reportinstance).css('height', '500px');
                             require(['block_learnerscript/report'], function(report) {
                                 report.generate_plotgraph(chartdata.plot);
                             });

@@ -364,6 +364,7 @@ class reportbase {
      *
      * @param  object $context    User context
      * @param  int $userid     User ID
+     * @return bool
      */
     public function check_permissions($context, $userid = null) {
         global $CFG, $USER;
@@ -805,7 +806,8 @@ class reportbase {
                     $class->reportfilterparams = $this->params;
                     $rid = isset($r->id) ? $r->id : 0;
                     if (isset($c->formdata->column) &&
-                    (!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns))) {
+                        (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')
+                        || (!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
                         if (!empty($this->params['filter_users'])) {
                             $this->currentuser = $this->params['filter_users'];
                         }
@@ -928,8 +930,8 @@ class reportbase {
             $calcs->align = $tablealign;
             $calcs->wrap = $tablewrap;
             $calcs->summary = $this->config->summary;
-            $calcs->attributes['class'] = (isset($this->componentdata['columns']['config']))
-            ? $this->componentdata['columns']['config']->class : 'generaltable';
+            $calcs->attributes['class'] = (isset($this->componentdata->columns->config))
+            ? $this->componentdata->columns->config->class : 'generaltable';
             $this->finalreport = new stdClass();
             $this->finalreport->calcs = $calcs;
         }

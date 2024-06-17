@@ -131,7 +131,7 @@ class renderer extends plugin_renderer_base {
         'alt' => get_string('closegraph', 'block_learnerscript'),
         'title' => get_string('closegraph', 'block_learnerscript'), 'class' => 'icon', ]),
         'plotgraphcontainer hide pull-right', ['data-reportid' => $report->id]) .
-        html_writer::div($plotreportcontainer, 'ls-report_graph_container hide', ['id' => "plotreportcontainer$reportid"]);
+        html_writer::div($plotreportcontainer, 'ls-report_graph_container', ['id' => "plotreportcontainer$reportid"]);
         if (!empty($plotdata)) {
             echo '';
         }
@@ -183,7 +183,7 @@ class renderer extends plugin_renderer_base {
 
                 switch ($sreport->role) {
                     case 'admin':
-                        $originalrole = get_string('admin', 'block_learnerscript');
+                        $originalrole = get_string('admin');
                         break;
                     case 'manager':
                         $originalrole = get_string('manager', 'role');

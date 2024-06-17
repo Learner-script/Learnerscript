@@ -161,8 +161,7 @@ class querylib {
                         $rolecourses = explode(',', $pluginclass->reportclass->rolewisecourses);
                         $courselist = array_intersect($courselist, $rolecourses);
                     }
-                    $courseids = implode(',', $courselist);
-                    list($csql, $cparams) = $DB->get_in_or_equal($rolewisecourses, SQL_PARAMS_NAMED);
+                    list($csql, $cparams) = $DB->get_in_or_equal($courselist, SQL_PARAMS_NAMED);
                     $cparams['siteid'] = SITEID;
                     $cparams['visible'] = 1;
                     $cparams['searchvalue'] = '%' . $searchvalue . '%';
@@ -257,7 +256,7 @@ class querylib {
                 && $filterdata['filter_users_type'] == 'custom') {
                     $courseid = $filterdata['filter_courses'];
                     $role = 'student';
-                    $concatsql1 .= " AND c.id = $coureid ";
+                    $concatsql1 .= " AND c.id = $courseid ";
                 }
                 if (!empty($filterusers) && !$search) {
                     $concatsql .= " AND u.id = $filterusers";

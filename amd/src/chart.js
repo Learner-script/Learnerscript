@@ -65,35 +65,21 @@ define(['jquery',
                     response = JSON.parse(response);
                     if (response.plot) {
                         if (response.plot.error === true) {
-                            $('.ls-report_graph_container').removeClass('hide').addClass('show');
-                            $('.ls-report_graph_container').css('height', '100px');
                             Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
                                 $('#plotreportcontainer' +
                                 args.instanceid).html("<div class='alert alert-warning'>" + s + "</div>");
-                            });
-                            $(document).ajaxStop(function() {
-                                $("#reportloadingimage").remove();
                             });
                         } else {
                             response.plot.reportid = args.reportid;
                             response.plot.reportinstance = args.reportid;
                             if (response.plot.data && response.plot.data.length > 0) {
-                                $('.ls-report_graph_container').removeClass('hide').addClass('show');
-                                $('#plotreportcontainer' + args.instanceid).css('height', '500px');
                                 require(['block_learnerscript/report'], function(report) {
                                     report.generate_plotgraph(response.plot);
                                 });
-                                $(document).ajaxStop(function() {
-                                    $("#reportloadingimage").remove();
-                                });
                             } else {
-                                $("#plotreportcontainer" + args.instanceid).css('height', '100px');
                                 Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
                                     $('#plotreportcontainer' +
                                     args.instanceid).html("<div class='alert alert-warning'>" + s + "</div>");
-                                });
-                                $(document).ajaxStop(function() {
-                                    $("#reportloadingimage").remove();
                                 });
                             }
                         }
@@ -102,15 +88,11 @@ define(['jquery',
             },
             combinationchart: function(chartdata) {
                 var canvas = document.createElement('canvas');
-
-                canvas.id = "mixedcanvas";
-                canvas.style.width = "100%";
-                canvas.style.height = "500px";
-                canvas.style.zIndex = 8;
-                canvas.style.position = "absolute";
+                var random = Math.random();
+                canvas.id = "mixedcanvas" + random;
                 var body = document.getElementById(chartdata.containerid);
                 body.appendChild(canvas);
-                var cursorlayer = document.getElementById("mixedcanvas").getContext("2d");
+                var cursorlayer = document.getElementById("mixedcanvas" + random).getContext("2d");
                 new Chart(cursorlayer, {
                     type: 'bar',
                     data: {
@@ -119,23 +101,70 @@ define(['jquery',
                     }//end data
                 });
             },
-            lbchart: function(chartdata) {
+            radarchart: function(chartdata) {
                 var canvas = document.createElement('canvas');
-                canvas.id = "canvaschart";
-                canvas.style.width = "100%";
-                canvas.style.height = "500px";
-                canvas.style.zIndex = 8;
-                canvas.style.position = "absolute";
-                var body = document.getElementById(chartdata.containerid);
+                var random = Math.random();
+                canvas.id = "radarcanvas" + random;
+                var body = document.getElementById('testaccess');
                 body.appendChild(canvas);
-                var cursorlayer = document.getElementById("canvaschart").getContext("2d");
+                var cursorlayer = document.getElementById("radarcanvas" + random).getContext("2d");
                 new Chart(cursorlayer, {
-                    type: 'bar',
+                    type: 'radar',
                     data: {
                         datasets: chartdata.data,
-                        labels: chartdata.categorydata
-                    }//end data
+                        labels: chartdata.xAxis
+                    },
+                    options: {
+                        plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        filler: {
+                            propagate: false
+                        },
+                        'samples-filler-analyser': {
+                            target: 'chart-analyser'
+                        }
+                        },
+                        interaction: {
+                            intersect: false
+                        }
+                    }
                 });
+            },
+            lbchart: function(chartdata) {
+                if (chartdata.type == 'bar') {
+                    var canvas = document.createElement('canvas');
+                    var random = Math.random();
+                    canvas.id = "canvaschart" + random;
+                    var body = document.getElementById(chartdata.containerid);
+                    body.appendChild(canvas);
+                    var cursorlayer = document.getElementById("canvaschart" + random).getContext("2d");
+                    new Chart(cursorlayer, {
+                        type: 'bar',
+                        data: {
+                            datasets: chartdata.data,
+                            labels: chartdata.categorydata
+                        },
+                        options: {
+                            indexAxis: 'y',
+                        }
+                    });
+                } else {
+                    var canvas = document.createElement('canvas');
+                    var random = Math.random();
+                    canvas.id = "canvaschart" + random;
+                    var body = document.getElementById(chartdata.containerid);
+                    body.appendChild(canvas);
+                    var cursorlayer = document.getElementById("canvaschart" + random).getContext("2d");
+                    new Chart(cursorlayer, {
+                        type: 'bar',
+                        data: {
+                            datasets: chartdata.data,
+                            labels: chartdata.categorydata
+                        }
+                    });
+                }
             },
         };
         return chart;

@@ -2612,7 +2612,6 @@ body .generaltable tr th {
 #page-blocks-learnerscript-viewreport .ls-report_graph_container {
     width: 100%;
     overflow: auto;
-    height: 500px;
 }
 
 body#page-blocks-learnerscript-viewreport {
@@ -5435,4 +5434,8 @@ body.path-blocks-learnerscript .report_header_skew_content .report_header_showhi
     width: 40px;
     height: 26px;
     margin: 3px 0 0 0;
+}
+body.path-blocks-learnerscript .ls-report_graph_container canvas {
+    position: relative;
+    max-height: 550px;
 }

@@ -62,7 +62,6 @@ define(['jquery',
             $('.plotgraphcontainer').on('click', function() {
                 var reportid = $(this).data('reportid');
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
-                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + reportid).html('');
 
             });
@@ -234,7 +233,6 @@ define(['jquery',
                 $('.filterform')[0].reset();
                 $(".filterform #id_filter_clear").attr('disabled', 'disabled');
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
-                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + args.instanceid).html('');
             });
 
@@ -262,7 +260,6 @@ define(['jquery',
                         instanceid: args.instanceid, reportdashboard: false});
                 }
                 $('.plotgraphcontainer').removeClass('show').addClass('hide');
-                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 $('#plotreportcontainer' + args.instanceid).html('');
             });
             /*
@@ -291,7 +288,6 @@ define(['jquery',
                         });
                 }
             }
-
         },
         CreateReportPage: function(args) {
             var disabletable = 0;
@@ -309,7 +305,6 @@ define(['jquery',
                     'reporttype': args.reporttype
                 });
             } else if (disabletable == 0) {
-                $('.ls-report_graph_container').removeClass('show').addClass('hide');
                 require(['block_learnerscript/reportwidget'], function(reportwidget) {
                     reportwidget.CreateDashboardwidget({
                         reportid: args.reportid,
@@ -336,6 +331,9 @@ define(['jquery',
                 case 'bar':
                 case 'column':
                     chart.lbchart(response);
+                    break;
+                case 'radar':
+                    chart.radarchart(response);
                     break;
                 case 'combination':
                     chart.combinationchart(response);
@@ -572,7 +570,7 @@ define(['jquery',
                     'action': 'generate_plotgraph',
                     'cols': args.cols,
                     'reporttype': args.reporttype,
-                    'filters': args.filters,
+                    'filters': args.filters
                 });
             }
         }

@@ -28,8 +28,8 @@ use block_learnerscript\local\ls;
 class generatereport_test extends \advanced_testcase {
 
     /**
-     * test_addreport
-     * @return void
+     * Test add report
+     *
      */
     public function test_addreport() {
         global $DB, $USER;

@@ -735,12 +735,12 @@ class schedule {
         $components = (new ls)->cr_unserialize($reportinstance->components);
         $permissions = (isset($components->permissions)) ? $components->permissions : '';
         $roles[-1] = 'admin';
-        if (!empty($permissions['elements'])) {
-            foreach ($permissions['elements'] as $p) {
-                if ($p['pluginname'] == 'roleincourse') {
-                    $contextname = context_helper::get_level_name($p['formdata']->contextlevel);
-                    $rolename = $DB->get_field('role', 'shortname', ['id' => $p['formdata']->roleid]);
-                    $roles[$p['formdata']->roleid .'_'. $p['formdata']->contextlevel] = $rolename . ' at '. $contextname .' level';
+        if (!empty($permissions->elements)) {
+            foreach ($permissions->elements as $p) {
+                if ($p->pluginname == 'roleincourse') {
+                    $contextname = context_helper::get_level_name($p->formdata->contextlevel);
+                    $rolename = $DB->get_field('role', 'shortname', ['id' => $p->formdata->roleid]);
+                    $roles[$p->formdata->roleid .'_'. $p->formdata->contextlevel] = $rolename . ' at '. $contextname .' level';
                 }
             }
         } else {
