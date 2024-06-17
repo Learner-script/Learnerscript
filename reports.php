@@ -23,9 +23,10 @@
  */
 require_once("../../config.php");
 use block_learnerscript\local\ls as ls;
+global $SESSION;
 
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
-$importurl = optional_param('importurl', '', PARAM_RAW);
+$importurl = optional_param('importurl', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 10, PARAM_INT);
 if (!$course = $DB->get_record("course", ["id" => $courseid])) {
     throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
@@ -81,7 +82,6 @@ foreach ($rolecontexts as $rc) {
 }
 $SESSION->rolecontextlist = $rcontext;
 
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->jquery_plugin('ui-css');
 if (!empty($SESSION->role)) {
     $statisticsreports = (new block_learnerscript\local\ls)->listofreportsbyrole(false, true, false, true);
@@ -99,7 +99,6 @@ $PAGE->set_heading($title);
 $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 echo html_writer::start_tag('div', ['id' => 'listofreports']);
 echo html_writer::div(html_writer::link(new \moodle_url($CFG->wwwroot .
     '/blocks/reportdashboard/dashboard.php',

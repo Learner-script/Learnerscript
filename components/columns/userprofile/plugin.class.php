@@ -198,18 +198,32 @@ class plugin_userprofile extends pluginbase {
                 } else {
                     $progress = $row->{$data->column};
                 }
-                $progress = (!empty($progress)) ? $progress : 0;
-                $row->{$data->column} = html_writer::div($progress . '%', "spark-report", ['id' => "spark-report$row->id",
-                'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress', ]);
+                $progress = (!empty($progress)) ? round($progress) : 0;
+                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progress . '%', "progress-bar",
+                ['role' => "progressbar", 'aria-valuenow' => $progress,
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progress . "%"]) .
+                html_writer::end_div();
             break;
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted FROM {user} WHERE id = :id', ['id' => $row->id]);
                 if ($userstatus->suspended) {
-                    $userstaus = '<span class="label label-warning">' . get_string('suspended') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('suspended'),
+                        ['class' => 'label label-warning']
+                    );
                 } else if ($userstatus->deleted) {
-                    $userstaus = '<span class="label label-warning">' . get_string('deleted') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('deleted'),
+                        ['class' => 'label label-warning']
+                    );
                 } else {
-                    $userstaus = '<span class="label label-success">' . get_string('active') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('active'),
+                        ['class' => 'label label-success']
+                    );
                 }
                 $row->{$data->column} = $userstaus;
 

@@ -23,7 +23,7 @@ defined('MOODLE_INTERNAL') || die();
 $observers  = [
     [
         'eventname'   => '*',
-        'callback'    => 'block_learnerscript_observer::ls_timestats',
+        'callback'    => '\block_learnerscript\local\observer::ls_timestats',
         'internal'    => 1,
         'priority'    => 1001,
     ],

@@ -65,14 +65,6 @@ class report_statistics extends reportbase {
         $this->config->debug = (strpos($sql, '%%DEBUG%%') !== false) ? true : false;
         $sessiontimeout = $DB->get_field('config', 'value', ['name' => 'sessiontimeout']);
 
-        // Pass special custom undefined variable as filter.
-        // Security warning !!! can be used for sql injection.
-        // Use %%FILTER_VAR%% in your sql code with caution.
-        $filtervar = optional_param('filtervar', '', PARAM_RAW);
-        if (!empty($filtervar)) {
-            $sql = str_replace('%%FILTER_VAR%%', $filtervar, $sql);
-        }
-
         $sql = str_replace('%%SESSIONTIMEOUT%%', $sessiontimeout, $sql);
         $sql = str_replace('%%USERID%%', $this->userid, $sql);
         $sql = str_replace('%%COURSEID%%', $this->courseid, $sql);
@@ -172,7 +164,8 @@ class report_statistics extends reportbase {
      * @param int $blockinstanceid Block instance id
      * @param int $start Report data start value
      * @param int $length Length of the report
-     * @param string $search [description]
+     * @param string $search Search value
+     * @return bool
      */
     public function create_report($blockinstanceid = null, $start = 0, $length = -1, $search = '') {
         global $CFG, $PAGE;
@@ -180,7 +173,7 @@ class report_statistics extends reportbase {
         $PAGE->requires->jquery_plugin('ui-css');
         $components = (new ls)->cr_unserialize($this->config->components);
 
-        $filters = (isset($components['filters']['elements'])) ? $components['filters']['elements'] : [];
+        $filters = (isset($components->filters->elements)) ? $components->filters->elements : [];
 
         $tablehead = [];
         $finalcalcs = [];
@@ -188,7 +181,7 @@ class report_statistics extends reportbase {
         $tablehead = [];
 
         $components = (new ls)->cr_unserialize($this->config->components);
-        $config = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : new stdclass;
+        $config = (isset($components->customsql->config)) ? $components->customsql->config : new stdclass;
         $totalrecords = 0;
 
         $sql = '';

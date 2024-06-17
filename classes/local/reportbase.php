@@ -40,12 +40,12 @@ class reportbase {
     public $id = 0;
 
     /**
-     * @var array $components Report components
+     * @var object $components Report components
      */
     public $components = [];
 
     /**
-     * @var array $finalreport Final report data
+     * @var object $finalreport Final report data
      */
     public $finalreport;
 
@@ -85,7 +85,7 @@ class reportbase {
     public $sql = '';
 
     /**
-     * @var boolean $designpage Design page
+     * @var bool $designpage Design page
      */
     public $designpage = true;
 
@@ -105,7 +105,7 @@ class reportbase {
     public $sqlorder;
 
     /**
-     * @var boolean $exports
+     * @var bool $exports
      */
     public $exports = true;
 
@@ -225,7 +225,7 @@ class reportbase {
     public $rolewisecourses = '';
 
     /**
-     * @var array $componentdata
+     * @var object $componentdata
      */
     public $componentdata;
 
@@ -364,6 +364,7 @@ class reportbase {
      *
      * @param  object $context    User context
      * @param  int $userid     User ID
+     * @return bool
      */
     public function check_permissions($context, $userid = null) {
         global $CFG, $USER;
@@ -382,20 +383,20 @@ class reportbase {
         if (empty($this->config->visible)) {
             return false;
         }
-        $permissions = (isset($this->componentdata['permissions'])) ? $this->componentdata['permissions'] : [];
-        if (empty($permissions['elements'])) {
+        $permissions = (isset($this->componentdata->permissions)) ? $this->componentdata->permissions : [];
+        if (empty($permissions->elements)) {
             return has_capability('block/learnerscript:viewreports', $context, $userid);
         } else {
             $i = 1;
             $cond = [];
-            foreach ($permissions['elements'] as $p) {
+            foreach ($permissions->elements as $p) {
                 require_once($CFG->dirroot . '/blocks/learnerscript/components/permissions/' .
-                    $p['pluginname'] . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_' . $p['pluginname'];
+                    $p->pluginname . '/plugin.class.php');
+                $classname = 'block_learnerscript\lsreports\plugin_' . $p->pluginname;
                 $class = new $classname($this->config);
                 $class->role = $this->role;
                 $class->userroles = isset($this->userroles) ? $this->userroles : '';
-                $cond[$i] = $class->execute($userid, $context, $p['formdata']);
+                $cond[$i] = $class->execute($userid, $context, $p->formdata);
                 $i++;
             }
             if (count($cond) == 1) {
@@ -403,11 +404,11 @@ class reportbase {
             } else {
                 $m = new EvalMath;
                 $orig = $dest = [];
-                if (isset($permissions['config']) && isset($permissions['config']->conditionexpr)) {
-                    $logic = trim($permissions['config']->conditionexpr);
+                if (isset($permissions->config) && isset($permissions->config->conditionexpr)) {
+                    $logic = trim($permissions->config->conditionexpr);
                     // Security.
                     // No more than: conditions * 10 chars.
-                    $logic = substr($logic, 0, count($permissions['elements']) * 10);
+                    $logic = substr($logic, 0, count($permissions->elements) * 10);
                     $logic = str_replace(['and', 'or'], ['&&', '||'], strtolower($logic));
                     // More Security Only allowed chars.
                     $logic = preg_replace_callback(
@@ -438,13 +439,13 @@ class reportbase {
      */
     public function add_filter_elements(&$mform) {
         global $CFG;
-        $filters = (isset($this->componentdata['filters'])) ? $this->componentdata['filters'] : [];
-        if (!empty($filters['elements'])) {
-            foreach ($filters['elements'] as $f) {
-                if ($f['formdata']->value) {
+        $filters = (isset($this->componentdata->filters)) ? $this->componentdata->filters : [];
+        if (!empty($filters->elements)) {
+            foreach ($filters->elements as $f) {
+                if ($f->formdata->value) {
                     require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                        $f['pluginname'] . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $f['pluginname'];
+                        $f->pluginname . '/plugin.class.php');
+                    $classname = 'block_learnerscript\lsreports\plugin_' . $f->pluginname;
                     $class = new $classname($this->config);
                     $class->singleselection = true;
                     $this->finalelements = $class->print_filter($mform);
@@ -526,9 +527,9 @@ class reportbase {
     public function check_filters_request($action = null) {
         global $CFG;
 
-        $filters = (isset($this->componentdata['filters'])) ? $this->componentdata['filters'] : [];
+        $filters = (isset($this->componentdata->filters)) ? $this->componentdata->filters : [];
 
-        if (!empty($filters['elements'])) {
+        if (!empty($filters->elements)) {
             $formdata = new stdclass;
             $ftcourses = optional_param('filter_courses', 0, PARAM_INT);
             $ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
@@ -605,29 +606,29 @@ class reportbase {
      */
     public function where() {
         if ($this->reporttype != 'table'  &&  isset($this->selectedcolumns)) {
-             $plot = (isset($this->componentdata['plot']['elements']))
-             ? $this->componentdata['plot']['elements'] : [];
+             $plot = (isset($this->componentdata->plot->elements))
+             ? $this->componentdata->plot->elements : [];
             foreach ($plot as $e) {
-                if ($e['id'] == $this->reporttype) {
-                    if ($e['pluginname'] == 'combination') {
-                        foreach ($e['formdata']->yaxis_bar as $key) {
-                            if (!empty($e['formdata']->{$key}) && method_exists($this, 'column_queries')) {
+                if ($e->id == $this->reporttype) {
+                    if ($e->pluginname == 'combination') {
+                        foreach ($e->formdata->yaxis_bar as $key) {
+                            if (!empty($e->formdata->{$key}) && method_exists($this, 'column_queries')) {
                                 $this->sql .= ' AND (' . $this->column_queries($key, $this->defaultcolumn) . ')'
-                                .$e['formdata']->{$key}.''.$e['formdata']->{$key .'_value'}.'';
+                                .$e->formdata->{$key}.''.$e->formdata->{$key .'_value'}.'';
                             }
                         }
-                        foreach ($e['formdata']->yaxis_line as $key) {
-                            if (!empty($e['formdata']->{$key}) && method_exists($this, 'column_queries')) {
+                        foreach ($e->formdata->yaxis_line as $key) {
+                            if (!empty($e->formdata->{$key}) && method_exists($this, 'column_queries')) {
                                 $this->sql .= ' AND (' . $this->column_queries($key, $this->defaultcolumn) . ')'
-                                .$e['formdata']->{$key}.''.$e['formdata']->{$key .'_value'}.'';
+                                .$e->formdata->{$key}.''.$e->formdata->{$key .'_value'}.'';
                             }
                         }
                     } else {
-                        if (isset($e['formdata']->yaxis)) {
-                            foreach ($e['formdata']->yaxis as $key) {
-                                if (!empty($e['formdata']->{$key}) && method_exists($this, 'column_queries')) {
+                        if (isset($e->formdata->yaxis)) {
+                            foreach ($e->formdata->yaxis as $key) {
+                                if (!empty($e->formdata->{$key}) && method_exists($this, 'column_queries')) {
                                     $this->sql .= ' AND (' . $this->column_queries($key, $this->defaultcolumn) . ')'
-                                    .$e['formdata']->{$key}.''.$e['formdata']->{$key .'_value'}.'';
+                                    .$e->formdata->{$key}.''.$e->formdata->{$key .'_value'}.'';
                                 }
                             }
                         }
@@ -679,49 +680,46 @@ class reportbase {
         global $DB, $CFG;
         $context = context_system::instance();
         $this->check_permissions($context, $this->userid);
-        $columns = (isset($this->componentdata['columns']['elements']))
-        ? $this->componentdata['columns']['elements'] : [];
-        $ordering = (isset($this->componentdata['ordering']['elements']))
-        ? $this->componentdata['ordering']['elements'] : [];
-        $plot = (isset($this->componentdata['plot']['elements']))
-        ? $this->componentdata['plot']['elements'] : [];
+        $columns = (isset($this->componentdata->columns->elements))
+        ? $this->componentdata->columns->elements : [];
+        $ordering = (isset($this->componentdata->ordering->elements))
+        ? $this->componentdata->ordering->elements : [];
+        $plot = (isset($this->componentdata->plot->elements))
+        ? $this->componentdata->plot->elements : [];
 
         if ($this->reporttype !== 'table') {
             $this->graphcolumns = [];
             foreach ($plot as $column) {
-                if ($column['id'] == $this->reporttype) {
+                if ($column->id == $this->reporttype) {
                     $this->graphcolumns = $column;
                 }
             }
-            if (!empty($this->graphcolumns['formdata']->columnsort)
-            && $this->graphcolumns['formdata']->columnsort
-            && $this->graphcolumns['formdata']->sorting) {
-                $this->sqlorder['column'] = $this->graphcolumns['formdata']->columnsort;
-                $this->sqlorder['dir'] = $this->graphcolumns['formdata']->sorting;
+            if (!empty($this->graphcolumns->formdata->columnsort)
+            && $this->graphcolumns->formdata->columnsort
+            && $this->graphcolumns->formdata->sorting) {
+                $this->sqlorder['column'] = $this->graphcolumns->formdata->columnsort;
+                $this->sqlorder['dir'] = $this->graphcolumns->formdata->sorting;
             }
-            if (!empty($this->graphcolumns['formdata']->limit)
-            && $this->graphcolumns['formdata']->limit) {
-                $this->length = $this->graphcolumns['formdata']->limit;
+            if (!empty($this->graphcolumns->formdata->limit)
+            && $this->graphcolumns->formdata->limit) {
+                $this->length = $this->graphcolumns->formdata->limit;
             }
 
-            if ($this->graphcolumns['pluginname'] == 'combination') {
-                $this->selectedcolumns = array_merge([$this->graphcolumns['formdata']->serieid] ,
-                $this->graphcolumns['formdata']->yaxis_line,
-                $this->graphcolumns['formdata']->yaxis_bar);
-            } else if ($this->graphcolumns['pluginname'] == 'pie') {
-                $this->selectedcolumns = [$this->graphcolumns['formdata']->areaname ,
-                $this->graphcolumns['formdata']->areavalue, ];
+            if ($this->graphcolumns->pluginname == 'combination') {
+                $this->selectedcolumns = array_merge([$this->graphcolumns->formdata->serieid] ,
+                $this->graphcolumns->formdata->yaxis_line,
+                $this->graphcolumns->formdata->yaxis_bar);
             } else {
-                 $this->selectedcolumns = !empty($this->graphcolumns['formdata']->yaxis) ?
-                                        array_merge([$this->graphcolumns['formdata']->serieid] ,
-                 $this->graphcolumns['formdata']->yaxis, ) : $this->graphcolumns['formdata']->serieid;
+                 $this->selectedcolumns = !empty($this->graphcolumns->formdata->yaxis) ?
+                                        array_merge([$this->graphcolumns->formdata->serieid] ,
+                 $this->graphcolumns->formdata->yaxis, ) : $this->graphcolumns->formdata->serieid;
             }
         } else {
             $columnnames  = [];
             foreach ($columns as $key => $column) {
-                if (isset($column['formdata']->column)) {
-                    $columnnames[$column['formdata']->column] = $column['formdata']->columname;
-                    $this->selectedcolumns[] = $column['formdata']->column;
+                if (isset($column->formdata->column)) {
+                    $columnnames[$column->formdata->column] = $column->formdata->columname;
+                    $this->selectedcolumns[] = $column->formdata->column;
                 }
             }
         }
@@ -788,13 +786,13 @@ class reportbase {
             foreach ($rows as $r) {
                 $tempcols = [];
                 foreach ($columns as $c) {
-                    $c = (array) $c;
+                    $c = (object) $c;
                     if (empty($c)) {
                         continue;
                     }
                     require_once($CFG->dirroot . '/blocks/learnerscript/components/columns/' .
-                    $c['pluginname'] . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $c['pluginname'];
+                    $c->pluginname . '/plugin.class.php');
+                    $classname = 'block_learnerscript\lsreports\plugin_' . $c->pluginname;
 
                     if (!isset($pluginscache[$classname])) {
                         $class = new $classname($this->config, $c);
@@ -807,31 +805,32 @@ class reportbase {
                     $class->reportinstance = $blockinstanceid ? $blockinstanceid : $this->config->id;
                     $class->reportfilterparams = $this->params;
                     $rid = isset($r->id) ? $r->id : 0;
-                    if (isset($c['formdata']->column) &&
-                    (!empty($this->selectedcolumns) && in_array($c['formdata']->column, $this->selectedcolumns))) {
+                    if (isset($c->formdata->column) &&
+                        (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')
+                        || (!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
                         if (!empty($this->params['filter_users'])) {
                             $this->currentuser = $this->params['filter_users'];
                         }
                         if (method_exists($this, 'column_queries')) {
                             if (isset($r->course)) {
-                                $c['formdata']->subquery = $this->column_queries($c['formdata']->column, $rid, $r->course);
+                                $c->formdata->subquery = $this->column_queries($c->formdata->column, $rid, $r->course);
                                 $this->currentcourseid = $r->course;
                             } else if (isset($r->user)) {
-                                $c['formdata']->subquery = $this->column_queries($c['formdata']->column, $rid, $r->user);
+                                $c->formdata->subquery = $this->column_queries($c->formdata->column, $rid, $r->user);
                             } else {
-                                $c['formdata']->subquery = $this->column_queries($c['formdata']->column, $rid);
+                                $c->formdata->subquery = $this->column_queries($c->formdata->column, $rid);
                             }
                         }
-                        $columndata = $class->execute($c['formdata'], $r, $this->reporttype
+                        $columndata = $class->execute($c->formdata, $r, $this->reporttype
                                                                          );
-                        $tempcols[$c['formdata']->column] = $columndata;
+                        $tempcols[$c->formdata->column] = $columndata;
                     }
                     if ($firstrow) {
-                        if (isset($c['formdata']->column)) {
-                            $columnheading = !empty($c['formdata']->columname) ? $c['formdata']->columname : $c['formdata']->column;
-                            $tablehead[$c['formdata']->column] = $columnheading;
+                        if (isset($c->formdata->column)) {
+                            $columnheading = !empty($c->formdata->columname) ? $c->formdata->columname : $c->formdata->column;
+                            $tablehead[$c->formdata->column] = $columnheading;
                         }
-                        list($align, $size, $wrap) = $class->colformat($c['formdata']);
+                        list($align, $size, $wrap) = $class->colformat($c->formdata);
                         $tablealign[] = $align;
                         $tablesize[] = $size ? $size . '%' : '';
                         $tablewrap[] = $wrap;
@@ -888,17 +887,17 @@ class reportbase {
         $table->size = $tablesize;
         $table->align = $tablealign;
         $table->wrap = $tablewrap;
-        $table->width = (isset($this->componentdata['columns']['config']))
-        ? $this->componentdata['columns']['config']->tablewidth : '';
+        $table->width = (isset($this->componentdata->columns->config))
+        ? $this->componentdata->columns->config->tablewidth : '';
         $table->summary = $this->config->summary;
-        $table->tablealign = (isset($this->componentdata['columns']['config']))
-        ? $this->componentdata['columns']['config']->tablealign : 'center';
-        $table->cellpadding = (isset($this->componentdata['columns']['config']))
-        ? $this->componentdata['columns']['config']->cellpadding : '5';
-        $table->cellspacing = (isset($this->componentdata['columns']['config']))
-        ? $this->componentdata['columns']['config']->cellspacing : '1';
-        $table->class = (isset($this->componentdata['columns']['config']))
-        ? $this->componentdata['columns']['config']->class : 'generaltable';
+        $table->tablealign = (isset($this->componentdata->columns->config))
+        ? $this->componentdata->columns->config->tablealign : 'center';
+        $table->cellpadding = (isset($this->componentdata->columns->config))
+        ? $this->componentdata->columns->config->cellpadding : '5';
+        $table->cellspacing = (isset($this->componentdata->columns->config))
+        ? $this->componentdata->columns->config->cellspacing : '1';
+        $table->class = (isset($this->componentdata->columns->config))
+        ? $this->componentdata->columns->config->class : 'generaltable';
                 // CALCS.
         if ($this->calculations) {
             $finalheadcalcs = $this->get_calcs($finaltable, $tablehead);
@@ -931,8 +930,8 @@ class reportbase {
             $calcs->align = $tablealign;
             $calcs->wrap = $tablewrap;
             $calcs->summary = $this->config->summary;
-            $calcs->attributes['class'] = (isset($this->componentdata['columns']['config']))
-            ? $this->componentdata['columns']['config']->class : 'generaltable';
+            $calcs->attributes['class'] = (isset($this->componentdata->columns->config))
+            ? $this->componentdata->columns->config->class : 'generaltable';
             $this->finalreport = new stdClass();
             $this->finalreport->calcs = $calcs;
         }
@@ -960,10 +959,10 @@ class reportbase {
     public function rolewisecourses() {
         global $DB;
         if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
-            if (!empty($this->componentdata['permissions']['elements'])) {
-                $roleincourse = array_filter($this->componentdata['permissions']['elements'], function($permission) {
+            if (!empty($this->componentdata->permissions->elements)) {
+                $roleincourse = array_filter($this->componentdata->permissions->elements, function($permission) {
                     // Role in course permission.
-                    if ($permission['pluginname'] == 'roleincourse') {
+                    if ($permission->pluginname == 'roleincourse') {
                         return true;
                     }
                 });
@@ -972,12 +971,12 @@ class reportbase {
                 $currentroleid = $DB->get_field('role', 'id', ['shortname' => $this->role]);
 
                 foreach ($roleincourse as $role) {
-                    if (!empty($this->role) && (!isset($role['formdata']->contextlevel)
-                    || $role['formdata']->roleid != $currentroleid)) {
+                    if (!empty($this->role) && (!isset($role->formdata->contextlevel)
+                    || $role->formdata->roleid != $currentroleid)) {
                         continue;
                     }
-                    $permissionslib = new permissionslib($role['formdata']->contextlevel,
-                    $role['formdata']->roleid,
+                    $permissionslib = new permissionslib($role->formdata->contextlevel,
+                    $role->formdata->roleid,
                     $this->userid);
                     $rolecontexts = $DB->get_records_sql("SELECT DISTINCT CONCAT(r.id, '@', rcl.id),
                     r.shortname, rcl.contextlevel

@@ -14,30 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace block_learnerscript\local;
+
 /**
- * A Moodle block to create customizable reports.
+ * Class observer
  *
- * @package   block_learnerscript
- * @copyright 2023 Moodle India Information Solutions Private Limited
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India Information Solutions Private Limited
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . "/blocks/learnerscript/lib.php");
-/** Observer class */
-class block_learnerscript_observer {
+class observer {
     /**
      * Store all actions about modules create/update/delete in own table.
      *
      */
     public static function ls_timestats() {
-        global $COURSE, $USER, $DB;
+        global $COURSE, $USER, $DB, $PAGE;
         $reluser = \core\session\manager::is_loggedinas() ? $USER->id : null;
         if ($USER && is_siteadmin($reluser) || $reluser) {
             return true;
         }
-        $pagevariables = get_pagevariables();
-        $activityid = $pagevariables->context->instanceid;
-        if ($pagevariables->context->contextlevel == 70 && $pagevariables->context->instanceid > 0) {
+        $activityid = $PAGE->context->instanceid;
+        if ($PAGE->context->contextlevel == 70 && $PAGE->context->instanceid > 0) {
             $modulename = $DB->get_field_sql("SELECT m.name
             FROM {course_modules} cm
             JOIN {modules} m ON m.id = cm.module
@@ -50,13 +48,13 @@ class block_learnerscript_observer {
             }
         }
         // Used $_SESSION to get loggedin user information to calculate the timespent.
-        $insertdata = new stdClass();
+        $insertdata = new \stdClass();
         $insertdata->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
         $insertdata->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
         $insertdata->instanceid = isset($_SESSION['instanceid']) ? $_SESSION['instanceid'] : 0;
         $insertdata->activityid = isset($_SESSION['activityid']) ? $_SESSION['activityid'] : 0;
         $insertdata->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';
-        $insertdata1 = new stdClass();
+        $insertdata1 = new \stdClass();
         $insertdata1->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
         $insertdata1->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
         $insertdata1->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';
@@ -77,7 +75,7 @@ class block_learnerscript_observer {
                 $insertdata1->timemodified = 0;
                 $DB->insert_record('block_ls_coursetimestats', $insertdata1);
             }
-            if ($pagevariables->context->contextlevel == 70 && $insertdata->instanceid <> 0) {
+            if ($PAGE->context->contextlevel == 70 && $insertdata->instanceid <> 0) {
                 $record = $DB->get_record('block_ls_modtimestats', ['courseid' => $insertdata->courseid,
                                                                         'activityid' => $insertdata->activityid,
                                                                         'instanceid' => $insertdata->instanceid,
@@ -102,15 +100,15 @@ class block_learnerscript_observer {
 
         }
         $instance = 0;
-        if ($pagevariables->context->contextlevel == 70) {
-            $cm = get_coursemodule_from_id('', $pagevariables->context->instanceid);
+        if ($PAGE->context->contextlevel == 70) {
+            $cm = get_coursemodule_from_id('', $PAGE->context->instanceid);
             $instance = $cm->instance;
         }
         $_SESSION['courseid'] = $COURSE->id;
-        $_SESSION['pageurl_timeme'] = parse_url($_SERVER['REQUEST_URI'])['path'];
+        $_SESSION['pageurl_timeme'] = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'])['path'] : '';
         $_SESSION['instanceid'] = $instance;
-        $_SESSION['activityid'] = $pagevariables->context->instanceid;
-        $pagevariables->requires->js_call_amd('block_learnerscript/track', 'timeme');
+        $_SESSION['activityid'] = $PAGE->context->instanceid;
+        $PAGE->requires->js_call_amd('block_learnerscript/track', 'timeme');
         $_COOKIE['time_timeme'] = 0;
         unset($_COOKIE['time_timeme']);
     }

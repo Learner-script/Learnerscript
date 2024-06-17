@@ -3447,8 +3447,7 @@ body.path-blocks-learnerscript .mform fieldset .fitem select {
     }
 
     body.path-blocks-learnerscript .notinschpage.ui-dialog .notschuserspage #existingcell,
-    .notinschpage.ui-dialog .notschuserspage .add-remove-controls,
-    .manageschusers.notschuserspage.ui-widget-content #potentialcell {
+    .notinschpage.ui-dialog .notschuserspage .add-remove-controls {
         width: 33.33%;
         display: table-cell;
         vertical-align: middle;
@@ -3494,25 +3493,6 @@ body.path-blocks-learnerscript .mform fieldset .fitem select {
 
     body .editreport > a {
         line-height: 32px;
-    }
-
-    body.path-blocks-learnerscript .ui-dialog .ui-dialog-content.manageschusers .fitem.required.fitem_fselect {
-        float: left;
-        width: 100%;
-    }
-
-    body.path-blocks-learnerscript .ui-dialog .ui-dialog-content.manageschusers .select2-container {
-        min-width: 100%;
-    }
-
-    body.path-blocks-learnerscript .ui-dialog .ui-dialog-content.manageschusers .searchusers {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        -webkit-box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        -o-box-sizing: border-box;
-        height: 30px;
     }
 
     body.path-blocks-learnerscript .manage_usersdiv span#addcontrols,
@@ -4634,6 +4614,7 @@ body#page-blocks-learnerscript-viewreport #licenseresult span.graphicon ul#align
     -o-transform: none;
     transform: none;
     max-width: 200px;
+    z-index: 10;
 }
 
 body#page-blocks-learnerscript-viewreport #licenseresult span.graphicon ul#align_menu .ls-plotgraphs_listitem {
@@ -4822,10 +4803,6 @@ body.path-blocks-learnerscript .lsoverviewimages {
 
 body .highcharts-root text.highcharts-credits {
     display: none;
-}
-
-body#page-blocks-learnerscript-components-scheduler-schedule .manageschusers .add_selected_users_container {
-    text-align: center;
 }
 
 body.path-blocks-learnerscript .ui-widget.ui-widget-content table > thead > tr,
@@ -5291,37 +5268,6 @@ body.path-blocks-learnerscript .notinschpage.ui-dialog {
     max-width: 500px;
 }
 
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content .sub-add-remove-controls {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-}
-
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content .sub-add-remove-controls #addcontrols button,
-.manageschusers.notschuserspage.ui-widget-content .sub-add-remove-controls #removecontrols button {
-    float: none;
-    margin-top: 5px;
-}
-
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content #potentialcell {
-    clear: both;
-}
-
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content #potentialcell > p {
-    margin-bottom: 0;
-}
-
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content form.assignform.mform .fitem_fselect .fitemtitle {
-    text-align: right;
-}
-
-body.path-blocks-learnerscript .manageschusers.notschuserspage.ui-widget-content #potentialcell input#addselect_searchtext {
-    width: 100%;
-    box-sizing: border-box;
-    height: 30px;
-    max-width: 100%;
-}
-
 body.path-blocks-learnerscript .ajaxForm input.disablecondition {
     margin-left: 5px;
 }
@@ -5483,4 +5429,13 @@ body.path-blocks-reportdashboard #dashboard-header img {
     width: 50px;
     height: 50px;
     object-fit: none;
+}
+body.path-blocks-learnerscript .report_header_skew_content .report_header_showhide #download_dropdwn a.dropdown-toggle img {
+    width: 40px;
+    height: 26px;
+    margin: 3px 0 0 0;
+}
+body.path-blocks-learnerscript .ls-report_graph_container canvas {
+    position: relative;
+    max-height: 550px;
 }

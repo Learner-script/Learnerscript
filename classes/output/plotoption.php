@@ -114,9 +114,9 @@ class plotoption implements renderable, templatable {
         if (in_array('permissions', $reportclass->components)) {
             $data->permissionsavailable = true;
         }
-        if (isset($reportclass->componentdata['customsql']['config']->type)
-        && (($reportclass->componentdata['customsql']['config']->type == 'sql')
-        || ($reportclass->componentdata['customsql']['config']->type == 'statistics'))) {
+        if (isset($reportclass->componentdata->customsql->config->type)
+        && (($reportclass->componentdata->customsql->config->type == 'sql')
+        || ($reportclass->componentdata->customsql->config->type == 'statistics'))) {
             $data->permissionsavailable = false;
         }
         $data->enableschedule = ($reportclass->parent === true

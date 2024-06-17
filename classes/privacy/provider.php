@@ -131,18 +131,16 @@ class provider implements \core_privacy\local\metadata\provider,
                 WHERE blms.userid = :userid";
         $contextlist->add_from_sql($sql, $params);
 
-        $params = ['userid' => $userid, 'contextcourse' => CONTEXT_COURSE];
-
         $sql = "SELECT ctx.id
                 FROM {context} ctx
                 JOIN {block_ls_coursetimestats} blc ON ctx.instanceid = blc.courseid
-                WHERE blc.userid = :userid AND ctx.contextlevel = :contextcourse";
+                WHERE blc.userid = :userid AND ctx.contextlevel = :contextlevel";
         $contextlist->add_from_sql($sql, $params);
 
         $sql = "SELECT ctx.id
                 FROM {context} ctx
                 JOIN {block_ls_modtimestats} blm ON ctx.instanceid = blm.courseid
-                WHERE blm.userid = :userid AND ctx.contextlevel = :contextcourse";
+                WHERE blm.userid = :userid AND ctx.contextlevel = :contextlevel";
         $contextlist->add_from_sql($sql, $params);
 
         return $contextlist;
@@ -156,29 +154,59 @@ class provider implements \core_privacy\local\metadata\provider,
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
-        $allowedcontexts = [
-            CONTEXT_SYSTEM, ];
-
-        if (!in_array($context->contextlevel, $allowedcontexts)) {
+        if (!$context instanceof \context_user) {
             return;
         }
 
-        if ($context->contextlevel == CONTEXT_SYSTEM) {
-            $sql = "SELECT userid FROM {block_ls_modtimestats}";
-            $userlist->add_from_sql('userid', $sql, []);
+        $params = [
+            'contextid' => $context->id,
+            'contextuser' => CONTEXT_USER,
+        ];
 
-            $sql = "SELECT userid FROM {block_ls_coursetimestats}";
-            $userlist->add_from_sql('userid', $sql, []);
+        $sql = "SELECT lsl.userid
+                  FROM {block_ls_modtimestats} lsl
+                  JOIN {context} ctx
+                       ON ctx.instanceid = lsl.userid
+                       AND ctx.contextlevel = :contextuser
+                 WHERE ctx.id = :contextid";
 
-            $sql = "SELECT userid FROM {block_ls_schedule}";
-            $userlist->add_from_sql('userid', $sql, []);
+        $userlist->add_from_sql('userid', $sql, $params);
 
-            $sql = "SELECT userid FROM {block_ls_userlmsaccess}";
-            $userlist->add_from_sql('userid', $sql, []);
+        $sql = "SELECT lsl.userid
+                  FROM {block_ls_coursetimestats} lsl
+                  JOIN {context} ctx
+                       ON ctx.instanceid = lsl.userid
+                       AND ctx.contextlevel = :contextuser
+                 WHERE ctx.id = :contextid";
 
-            $sql = "SELECT ownerid as userid FROM {block_learnerscript}";
-            $userlist->add_from_sql('userid', $sql, []);
-        }
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT lsl.userid
+                  FROM {block_ls_schedule} lsl
+                  JOIN {context} ctx
+                       ON ctx.instanceid = lsl.userid
+                       AND ctx.contextlevel = :contextuser
+                 WHERE ctx.id = :contextid";
+
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT lsl.userid
+                  FROM {block_ls_userlmsaccess} lsl
+                  JOIN {context} ctx
+                       ON ctx.instanceid = lsl.userid
+                       AND ctx.contextlevel = :contextuser
+                 WHERE ctx.id = :contextid";
+
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT lsl.ownerid AS userid
+                  FROM {block_learnerscript} lsl
+                  JOIN {context} ctx
+                       ON ctx.instanceid = lsl.ownerid
+                       AND ctx.contextlevel = :contextuser
+                 WHERE ctx.id = :contextid";
+
+        $userlist->add_from_sql('userid', $sql, $params);
     }
 
     /**
@@ -193,7 +221,7 @@ class provider implements \core_privacy\local\metadata\provider,
         if (empty($contextlist->count())) {
             return;
         }
-        $context = context_system::instance();
+        $context = context_user::instance($userid);
 
         $sql = "SELECT * FROM {block_ls_modtimestats}
                      WHERE userid = :userid";
@@ -230,6 +258,15 @@ class provider implements \core_privacy\local\metadata\provider,
                 writer::with_context($context)->export_data((array)$context, $record);
             }
         }
+
+        $sql = "SELECT * FROM {block_learnerscript}
+                     WHERE ownerid = :userid";
+        $params['userid'] = $userid;
+        if ($users = $DB->get_records_sql($sql, $params)) {
+            foreach ($users as $record) {
+                writer::with_context($context)->export_data((array)$context, $record);
+            }
+        }
     }
 
     /**
@@ -240,7 +277,7 @@ class provider implements \core_privacy\local\metadata\provider,
     public static function delete_data_for_all_users_in_context(\context $context) {
         // Only delete data for a user context.
         if ($context->contextlevel == CONTEXT_USER) {
-            static::delete_user_data($context->instanceid, $context);
+            static::delete_user_data($context->instanceid);
         }
     }
 
@@ -290,5 +327,7 @@ class provider implements \core_privacy\local\metadata\provider,
         $DB->delete_records('block_ls_schedule', ['userid' => $userid]);
         // Delete user's lms access information.
         $DB->delete_records('block_ls_userlmsaccess', ['userid' => $userid]);
+        // Delete user's report information.
+        $DB->delete_records('block_learnerscript', ['ownerid' => $userid]);
     }
 }

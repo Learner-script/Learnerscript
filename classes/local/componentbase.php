@@ -50,7 +50,7 @@ class componentbase {
      *
      * @param  object $mform    Report form
      * @param  object $fullform Form
-     * @return boolean
+     * @return bool
      */
     public function add_form_elements(&$mform, $fullform) {
         return false;

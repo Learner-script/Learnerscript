@@ -33,11 +33,6 @@ $rawjson = file_get_contents('php://input');
 
 $requests = json_decode($rawjson, true);
 
-foreach ($requests as $key => $val) {
-    if (strpos($key, 'filter_') !== false) {
-        $_POST[$key] = $val;
-    }
-}
 if (empty($requests['scheduleid'])) {
     $scheduleid = 0;
 } else {
@@ -67,11 +62,6 @@ if (empty($requests['schuserslist'])) {
     $schuserslist = '';
 } else {
     $schuserslist = $requests['schuserslist'];
-}
-if (empty($requests['bullkselectedusers'])) {
-    $bullkselectedusers = '';
-} else {
-    $bullkselectedusers = $requests['bullkselectedusers'];
 }
 if (empty($requests['validdate'])) {
     $validdate = 0;
@@ -201,13 +191,12 @@ if (empty($requests['reportid'])) {
 $action = $requests['action'];
 $reportid = optional_param('reportid', $reportid, PARAM_INT);
 $scheduleid = optional_param('scheduleid', $scheduleid, PARAM_INT);
-$selectedroleid = optional_param('selectedroleid', $selectedroleid, PARAM_RAW);
-$roles = optional_param('roleid', $roles, PARAM_RAW);
+$selectedroleid = optional_param('selectedroleid', $selectedroleid, PARAM_INT);
+$roles = optional_param('roleid', $roles, PARAM_INT);
 $search = optional_param('search', $search, PARAM_TEXT);
 $type = optional_param('type', $type, PARAM_TEXT);
 $schuserslist = optional_param('schuserslist', $schuserslist, PARAM_RAW);
-$bullkselectedusers = optional_param('bullkselectedusers', $bullkselectedusers, PARAM_RAW);
-$expireddate = optional_param('validdate', $validdate, PARAM_RAW);
+$expireddate = optional_param('validdate', $validdate, PARAM_INT);
 $page = optional_param('page', $page, PARAM_INT);
 $start = optional_param('start', $start, PARAM_INT);
 $length = optional_param('length', $length, PARAM_INT);
@@ -219,18 +208,18 @@ $status = optional_param('status', $status, PARAM_TEXT);
 $userid = optional_param('userid', $userid, PARAM_INT);
 $components = optional_param('components', $components, PARAM_RAW);
 $component = optional_param('component', $component, PARAM_RAW);
-$pname = optional_param('pname', $pname, PARAM_RAW);
-$jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_RAW);
+$pname = optional_param('pname', $pname, PARAM_TEXT);
+$jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_TEXT);
 $conditionsdata = optional_param('conditions', $conditionsdata, PARAM_RAW);
 $export = optional_param('export', $export, PARAM_RAW);
 $lsfstartdate = optional_param('lsfstartdate', $lsfstartdate, PARAM_INT);
 $lsfenddate = optional_param('lsfenddate', $lsfenddate, PARAM_INT);
-$cid = optional_param('cid', $cid, PARAM_RAW);
-$reporttype = optional_param('reporttype', $reporttype, PARAM_RAW);
+$cid = optional_param('cid', $cid, PARAM_INT);
+$reporttype = optional_param('reporttype', $reporttype, PARAM_TEXT);
 $categoryid = optional_param('categoryid', $categoryid, PARAM_INT);
-$filters = optional_param('filters', $filters, PARAM_RAW);
+$filters = optional_param('filters', $filters, PARAM_TEXT);
 $filters = json_decode($filters, true);
-$basicparams = optional_param('basicparams', $basicparams, PARAM_RAW);
+$basicparams = optional_param('basicparams', $basicparams, PARAM_TEXT);
 $basicparams = json_decode($basicparams, true);
 $elementsorder = optional_param('elementsorder', $elementsorder, PARAM_RAW);
 $contextlevel = optional_param('contextlevel', $contextlevel, PARAM_INT);
@@ -270,36 +259,6 @@ switch ($action) {
             $return = $termsdata;
         }
     break;
-    case 'roleusers':
-        if ((has_capability('block/learnerscript:managereports', $context)
-        || has_capability('block/learnerscript:manageownreports', $context)
-        || is_siteadmin()) && !empty($reportid) && !empty($type) && !empty($roles)) {
-            $userslist = $scheduling->schroleusers($reportid, $scheduleid, $type, $roles, $search, $bullkselectedusers);
-            $termsdata = [];
-            $termsdata['total_count'] = count($userslist);
-            $termsdata['incomplete_results'] = false;
-            $termsdata['items'] = $userslist;
-            $return = $termsdata;
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else if (empty($type)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Type');
-            } else if (empty($roles)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Role');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        break;
     case 'viewschuserstable':
         if ((has_capability('block/learnerscript:managereports', $context)
         || has_capability('block/learnerscript:manageownreports', $context)
@@ -314,34 +273,6 @@ switch ($action) {
             if (empty($schuserslist)) {
                 $termsdata['cap'] = false;
                 $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Schedule Users List');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        break;
-    case 'manageschusers':
-        if ((has_capability('block/learnerscript:managereports', $context)
-        || has_capability('block/learnerscript:manageownreports', $context)
-        || is_siteadmin()) && !empty($reportid)) {
-            $reqimage = $OUTPUT->image_url('req');
-            $roleslist = (new schedule)->reportroles($selectedroleid);
-            $selectedusers = (new schedule)->selectesuserslist($schuserslist);
-            $scheduledata = new \block_learnerscript\output\scheduledusers($reportid,
-                $reqimage,
-                $roleslist,
-                $selectedusers,
-                $scheduleid,
-                $reportinstance);
-            $return = $learnerscript->render($scheduledata);
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
             } else {
                 $termsdata['cap'] = true;
                 $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
@@ -476,18 +407,10 @@ switch ($action) {
         $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
         $properties = new stdClass();
         $reportclass = new $reportclassname($report, $properties);
-        $comp = (array) $ls->cr_unserialize($reportclass->config->components);
+        $comp = (object) $ls->cr_unserialize($reportclass->config->components);
         $components = json_decode($components, true);
-        foreach ($components['calculations']['elements'] as $k => $calculations) {
-            if (empty($calculations['pluginname']) || ($calculations['type'] != 'calculations')) {
-                unset($components['calculations']['elements'][$k]);
-            } else {
-                $components['calculations']['elements'][$k]['formdata'] =
-                (object) $components['calculations']['elements'][$k]['formdata'];
-            }
-        }
-        $comp['columns']['elements'] = $components['columns']['elements'];
-        $comp['filters']['elements'] = $components['filters']['elements'];
+        $comp->columns->elements = $components->columns->elements;
+        $comp->filters->elements = $components->filters->elements;
         $comparray = ['columns', 'filters'];
         foreach ($comparray as $c) {
             foreach ($comp[$c]['elements'] as $k => $d) {
@@ -518,7 +441,7 @@ switch ($action) {
     case 'courseactivities':
         if ($courseid > 0) {
             $modinfo = get_fast_modinfo($courseid);
-            $return[0] = 'Select Activity';
+            $return[0] = get_string('select_activity', 'block_learnerscript');
             if (!empty($modinfo->cms)) {
                 foreach ($modinfo->cms as $k => $cm) {
                     if ($cm->visible == 1 && $cm->deletioninprogress == 0) {
@@ -547,7 +470,6 @@ switch ($action) {
                     $rolecourses = explode(',', $reportclass->rolewisecourses);
                     $courselist = array_intersect($courselist, $rolecourses);
                 }
-                $courseids = implode(',', $courselist);
                 list($coursesql, $params) = $DB->get_in_or_equal($courselist, SQL_PARAMS_NAMED);
                 $params['siteid'] = SITEID;
                 $params['visible'] = 1;
@@ -634,17 +556,6 @@ switch ($action) {
         $report->components = $finalcomponents;
         $DB->update_record('block_learnerscript', $report);
         break;
-    case 'contextroles':
-        $report = $DB->get_record('block_learnerscript', ['id' => $reportid]);
-        if ($report->type) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-            $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-            $properties = new stdClass;
-            $reportclass = new $reportclassname($report, $properties);
-        }
-        $excludedroles = $reportclass->excludedroles;
-        $return = get_roles_in_context($contextlevel, $excludedroles);
-        break;
     case 'disablecolumnstatus':
         $reportname = $DB->get_field('block_learnerscript', 'disabletable', ['id' => $reportid]);
         if ($reportname == 1) {
@@ -665,7 +576,7 @@ switch ($action) {
         $properties = new stdClass();
         $reportclass = new $reportclassname($report, $properties);
         $reportclass->create_report();
-        $components = unserialize($reportclass->config->components);
+        $components = json_decode($reportclass->config->components);
 
         $return['columns'] = $components['columns'];
         $uniqueid = random_string(15);
@@ -692,7 +603,7 @@ switch ($action) {
     break;
 }
 
-    $json = json_encode($return, JSON_NUMERIC_CHECK);
+$json = json_encode($return, JSON_NUMERIC_CHECK);
 if ($json) {
     echo $json;
 } else {

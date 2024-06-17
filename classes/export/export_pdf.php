@@ -81,32 +81,32 @@ class export_pdf {
         }
 
         $table = "";
-        $table .= "<table border=\"1\" cellpadding=\"5\">";
+        $table .= html_writer::start_tag('table', ['border' => '1', 'cellpadding' => '5']);
         $s = count($matrix);
         reset($matrix);
         $firstkey = key($matrix);
         $reporttype = $DB->get_field('block_learnerscript',  'type',  ['id' => $id]);
         if ($matrix) {
             if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
-                $table .= "<thead><tr style=\"color:#000000;\">";
+                $table .= html_writer::start_tag('thead') . html_writer::start_tag('tr', ['style' => 'color:#000000;']);
                 for ($i = $firstkey; $i < ($firstkey + 1); $i++) {
                     foreach ($matrix[$i] as $col) {
-                        $table .= "<td>$col</td>";
+                        $table .= html_writer::tag('td', $col);
                     }
                 }
-                $table .= "</tr></thead>";
+                $table .= html_writer::end_tag('tr') . html_writer::end_tag('thead');
             }
 
-            $table .= "<tbody>";
+            $table .= html_writer::start_tag('tbody');
             for ($i = ($firstkey + 1); $i < count($matrix); $i++) {
-                $table .= "<tr>";
+                $table .= html_writer::start_tag('tr');
                 foreach ($matrix[$i] as $col) {
-                    $table .= "<td>$col</td>";
+                    $table .= html_writer::tag('td', $col);
                 }
-                $table .= "</tr>";
+                $table .= html_writer::end_tag('tr');
             }
         }
-        $table .= "</tbody></table>";
+        $table .= html_writer::end_tag('tbody') . html_writer::end_tag('table');
 
         $doc = new \TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT);
 
@@ -141,19 +141,20 @@ class export_pdf {
         $doc->setJPEGQuality(75);
 
         $head = get_config('block_learnerscript', 'analytics_color');
-        $header = (new ls)->pdf_reportheader();
-
-        $headerimgpath = get_reportheader_imagepath();
+        $header = $this->pdf_reportheader();
 
         $filename = $reportname->name;
-        $doc->writeHTMLCell($w = 0, $h = 10, $x = '10', $y = '10', $header, $border = 0, $ln = 1,
-        $fill = 0, $reseth = true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '120', $y = '20', '<h1><b>' . $reportname->name .
-        '</b></h1>', $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25', '<h4>Filters</h4>', $border = 0,
+        $doc->writeHTMLCell($w = 0, $h = 10, $x = '10', $y = '10', $header, $border = 0,
+         $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
+        $doc->writeHTMLCell($w = 100, $h = 10, $x = '120', $y = '20',
+        html_writer::tag('h1', html_writer::tag('b', $reportname->name)), $border = 0,
         $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '30', $finalfilterdata, $border = 0,
-        $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
+        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25',
+        html_writer::tag('h4', get_string('filters', 'block_learnerscript')), $border = 0, $ln = 1, $fill = 0, $reseth =
+        true, $align = '', $autopadding = true);
+        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '30',
+        $finalfilterdata, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '',
+         $autopadding = true);
         if (!empty($reportclass->selectedfilters) && count($reportclass->selectedfilters) <= 4) {
             $doc->writeHTMLCell($w = 0, $h = 0, $x = '10', $y = '70', $table, $border = 0,
             $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
@@ -161,7 +162,89 @@ class export_pdf {
             $doc->writeHTMLCell($w = 0, $h = 0, $x = '10', $y = '70', $table, $border = 0,
             $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
         }
-
         $doc->Output($filename, 'I');
+    }
+
+    /**
+     * PDF Report Export Header
+     * @return string Report Header
+     */
+    public function pdf_reportheader() {
+        $headerimagepath = block_learnerscript_get_reportheader_imagepath();
+        $headerimgpath = "";
+        if (@getimagesize($headerimagepath)) {
+            $headerimgpath = $headerimagepath;
+        }
+        if ($headerimgpath) {
+            $reportlogoimage =
+            '<img src="' . $headerimgpath . '" alt=' . get_string("altreportimage", "block_learnerscript") . ' height="80px">';
+        } else {
+            $reportlogoimage = "";
+        }
+        return $reportlogoimage;
+    }
+
+    /**
+     * PDF report export attachment
+     * @param object $reportclass Report data
+     * @param string $fname File name
+     */
+    public function export_pdf_attachment($reportclass, $fname = '') {
+        global $CFG;
+        require_once($CFG->libdir . '/pdflib.php');
+        $report = $reportclass->finalreport;
+        $table = $report->table;
+        $matrix = [];
+        $fname == '' ? $filename = 'report' : $filename = $fname . '.pdf';
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $heading) {
+                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+            }
+        }
+
+        if (!empty($table->data)) {
+            foreach ($table->data as $rkey => $row) {
+                foreach ($row as $key => $item) {
+                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
+                }
+            }
+        }
+        $table = "";
+
+        $table .= html_writer::start_tag('table', ['border' => '1', 'cellpadding' => '5']) .
+                    html_writer::start_tag('thead') . html_writer::start_tag('tr');
+        reset($matrix);
+        $fkey = key($matrix);
+        for ($i = $fkey; $i < ($fkey + 1); $i++) {
+            foreach ($matrix[$i] as $col) {
+                $table .= html_writer::start_tag('td') . html_writer::tag('b', $col) . html_writer::end_tag('td');
+            }
+        }
+        $table .= html_writer::end_tag('tr') . html_writer::end_tag('thead') . html_writer::start_tag('tbody');
+        for ($i = ($fkey + 1); $i < count($matrix); $i++) {
+            $table .= html_writer::start_tag('tr');
+            foreach ($matrix[$i] as $col) {
+                $table .= html_writer::tag('td', $col);
+            }
+            $table .= html_writer::end_tag('tr');
+        }
+        $table .= html_writer::end_tag('tbody') . html_writer::end_tag('table');
+        $table .= "";
+        $doc = new \pdf;
+        $doc->setPrintHeader(false);
+        $doc->setPrintFooter(false);
+        $doc->AddPage();
+
+        $doc->writeHTML($table);
+
+        if ($fname == '') {
+            $doc->Output();
+            exit;
+        } else {
+            $doc->Output($filename, 'F');
+        }
     }
 }

@@ -145,8 +145,6 @@ define(['jquery',
                     if (BasicparamCourse.length > 0) {
                         FirstElementActive = true;
                     }
-                    // Smartfilter.UserCourses({ userid: userid, reporttype: args.reporttype, reportid: args.reportid,
-                    //                           firstelementactive: FirstElementActive, triggercourseactivities: true });
                 }
             });
 
@@ -226,7 +224,9 @@ define(['jquery',
                     $(".basicparamsform #id_filter_apply").trigger('click', [true]);
                 } else {
                     args.reporttype = $('.ls-plotgraphs_listitem.ui-tabs-active').data('cid');
-                    report.CreateReportPage({reportid: args.reportid, reporttype: args.reporttype, instanceid: args.reportid});
+                    report.CreateReportPage({reportid: args.reportid, reporttype: args.reporttype, instanceid: args.reportid,
+                        reportdashboard: false,
+                    });
                 }
                 $(".filterform select[data-select2='1']").select2("destroy").select2({theme: "classic"});
                 $(".filterform select[data-select2-ajax='1']").val('0').trigger('change');
@@ -288,15 +288,6 @@ define(['jquery',
                         });
                 }
             }
-
-            /*
-             * Make sure will have vertical tabs for plotoptions for report
-             */
-            // $tabs = $('#report_plottabs').tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
-            // $("#report_plottabs li").removeClass("ui-corner-top").addClass("ui-corner-left");
-
-            // helper.tabsdraggable($tabs);
-
         },
         CreateReportPage: function(args) {
             var disabletable = 0;
@@ -326,40 +317,46 @@ define(['jquery',
 
             }
         },
+
         /**
          * Generates graph widget with given Highcharts ajax response
          * @param {object} response Ajax response
          * @return Creates highchart widget with given response based on type of chart
          */
         generate_plotgraph: function(response) {
-            response.containerid = 'plotreportcontainer' + response.reportinstance;
+            var reportinstance = response.reportinstance || response.reportid;
+            response.containerid = 'plotreportcontainer' + reportinstance;
             switch (response.type) {
-                case 'pie':
-                    chart.piechart(response);
-                    break;
                 case 'spline':
                 case 'bar':
                 case 'column':
                     chart.lbchart(response);
                     break;
-                case 'solidgauge':
-                    chart.solidgauge(response);
+                case 'radar':
+                    chart.radarchart(response);
                     break;
                 case 'combination':
                     chart.combinationchart(response);
                     break;
-                case 'heatmap':
-                    chart.HeatMap(response);
-                    break;
             }
         },
+
         /**
          * Datatable serverside for all table type reports
          * @param {object} args reportid
          * @return Apply serverside datatable to report table
          */
         ReportDatatable: function(args) {
-            Str.get_string('nodataavailable', 'block_learnerscript').then(function(s) {
+            Str.get_strings([{
+                key: 'show',
+                component: 'block_learnerscript'
+            }, {
+                key: 'showall',
+                component: 'block_learnerscript'
+            }, {
+                key: 'search',
+                component: 'block_learnerscript'
+            }]).then(function(s){
                 var params = {};
                 var reportinstance = args.instanceid ? args.instanceid : args.reportid;
                 params.filters = args.filters;
@@ -418,14 +415,15 @@ define(['jquery',
                 if (args.reportname == 'Users profile' || args.reportname == 'Course profile') {
                     var lengthoptions = [
                         [50, 100, -1],
-                        ["Show 50", "Show 100", "Show All"]
+                        [s[0] + "50", s[0] + "100", s[1]]
                     ];
                 } else {
                     var lengthoptions = [
                         [10, 25, 50, 100, -1],
-                        ["Show 10", "Show 25", "Show 50", "Show 100", "Show All"]
+                        [s[0] + "10", s[0] + "25", s[0] + "50", s[0] + "100", s[1]]
                     ];
                 }
+
                 $('#reporttable_' + reportinstance).DataTable({
                     'processing': true,
                     'serverSide': true,
@@ -441,7 +439,6 @@ define(['jquery',
                     }),
                     'columnDefs': args.columnDefs,
                     "fnDrawCallback": function() {
-                        chart.SparkLineReport();
                         helper.DrilldownReport();
                     },
                     "oScroll": {},
@@ -493,9 +490,8 @@ define(['jquery',
                         },
                         'sProcessing': "<img src='" + M.util.image_url('loading', 'block_learnerscript') + "'>",
                         'search': "_INPUT_",
-                        'searchPlaceholder': "Search",
+                        'searchPlaceholder': s[2],
                         'lengthMenu': "_MENU_",
-                        "emptyTable": "<div class='alert alert-info'>" + s + "</div>"
                     },
                     "lengthMenu": lengthoptions
                 });
@@ -504,6 +500,7 @@ define(['jquery',
                 html($('#export_options' + args.reportid).html());
             });
         },
+
         AddExpressions: function(e, value) {
             $(e.target).on('select2:unselecting', function(e) {
                 $('#fitem_id_' + e.params.args.data.id + '').remove();

@@ -25,8 +25,25 @@ use block_learnerscript\local\componentbase;
 
 /** Plot component */
 class component_plot extends componentbase {
-
-    /** Plot graphs initialization */
+    /**
+     * @var bool $plugins Plugins
+     */
+    public $plugins;
+    /**
+     * @var bool $ordering Ordering
+     */
+    public $ordering;
+    /**
+     * @var bool $form Form
+     */
+    public $form;
+    /**
+     * @var bool $help Help
+     */
+    public $help;
+    /**
+     * Plot graphs initialization
+     */
     public function init() {
         $this->plugins = true;
         $this->ordering = true;

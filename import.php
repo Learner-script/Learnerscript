@@ -21,11 +21,9 @@
  */
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
-use block_learnerscript_license_setting;
 use html_writer;
 
 $import = optional_param('import', 0, PARAM_INT);
-$reset = optional_param('reset', 0, PARAM_INT);
 
 require_login();
 
@@ -54,7 +52,7 @@ $lsreportscount = $DB->count_records('block_learnerscript');
 $lsimportlogs = [];
 $lastreport = 0;
 foreach ($lsimportlogs as $lsimportlog) {
-    $lslog = unserialize($lsimportlog);
+    $lslog = json_decode($lsimportlog);
     if ($lslog['status'] == false) {
         $errorreportsposition[$lslog['position']] = $lslog['position'];
     }
@@ -91,7 +89,7 @@ if (empty($lsimportlogs) || $lsreportscount < 1) {
         $importstatus = true;
     }
 }
-$errorreportspositiondata = serialize($errorreportsposition);
+$errorreportspositiondata = json_encode($errorreportsposition);
 
 echo $OUTPUT->header();
 $slideshowimagespath = '/blocks/learnerscript/images/slideshow/';
@@ -118,14 +116,26 @@ if ($reportdashboardblockexists) {
 }
 
 if ($importstatus && !$lsreportconfigstatus) {
-    $pluginsettings = new block_learnerscript_license_setting('block_learnerscript/lsreportconfigimport',
+    $pluginsettings = new block_learnerscript\local\license_setting('block_learnerscript/lsreportconfigimport',
                 'lsreportconfigimport', get_string('lsreportconfigimport', 'block_learnerscript'), '', PARAM_INT, 2);
     $pluginsettings->config_write('lsreportconfigimport', 1);
 
     echo html_writer::div('', "", ['id' => 'progressbar']);
-    echo '<center style="display:none">' . html_writer::div(html_writer::link(new moodle_url($redirecturl),
-    '<button>Continue</button>'),
-    "", ['id' => 'reportdashboardnav']) . '</center>';
+    echo html_writer::tag(
+        'center',
+        html_writer::div(
+            html_writer::link(
+                new moodle_url($redirecturl),
+                html_writer::tag(
+                    'button',
+                    get_string('continue', 'block_learnerscript')
+                )
+            ),
+            '',
+            ['id' => 'reportdashboardnav']
+        ),
+        ['style' => 'display:none']
+    );
     $usertours = $CFG->dirroot . '/blocks/learnerscript/usertours/';
     $totalusertours = count(glob($usertours . '*.json'));
     $usertoursjson = glob($usertours . '*.json');
@@ -148,7 +158,7 @@ if ($importstatus && !$lsreportconfigstatus) {
     get_string('clickhere', 'block_learnerscript')) .get_string('tocontinue', 'block_learnerscript'),
     "alert alert-info");
 }
-echo "</center>".html_writer::end_tag('div');
+echo html_writer::end_tag('center') . html_writer::end_tag('div');
 
 if ($importstatus && !$lsreportconfigstatus) {
     $PAGE->requires->js_call_amd('block_learnerscript/lsreportconfig', 'init',

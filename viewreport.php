@@ -35,7 +35,7 @@ $delete = optional_param('delete', 0, PARAM_INT);
 $cid = optional_param('cid', '', PARAM_ALPHANUM);
 $comp = optional_param('comp', '', PARAM_ALPHA);
 $pname = optional_param('pname', '', PARAM_ALPHA);
-global $USER, $CFG;
+global $USER, $CFG, $SESSION;
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
@@ -99,10 +99,14 @@ $urlfilterparams = ['filter_courses' => $paramcourses,
 $urlrequests = array_filter($urlfilterparams);
 foreach ($urlrequests as $key => $val) {
     if (strpos($key, 'filter_') !== false) {
-        $filterrequests[$key] = optional_param($key, $val, PARAM_RAW);
+        if ($key == 'filter_status') {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
+        } else {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
+        }
     }
     if (strpos($key, 'date') !== false) {
-        $datefilterrequests[$key] = optional_param($key, $val, PARAM_RAW);
+        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
     }
 }
 if (!$report = $DB->get_record('block_learnerscript', ['id' => $id])) {
@@ -133,12 +137,11 @@ $PAGE->set_context($context);
 $PAGE->set_title($report->name);
 $PAGE->set_pagelayout('report');
 
-
 if ($delete && confirm_sesskey()) {
     $components = (new block_learnerscript\local\ls)->cr_unserialize($report->components);
-    $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
+    $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
     foreach ($elements as $index => $e) {
-        if ($e['id'] == $cid) {
+        if ($e->id == $cid) {
             if ($delete) {
                 unset($elements[$index]);
                 break;
@@ -150,7 +153,7 @@ if ($delete && confirm_sesskey()) {
             break;
         }
     }
-    $components[$comp]['elements'] = $elements;
+    $components->$comp->elements = $elements;
     $report->components = (new block_learnerscript\local\ls)->cr_serialize($components);
     $DB->update_record('block_learnerscript', $report);
     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $id, 'courseid' => $courseid]));
@@ -214,7 +217,6 @@ $PAGE->set_url('/blocks/learnerscript/viewreport.php', ['id' => $id]);
 
 $download = ($download && $format && strpos($report->export, $format) !== false) ? true : false;
 
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->css('/blocks/reportdashboard/css/radioslider/radios-to-slider.min.css');
 $PAGE->requires->css('/blocks/reportdashboard/css/flatpickr.min.css');
 $PAGE->requires->css('/blocks/learnerscript/css/datatables/fixedHeader.dataTables.min.css');
@@ -273,11 +275,11 @@ if (!$download) {
     $event->trigger();
 
     echo $OUTPUT->header();
-    $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
     if ($report->type == 'sql' || $report->type == 'statistics') {
         echo $OUTPUT->heading($report->name."  ".
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'), 'title' => 'Help with ' . $report->name,
-                'alt' => 'help', 'href' => "javascript:void(0)",
+        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'),
+                'title' => get_string('helpwith', 'block_learnerscript') . $report->name,
+                'alt' => get_string('help'), 'href' => "javascript:void(0)",
         'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
 
     } else {
@@ -287,7 +289,8 @@ if (!$download) {
     echo html_writer::start_tag('div', ['id' => 'licenseresult']);
     $renderer = $PAGE->get_renderer('block_learnerscript');
     if ($drillid > 0) {
-        echo $OUTPUT->single_button($drillreporturl, 'Go back to:' . $drillreportname);
+        echo $OUTPUT->single_button($drillreporturl,
+            get_string('goback', 'block_learnerscript') . $drillreportname);
     }
     $disabletable = !empty($report->disabletable) ? $report->disabletable : 0;
     $renderer->viewreport($report, $context, $reportclass);

@@ -310,15 +310,15 @@ class report_courseprofile extends reportbase implements report {
         $courseids = isset($this->params['filter_courses']) &&
                         $this->params['filter_courses'] > 0 ? $this->params['filter_courses'] : SITEID;
 
-        $filters = (isset($components['filters']['elements'])) ? $components['filters']['elements'] : [];
-        $columns = (isset($components['columns']['elements'])) ? $components['columns']['elements'] : [];
-        $ordering = (isset($components['ordering']['elements'])) ? $components['ordering']['elements'] : [];
+        $filters = (isset($components->filters->elements)) ? $components->filters->elements : [];
+        $columns = (isset($components->columns->elements)) ? $components->columns->elements : [];
+        $ordering = (isset($components->ordering->elements)) ? $components->ordering->elements : [];
         $columnnames  = [];
 
         foreach ($columns as $key => $column) {
-            if (isset($column['formdata']->column)) {
-                $columnnames[$column['formdata']->column] = $column['formdata']->columname;
-                $this->selectedcolumns[] = $column['formdata']->column;
+            if (isset($column->formdata->column)) {
+                $columnnames[$column->formdata->column] = $column->formdata->columname;
+                $this->selectedcolumns[] = $column->formdata->column;
             }
         }
         $finalelements = [];
@@ -457,11 +457,11 @@ class report_courseprofile extends reportbase implements report {
         $table->size = $tablesize;
         $table->align = $tablealign;
         $table->wrap = $tablewrap;
-        $table->width = (isset($components['columns']['config'])) ? $components['columns']['config']->tablewidth : '';
+        $table->width = (isset($components->columns->config)) ? $components->columns->config->tablewidth : '';
         $table->summary = $this->config->summary;
-        $table->tablealign = (isset($components['columns']['config'])) ? $components['columns']['config']->tablealign : 'center';
-        $table->cellpadding = (isset($components['columns']['config'])) ? $components['columns']['config']->cellpadding : '5';
-        $table->cellspacing = (isset($components['columns']['config'])) ? $components['columns']['config']->cellspacing : '1';
+        $table->tablealign = (isset($components->columns->config)) ? $components->columns->config->tablealign : 'center';
+        $table->cellpadding = (isset($components->columns->config)) ? $components->columns->config->cellpadding : '5';
+        $table->cellspacing = (isset($components->columns->config)) ? $components->columns->config->cellspacing : '1';
 
         if (!$this->finalreport) {
             $this->finalreport = new stdClass;

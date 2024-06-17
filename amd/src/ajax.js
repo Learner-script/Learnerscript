@@ -20,7 +20,7 @@
  * @package
  * @copyright  2023 Moodle India Information Solutions Private Limited
  */
-define(['jquery', 'core/config', 'core/log', 'core/modal_factory'], function($, config, Log, ModalFactory) {
+define(['jquery','core/str', 'core/config', 'core/log', 'core/modal_factory'], function($, Str, config, Log, ModalFactory) {
     // Keeps track of when the user leaves the page so we know not to show an error.
     var unloading = false;
     /**
@@ -65,7 +65,9 @@ define(['jquery', 'core/config', 'core/log', 'core/modal_factory'], function($, 
             request.deferred.resolve(response);
         } else {
             // This is not an expected case.
-            exception = new Error('missing response');
+            Str.get_string('missing_response', 'block_learnerscript').then(function(s){
+                exception = new Error(s);
+            });
         }
         // Something failed, reject the remaining promises.
         if (typeof(exception) !== 'undefined' && exception !== null) {
@@ -86,10 +88,8 @@ define(['jquery', 'core/config', 'core/log', 'core/modal_factory'], function($, 
         var request = this;
         if (unloading) {
             // No need to trigger an error because we are already navigating.
-            Log.error("Page unloaded.");
             Log.error(exception);
         } else {
-            Log.error("Page Not Responding.");
             Log.error(exception);
             request.deferred.reject(exception);
         }

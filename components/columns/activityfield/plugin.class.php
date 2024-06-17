@@ -95,9 +95,9 @@ class plugin_activityfield extends pluginbase {
                 }
             break;
             case 'completion':
-                $courserecord->{$data->column} = $courserecord->{$data->column} > 0 ?
-                '<span class="label label-success">' .  get_string('enabled', 'block_learnerscript') . '</span>' :
-                '<span class="label label-warning">' . get_string('disabled', 'block_learnerscript') . '</span>';
+                $courserecord->{$data->column} = $courserecord->{$data->column} > 0
+                ? html_writer::tag('span', get_string('enabled', 'block_learnerscript'), ['class' => 'label label-success'])
+                : html_writer::tag('span', get_string('disabled', 'block_learnerscript'), ['class' => 'label label-warning']);
             break;
             case 'completiongradeitemnumber':
                 $courserecord->{$data->column} = ($courserecord->{$data->column}) ? ($courserecord->{$data->column}) : 'N/A';
@@ -119,9 +119,9 @@ class plugin_activityfield extends pluginbase {
                 }
             break;
             case 'visible':
-                $courserecord->{$data->column} = ($courserecord->{$data->column}) ?
-                '<span class="label label-success">' . get_string('active') .'</span>' :
-                '<span class="label label-warning">' . get_string('no'). '</span>';
+                $courserecord->{$data->column} = ($courserecord->{$data->column})
+                ? html_writer::tag('span', get_string('active'), ['class' => 'label label-success'])
+                : html_writer::tag('span', get_string('no'), ['class' => 'label label-warning']);
             break;
             case 'module':
                 $moduletype = $DB->get_field('modules', 'name', ['id' => $courserecord->module]);

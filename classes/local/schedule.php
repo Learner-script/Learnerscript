@@ -137,10 +137,9 @@ class schedule {
             return $this;
         }
 
-        $this->changed = true;
         $frequency = $schedulereport->frequency;
         $schedule = $schedulereport->schedule;
-        $usertz = $this->get_clean_timezone($USER->timezone);
+        $usertz = \core_date::normalise_timezone($USER->timezone);
         if (is_null($timestamp)) {
             $datetime = new DateTime('now', new DateTimeZone($usertz));
             $timestamp = strtotime($datetime->format('Y-m-d H:i:s'));
@@ -233,144 +232,6 @@ class schedule {
                 break;
         }
         return $out;
-    }
-
-    /**
-     * gets a list of bad timezones with the most likely proper named location zone
-     * @return array a bad timezone list key=>bad value=>replacement
-     */
-    public function get_bad_timezone_list() {
-        $zones = [];
-        // Unsupported but common abbreviations.
-        $zones['EST'] = 'America/New_York';
-        $zones['EDT'] = 'America/New_York';
-        $zones['EST5EDT'] = 'America/New_York';
-        $zones['CST'] = 'America/Chicago';
-        $zones['CDT'] = 'America/Chicago';
-        $zones['CST6CDT'] = 'America/Chicago';
-        $zones['MST'] = 'America/Denver';
-        $zones['MDT'] = 'America/Denver';
-        $zones['MST7MDT'] = 'America/Denver';
-        $zones['PST'] = 'America/Los_Angeles';
-        $zones['PDT'] = 'America/Los_Angeles';
-        $zones['PST8PDT'] = 'America/Los_Angeles';
-        $zones['HST'] = 'Pacific/Honolulu';
-        $zones['WET'] = 'Europe/London';
-        $zones['GMT'] = 'Europe/London';
-        $zones['EET'] = 'Europe/Kiev';
-        $zones['FET'] = 'Europe/Minsk';
-        $zones['CET'] = 'Europe/Amsterdam';
-
-        // Moodle offset zones.
-        $zones['-13.0'] = 'Pacific/Apia';
-        $zones['-12.5'] = 'Pacific/Apia';
-        $zones['-12.0'] = 'Pacific/Kwajalein';
-        $zones['-11.5'] = 'Pacific/Niue';
-        $zones['-11.0'] = 'Pacific/Midway';
-        $zones['-10.5'] = 'Pacific/Rarotonga';
-        $zones['-10.0'] = 'Pacific/Honolulu';
-        $zones['-9.5'] = 'Pacific/Marquesas';
-        $zones['-9.0'] = 'America/Anchorage';
-        $zones['-8.5'] = 'America/Anchorage';
-        $zones['-8.0'] = 'America/Los_Angeles';
-        $zones['-7.5'] = 'America/Los_Angeles';
-        $zones['-7.0'] = 'America/Denver';
-        $zones['-6.5'] = 'America/Denver';
-        $zones['-6.0'] = 'America/Chicago';
-        $zones['-5.5'] = 'America/Chicago';
-        $zones['-5.0'] = 'America/New_York';
-        $zones['-4.5'] = 'America/Caracas';
-        $zones['-4.0'] = 'America/Santiago';
-        $zones['-3.5'] = 'America/St_Johns';
-        $zones['-3.0'] = 'America/Sao_Paulo';
-        $zones['-2.5'] = 'America/Sao_Paulo';
-        $zones['-2.0'] = 'Atlantic/South_Georgia';
-        $zones['-1.5'] = 'Atlantic/Cape_Verde';
-        $zones['-1.0'] = 'Atlantic/Cape_Verde';
-        $zones['-0.5'] = 'Europe/London';
-        $zones['0.0'] = 'Europe/London';
-        $zones['0.5'] = 'Europe/London';
-        $zones['1.0'] = 'Europe/Amsterdam';
-        $zones['1.5'] = 'Europe/Amsterdam';
-        $zones['2.0'] = 'Europe/Helsinki';
-        $zones['2.5'] = 'Europe/Minsk';
-        $zones['3.0'] = 'Asia/Riyadh';
-        $zones['3.5'] = 'Asia/Tehran';
-        $zones['4.0'] = 'Asia/Dubai';
-        $zones['4.5'] = 'Asia/Kabul';
-        $zones['5.0'] = 'Asia/Karachi';
-        $zones['5.5'] = 'Asia/Kolkata';
-        $zones['6.0'] = 'Asia/Dhaka';
-        $zones['6.5'] = 'Asia/Rangoon';
-        $zones['7.0'] = 'Asia/Bangkok';
-        $zones['7.5'] = 'Asia/Singapore';
-        $zones['8.0'] = 'Australia/Perth';
-        $zones['8.5'] = 'Australia/Perth';
-        $zones['9.0'] = 'Asia/Tokyo';
-        $zones['9.5'] = 'Australia/Adelaide';
-        $zones['10.0'] = 'Australia/Sydney';
-        $zones['10.5'] = 'Australia/Lord_Howe';
-        $zones['11.0'] = 'Pacific/Guadalcanal';
-        $zones['11.5'] = 'Pacific/Norfolk';
-        $zones['12.0'] = 'Pacific/Auckland';
-        $zones['12.5'] = 'Pacific/Auckland';
-        $zones['13.0'] = 'Pacific/Apia';
-        return $zones;
-    }
-
-    /**
-     * Get clean timezone
-     * @todo MDL-5678 Gets a clean timezone attempting to compensate for some Moodle 'special' timezones
-     *       where the returned zone is compatible with PHP DateTime, DateTimeZone etc functions
-     * @param string/float $tz either a location identifier string or, in some Moodle special cases, a number
-     * @return string a clean timezone that can be used safely
-     */
-    public function get_clean_timezone($tz = null) {
-        global $CFG, $DB;
-
-        $cleanzones = DateTimeZone::listIdentifiers();
-        if (empty($tz)) {
-            $tz = \core_date::get_user_timezone();
-
-        }
-
-        // If already a good zone, return.
-        if (in_array($tz, $cleanzones, true)) {
-            return $tz;
-        }
-        // For when all else fails.
-        $default = 'Europe/London';
-        // ...try to handle UTC offsets, and numbers including '99' (server local time).
-        // ...note: some old versions of moodle had GMT offsets stored as floats.
-        if (is_numeric($tz)) {
-            if (intval($tz) == 99) {
-                // Check various config settings to try and resolve to something useful.
-                if (isset($CFG->forcetimezone) && $CFG->forcetimezone != 99) {
-                    $tz = $CFG->forcetimezone;
-                } else if (isset($CFG->timezone) && $CFG->timezone != 99) {
-                    $tz = $CFG->timezone;
-                }
-            }
-            if (intval($tz) == 99) {
-                // No useful CFG settings, try a system call.
-                $tz = date_default_timezone_get();
-            }
-            // Do we have something useful yet?.
-            if (in_array($tz, $cleanzones, true)) {
-                return $tz;
-            }
-            // Check the bad timezone replacement list.
-            if (is_float($tz)) {
-                $tz = number_format($tz, 1);
-            }
-            $badzones = $this->get_bad_timezone_list();
-            // Does this exist in our replacement list?.
-            if (in_array($tz, array_keys($badzones))) {
-                return $badzones[$tz];
-            }
-        }
-        // Everything has failed, set to London.
-        return $default;
     }
 
     /**
@@ -480,24 +341,28 @@ class schedule {
         }
         switch ($format) {
             case 'ods':
-                $filename = $this->export_ods($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
+                (new \block_learnerscript\export\export_ods)->export_ods_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.ods';
                 break;
             case 'xls':
-                $filename = $this->export_xls($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
+                (new \block_learnerscript\export\export_xls)->export_xls_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.xls';
                 break;
             case 'csv':
-                $filename = $this->export_csv($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
+                (new \block_learnerscript\export\export_csv)->export_csv_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.csv';
                 break;
             case 'pdf':
-                $filename = $this->export_pdf($reportdata, $CFG->dataroot . '/' . $reportfilepathname);
+                (new \block_learnerscript\export\export_pdf)->export_pdf_attachment($reportdata,
+                    $CFG->dataroot . '/' . $reportfilepathname);
                 $reportfilepathname = $reportfilepathname . '.pdf';
                 break;
         }
 
-        $dir = get_config('block_learnerscript', 'exportfilesystempath') . DIRECTORY_SEPARATOR . $user->id;
+        get_config('block_learnerscript', 'exportfilesystempath') . DIRECTORY_SEPARATOR . $user->id;
         $reportfilename = $reportfilepathname;
         return $reportfilename;
     }
@@ -624,215 +489,6 @@ class schedule {
     }
 
     /**
-     * Export report in XLS format
-     *
-     * @param  object $reportclass Export report object
-     * @param  string $filename    Export report name
-     */
-    public function export_xls($reportclass, $filename) {
-        global $CFG;
-        require_once("$CFG->libdir/phpexcel/PHPExcel.php");
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $filename = $filename . '.xls';
-        // Creating a workbook.
-        $workbook = new PHPExcel();
-        $workbook->getActiveSheet()->setTitle(get_string('listofusers', 'block_learnerscript'));
-        $rownumber = 1;
-        $col = 'A';
-        foreach ($table->head as $key => $heading) {
-            $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-            str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                        ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
-            $col++;
-        }
-        // Loop through the result set.
-        $rownumber = 2;
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                $col = 'A';
-                foreach ($row as $key => $item) {
-                    $workbook->getActiveSheet()->setCellValue($col . $rownumber,
-                    str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
-                    $col++;
-                }
-                $rownumber++;
-            }
-        }
-
-        // Freeze pane so that the heading line won't scroll.
-        $workbook->getActiveSheet()->freezePane('A2');
-
-        // Save as an Excel BIFF (xls) file.
-        $objwriter = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
-
-        $objwriter->save($filename);
-    }
-    /**
-     * Export report in ODS format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $filename    Export report name
-     */
-    public function export_ods($reportclass, $filename = null) {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/lib/odslib.class.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $filename = $filename . '.ods';
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-        $workbook = new MoodleODSWorkbook($filename);
-
-        $myxls = [];
-
-        $myxls[0] = $workbook->add_worksheet('');
-        foreach ($matrix as $ri => $col) {
-            foreach ($col as $ci => $cv) {
-                $myxls[0]->write($ri, $ci, $cv);
-            }
-        }
-        $writer = new MoodleODSWriter($myxls);
-        $contents = $writer->get_file_content();
-        $handle = fopen($filename, 'w');
-        fwrite($handle, $contents);
-        fclose($handle);
-    }
-    /**
-     * Export report in PDF format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $fname       Exprt file name
-     * @return [type]              [description]
-     */
-    public function export_pdf($reportclass, $fname = '') {
-        global $DB, $CFG;
-        require_once($CFG->libdir . '/pdflib.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $fname == '' ? $filename = 'report' : $filename = $fname . '.pdf';
-
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-        $table = "";
-
-        $table .= "<table border=\"1\" cellpadding=\"5\"><thead><tr>";
-        $s = count($matrix);
-        reset($matrix);
-        $firstkey = key($matrix);
-        for ($i = $firstkey; $i < ($firstkey + 1); $i++) {
-            foreach ($matrix[$i] as $col) {
-                $table .= "<td><b>$col</b></td>";
-            }
-        }
-        $table .= "</tr></thead><tbody>";
-        for ($i = ($firstkey + 1); $i < count($matrix); $i++) {
-            $table .= "<tr>";
-            foreach ($matrix[$i] as $col) {
-                $table .= "<td>$col</td>";
-            }
-            $table .= "</tr>";
-        }
-        $table .= "</tbody></table>";
-        $table .= "";
-        $doc = new pdf;
-        $doc->setPrintHeader(false);
-        $doc->setPrintFooter(false);
-        $doc->AddPage();
-
-        $doc->writeHTML($table);
-
-        if ($fname == '') {
-            $doc->Output();
-            exit;
-        } else {
-            $doc->Output($filename, 'F');
-        }
-    }
-    /**
-     * Export report in CSV format
-     *
-     * @param  object $reportclass Export report class object
-     * @param  string $filename    Export report filename
-     */
-    public function export_csv($reportclass, $filename = '') {
-        global $CFG;
-        require_once($CFG->libdir . '/csvlib.class.php');
-        $report = $reportclass->finalreport;
-        $table = $report->table;
-        $matrix = [];
-        $filename = '' ? $filename = 'report.csv' : $filename . '.csv';
-
-        if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
-            foreach ($table->head as $key => $heading) {
-                $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-            }
-        }
-
-        if (!empty($table->data)) {
-            foreach ($table->data as $rkey => $row) {
-                foreach ($row as $key => $item) {
-                    $matrix[$rkey + 1][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
-                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-                }
-            }
-        }
-
-        $csvexport = new csv_export_writer();
-        $csvexport->set_filename($filename);
-
-        foreach ($matrix as $ri => $col) {
-            $csvexport->add_data($col);
-        }
-        if ($filename) {
-            $fp = fopen($filename, "w");
-            fwrite($fp, $csvexport->print_csv_data(true));
-            fclose($fp);
-        } else {
-            $csvexport->download_file();
-            exit;
-        }
-    }
-    /**
      * Getting users by using role wise and searching parameter string
      * @param  string   $roleid  List of roleids
      * @param  string  $search
@@ -933,7 +589,7 @@ class schedule {
             case 'remove':
                 $userslistsql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
                         FROM {user} as u
-                        JOIN {block_ls_schedule} as bcs ON u.id IN (bcs.sendinguserid)
+                        JOIN {block_ls_schedule} as bcs ON u.id = bcs.sendinguserid)
                         WHERE bcs.reportid = :reportid $searchsql  AND u.confirmed = 1
                         AND u.suspended = 0 AND u.deleted = 0 ";
 
@@ -960,7 +616,7 @@ class schedule {
         global $DB;
 
         if (!$reportid) {
-            throw new moodle_exception('Missing Report ID.');
+            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
         }
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
@@ -1067,7 +723,7 @@ class schedule {
      * Get report roles
      *
      * @param  int $selectedroleid Selected report id
-     * @param  int    $reportid Report ID
+     * @param  int $reportid Report ID
      * @return array
      */
     public function reportroles($selectedroleid = '', $reportid = 0) {
@@ -1077,14 +733,14 @@ class schedule {
         $reportinstance = (new ls)->cr_get_reportinstance($reportid);
 
         $components = (new ls)->cr_unserialize($reportinstance->components);
-        $permissions = (isset($components['permissions'])) ? $components['permissions'] : [];
+        $permissions = (isset($components->permissions)) ? $components->permissions : '';
         $roles[-1] = 'admin';
-        if (!empty($permissions['elements'])) {
-            foreach ($permissions['elements'] as $p) {
-                if ($p['pluginname'] == 'roleincourse') {
-                    $contextname = context_helper::get_level_name($p['formdata']->contextlevel);
-                    $rolename = $DB->get_field('role', 'shortname', ['id' => $p['formdata']->roleid]);
-                    $roles[$p['formdata']->roleid .'_'. $p['formdata']->contextlevel] = $rolename . ' at '. $contextname .' level';
+        if (!empty($permissions->elements)) {
+            foreach ($permissions->elements as $p) {
+                if ($p->pluginname == 'roleincourse') {
+                    $contextname = context_helper::get_level_name($p->formdata->contextlevel);
+                    $rolename = $DB->get_field('role', 'shortname', ['id' => $p->formdata->roleid]);
+                    $roles[$p->formdata->roleid .'_'. $p->formdata->contextlevel] = $rolename . ' at '. $contextname .' level';
                 }
             }
         } else {

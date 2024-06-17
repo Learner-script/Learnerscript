@@ -94,11 +94,10 @@ class plugin_activities extends pluginbase {
     public function filter_data($selectoption = true, $request = []) {
         global $DB, $CFG;
         $factivities = isset($request['filter_activities']) ? $request['filter_activities'] : 0;
-        $filteractivities = optional_param('filter_activities', $factivities, PARAM_RAW);
         require_once($CFG->dirroot . '/course/lib.php');
         $courseid = optional_param('courseid', SITEID, PARAM_INT);
         if ($courseid <= SITEID) {
-            $courseid = optional_param('filter_courses', SITEID, PARAM_RAW);
+            $courseid = optional_param('filter_courses', SITEID, PARAM_INT);
             $courselist = $DB->get_record_sql("SELECT * FROM {course} WHERE id = $courseid");
         }
         $activities = [];

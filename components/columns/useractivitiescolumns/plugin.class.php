@@ -170,7 +170,8 @@ class plugin_useractivitiescolumns extends pluginbase {
                         $completiontype = get_string('fail', 'block_learnerscript');
                         break;
                 }
-                $row->completionstatus = $completiontype ? get_string('completion-' . $completiontype, 'completion') : get_string('na', 'block_learnerscript');
+                $row->completionstatus = $completiontype ? get_string('completion-' . $completiontype, 'completion') :
+                                            get_string('na', 'block_learnerscript');
             break;
         }
         return (isset($row->{$data->column})) ? $row->{$data->column} : '--';

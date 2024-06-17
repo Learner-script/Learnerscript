@@ -178,21 +178,34 @@ class plugin_usercolumns extends pluginbase {
                 } else {
                     $progress = $row->{$data->column};
                 }
-                $progress = empty($progress) ? 0 : $progress;
-                $row->{$data->column} = html_writer::div($progress . '%', "spark-report",
-                ['id' => html_writer::random_id(),
-                'data-sparkline' => "$progress; progressbar", 'data-labels' => 'progress', ]);
+                $progress = empty($progress) ? 0 : round($progress);
+                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progress . '%', "progress-bar",
+                ['role' => "progressbar", 'aria-valuenow' => $progress,
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progress . "%"]) .
+                html_writer::end_div();
             break;
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted
                 FROM {user}
                 WHERE id = :id', ['id' => $row->id]);
                 if ($userstatus->suspended) {
-                    $userstaus = '<span class="badge badge-warning">' . get_string('suspended') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('suspended'),
+                        ['class' => 'badge badge-warning']
+                    );
                 } else if ($userstatus->deleted) {
-                    $userstaus = '<span class="badge badge-warning">' . get_string('deleted') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('deleted'),
+                        ['class' => 'badge badge-warning']
+                    );
                 } else {
-                    $userstaus = '<span class="badge badge-success">' . get_string('active') .'</span>';
+                    $userstaus = html_writer::tag(
+                        'span',
+                        get_string('active'),
+                        ['class' => 'badge badge-success']
+                    );
                 }
                 $row->{$data->column} = $userstaus;
 

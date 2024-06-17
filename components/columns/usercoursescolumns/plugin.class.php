@@ -93,9 +93,10 @@ class plugin_usercoursescolumns extends pluginbase {
             case 'progressbar':
                 $progressbar = \core_completion\progress::get_course_progress_percentage($course, $row->userid);
                 $progressbar = !empty($progressbar) ? floor($progressbar) : 0;
-                $row->{$data->column} = html_writer::div($progressbar . '%', "spark-report",
-                ['id' => html_writer::random_id(),
-                'data-sparkline' => "$progressbar; progressbar", 'data-labels' => 'progress', ]);
+                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progressbar . '%', "progress-bar",
+                ['role' => "progressbar", 'aria-valuenow' => $progressbar,
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progressbar . "%"]) .
+                html_writer::end_div();
                 break;
             case 'status':
                 require_once("{$CFG->libdir}/completionlib.php");

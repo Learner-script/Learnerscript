@@ -95,19 +95,19 @@ class plugin_coursefield extends pluginbase {
                     break;
                 case 'visibleold':
                 case 'visible':
-                    $courserecord->{$data->column} = ($courserecord->{$data->column}) ?
-                    '<span class="label label-success">' . get_string('active') .'</span>' :
-                    '<span class="label label-warning">' . get_string('no'). '</span';
+                    $courserecord->{$data->column} = ($courserecord->{$data->column})
+                    ? html_writer::tag('span', get_string('active'), ['class' => 'label label-success'])
+                    : html_writer::tag('span', get_string('no'), ['class' => 'label label-warning']);
                     break;
                 case 'enrollable':
                     $courserecord->{$data->column} = ($courserecord->{$data->column}) ?
-                    '<span class="label label-success">' .  get_string('yes') . '</span>' :
-                    '<span class="label label-warning">' . get_string('no') . '</span>';
+                    html_writer::tag('span', get_string('yes'), ['class' => 'label label-success']) :
+                    html_writer::tag('span', get_string('no'), ['class' => 'label label-warning']);
                     break;
                 case 'enablecompletion':
                     $courserecord->{$data->column} = ($courserecord->{$data->column}) ?
-                    '<span class="label label-success">' .  get_string('enabled', 'block_learnerscript') . '</span>' :
-                    '<span class="label label-warning">' . get_string('disabled', 'block_learnerscript') . '</span>';
+                    html_writer::tag('span', get_string('enabled', 'block_learnerscript'), ['class' => 'label label-success']) :
+                    html_writer::tag('span', get_string('disabled', 'block_learnerscript'), ['class' => 'label label-warning']);
                     break;
                 case 'fullname':
                     if (is_siteadmin()) {

@@ -35,7 +35,6 @@ use block_learnerscript\local\schedule;
  * @param  array  $options       File options
  */
 function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
-    global $CFG;
     if ($filearea == 'logo') {
         $itemid = (int) array_shift($args);
 
@@ -67,7 +66,7 @@ function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args
  * @param  boolean $excel Report header
  * @return string
  */
-function get_reportheader_imagepath($excel = false) {
+function block_learnerscript_get_reportheader_imagepath($excel = false) {
     global $CFG;
     $fs = get_file_storage();
     $syscontext = context_system::instance();
@@ -212,7 +211,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
  * @param array $args Send emails arguments
  */
 function block_learnerscript_sendreportemail_ajaxform($args) {
-    global $CFG, $DB, $OUTPUT, $PAGE, $USER;
+    global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SESSION;
 
     $args = (object) $args;
     $o = '';
@@ -297,54 +296,4 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
             return $output;
         }
     }
-}
-/**
- * Get roles in context level
- * @param int $contextlevel User contextlevel
- * @param array $excludedroles Roles to exclude report permissions
- */
-function get_roles_in_context($contextlevel, $excludedroles = null) {
-    global $DB;
-    if ($contextlevel == 10) {
-        $contextroles = $DB->get_records_sql("SELECT DISTINCT roleid FROM {role_context_levels}");
-        list($contextsql, $params) = $DB->get_in_or_equal($contextroles, SQL_PARAMS_NAMED, 'param', false);
-        $systemroles = array_values(get_roles_for_contextlevels($contextlevel));
-        $iomadroles = $DB->get_records_sql_menu("SELECT id, shortname
-        FROM {role}
-        WHERE 1 = 1 AND id $contextsql", $params);
-        $allroles = array_merge($systemroles, array_keys($iomadroles));
-    } else {
-        $allroles = array_values(get_roles_for_contextlevels($contextlevel));
-    }
-    if (!empty($excludedroles)) {
-        $rolesexcluded = implode(',', array_values($excludedroles));
-    }
-    list($rolesql, $params) = $DB->get_in_or_equal($allroles);
-    list($excludesql, $params) = $DB->get_in_or_equal($excludedroles, SQL_PARAMS_NAMED, 'param', false);
-    if (!empty($rolesexcluded)) {
-        $roles = $DB->get_records_sql("SELECT id, shortname, name
-                    FROM {role} WHERE id $rolesql
-                    AND shortname $excludesql", $params);
-    } else {
-        $roles = $DB->get_records_sql("SELECT id, shortname, name
-                    FROM {role} WHERE id $rolesql", $params);
-    }
-    $userroles = [];
-    foreach ($roles as $r) {
-        if ($r->shortname == 'guest' || $r->shortname == 'user' || $r->shortname == 'frontpage') {
-            continue;
-        }
-        if ($contextlevel == CONTEXT_SYSTEM && $r->shortname == 'manager') {
-            continue;
-        }
-        $userroles[$r->id] = role_get_name($r);
-    }
-    return $userroles;
-}
-/**
- * Get page variables
- */
-function get_pagevariables() {
-    global $PAGE;
-    return $PAGE;
 }

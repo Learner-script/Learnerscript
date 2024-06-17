@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once(__DIR__ . '/../../config.php');
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 use core_external\external_api;
@@ -24,7 +25,7 @@ use core_external\external_value;
 use block_learnerscript\local\ls as ls;
 use block_learnerscript\local\reportbase as reportbase;
 use block_learnerscript\local\schedule;
-use block_learnerscript_license_setting as lssetting;
+use block_learnerscript\local\license_setting as lssetting;
 
 /**
  * Learnerscript external functions
@@ -45,8 +46,8 @@ class block_learnerscript_external extends external_api {
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
                 'contextlevel' => new external_value(PARAM_INT, 'contextlevel of role', VALUE_DEFAULT),
                 'page' => new external_value(PARAM_INT, 'Current page number to request', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'reportid' => new external_value(PARAM_RAW, 'Report id of report', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
@@ -72,8 +73,6 @@ class block_learnerscript_external extends external_api {
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:managereports', $context);
-        $pagevariables = get_pagevariables();
-        $pagevariables->set_context($context);
         $roles = $roleid;
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::rolewiseusers_parameters(), ['roleid' => $roleid, 'term' => $term,
@@ -84,16 +83,10 @@ class block_learnerscript_external extends external_api {
             has_capability('block/learnerscript:manageownreports', $context) ||
             is_siteadmin()) && !empty($roles)) {
             if ($roles == -1) {
-                $siteadmins = $CFG->siteadmins;
-                $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
-                                    FROM {user} u
-                                   WHERE 1 = 1
-                                     AND u.id IN ($siteadmins)";
-
-                $admins = $DB->get_records_sql($adminssql, ['siteadmins' => 'siteadmins']);
+                $admins = get_admins();
                 $userlist = [];
                 foreach ($admins as $admin) {
-                    $userlist[] = ['id' => $admin->id, 'text' => $admin->fullname];
+                    $userlist[] = ['id' => $admin->id, 'text' => fullname($admin)];
                 }
             } else {
                 $userlist = (new schedule)->rolewiseusers($roles, $term, $page, $reportid, $contextlevel);
@@ -127,106 +120,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function rolewiseusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
-    }
-    /**
-     * User roles parameters
-     * @return external_function_parameters
-     */
-    public static function roleusers_parameters() {
-        return new external_function_parameters(
-            [
-                'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
-                'scheduleid' => new external_value(PARAM_INT, 'selected schedule for report', VALUE_DEFAULT),
-                'selectedroleid' => new external_value(PARAM_RAW, 'selected role for report', VALUE_DEFAULT),
-                'roleid' => new external_value(PARAM_RAW, 'roleid for report', VALUE_DEFAULT),
-                'contextlevel' => new external_value(PARAM_INT, 'contextlevel of role', VALUE_DEFAULT),
-                'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'bullkselectedusers' => new external_value(PARAM_RAW, 'bulk users selected', VALUE_DEFAULT),
-            ]
-        );
-    }
-    /**
-     * Displays the list of users based on selected roles
-     * @param int $reportid Scheduled report ID
-     * @param int $scheduleid Schedule ID
-     * @param int $selectedroleid Selected role id to share the scheduled report
-     * @param int $roleid Roled ID
-     * @param int $contextlevel Contextlevel of the selected role
-     * @param string $term Search text
-     * @param string $type Type of the report
-     * @param string $bullkselectedusers Selected users
-     */
-    public static function roleusers($reportid, $scheduleid, $selectedroleid,
-    $roleid, $contextlevel, $term, $type, $bullkselectedusers) {
-        global $DB, $CFG;
-        $roleid = json_decode($roleid);
-        $bullkselectedusers = json_decode($bullkselectedusers);
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
-        // We always must pass webservice params through validate_parameters.
-        self::validate_parameters(self::roleusers_parameters(), ['reportid' => $reportid, 'scheduleid' => $scheduleid,
-        'selectedroleid' => $selectedroleid, 'roleid' => $roleid, 'contextlevel' => $contextlevel, 'term' => $term,
-        'type' => $type, 'bullkselectedusers' => $bullkselectedusers, ]);
-
-        if ((has_capability('block/learnerscript:managereports', $context) ||
-            has_capability('block/learnerscript:manageownreports', $context) ||
-            is_siteadmin()) && !empty($reportid) && !empty($type) && !empty($roleid)) {
-            if ($roleid == -1) {
-                 $escselsql = "";
-                if ($bullkselectedusers) {
-                    $bullkselectedusersdata = implode(',', $bullkselectedusers);
-                    $escselsql = " AND u.id NOT IN ($bullkselectedusersdata) ";
-                }
-                $siteadmins = $CFG->siteadmins;
-                $adminssql = "SELECT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
-                                    FROM {user} u
-                                   WHERE 1 = 1
-                                     AND u.id IN ($siteadmins) $escselsql";
-                $admins = $DB->get_records_sql($adminssql, ['siteadmins' => 'siteadmins']);
-                $userslist = [];
-                foreach ($admins as $admin) {
-                    $userslist[] = ['id' => $admin->id, 'fullname' => $admin->fullname];
-                }
-            } else {
-                $userslist = (new schedule)->schroleusers($reportid, $scheduleid, $type,
-                                                    $roleid, $term, $bullkselectedusers, $contextlevel);
-            }
-            $termsdata = [];
-            $termsdata['total_count'] = count($userslist);
-            $termsdata['incomplete_results'] = false;
-            $termsdata['items'] = $userslist;
-            $return = $termsdata;
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else if (empty($type)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Type');
-            } else if (empty($roles)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Role');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * User roles
-     * @return external_description
-     */
-    public static function roleusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * View Schedule Users parameters description
@@ -237,7 +131,7 @@ class block_learnerscript_external extends external_api {
             [
                 'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
                 'scheduleid' => new external_value(PARAM_INT, 'selected schedule for report', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_RAW, 'list of scheduled users', VALUE_DEFAULT),
+                'schuserslist' => new external_value(PARAM_TEXT, 'list of scheduled users', VALUE_DEFAULT),
             ]
         );
     }
@@ -281,82 +175,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function viewschuserstable_returns() {
-        return new external_value(PARAM_RAW, 'data');
-    }
-    /**
-     * Manage Schedule Users description
-     */
-    public static function manageschusers_is_allowed_from_ajax() {
-        return true;
-    }
-    /**
-     * Manage Schedule Users parameters description
-     * @return external_function_parameters
-     */
-    public static function manageschusers_parameters() {
-        return new external_function_parameters(
-            [
-                'reportid' => new external_value(PARAM_INT, 'report id of report', VALUE_DEFAULT),
-                'scheduleid' => new external_value(PARAM_RAW, 'schedule id', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_RAW, '', VALUE_DEFAULT),
-                'selectedroleid' => new external_value(PARAM_RAW, 'selected role id', VALUE_DEFAULT),
-                'reportinstance' => new external_value(PARAM_INT, 'report instance', VALUE_DEFAULT),
-
-            ]
-        );
-    }
-    /**
-     * Manage Schedule Users description
-     * @param int $reportid Report ID
-     * @param int $scheduleid Schedule ID
-     * @param array $schuserslist Scheduled users list
-     * @param int $selectedroleid Scheduled report ID
-     * @param string $reportinstance Report instance type
-     */
-    public static function manageschusers($reportid, $scheduleid, $schuserslist, $selectedroleid, $reportinstance) {
-        global $OUTPUT;
-        $pagevariables = get_pagevariables();
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
-        $pagevariables->set_context($context);
-
-        // We always must pass webservice params through validate_parameters.
-        self::validate_parameters(self::manageschusers_parameters(), ['reportid' => $reportid, 'scheduleid' => $scheduleid,
-        'schuserslist' => $schuserslist, 'selectedroleid' => $selectedroleid, 'reportinstance' => $reportinstance, ]);
-
-        if ((has_capability('block/learnerscript:managereports', $context) ||
-            has_capability('block/learnerscript:manageownreports', $context) ||
-            is_siteadmin()) && !empty($reportid)) {
-            $roleslist = (new schedule)->reportroles($selectedroleid, $reportid);
-            $selectedusers = (new schedule)->selectesuserslist($schuserslist);
-            $reqimage = $OUTPUT->image_url('req');
-            $scheduledata = new \block_learnerscript\output\scheduledusers($reportid,
-            $reqimage, $roleslist, $selectedusers, $scheduleid, $reportinstance);
-            $learnerscript = $pagevariables->get_renderer('block_learnerscript');
-            $return = $learnerscript->render($scheduledata);
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * Manage Schedule Users description returns
-     * @return external_description
-     */
-    public static function manageschusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Schedule Report Form parameters description
@@ -367,7 +186,7 @@ class block_learnerscript_external extends external_api {
             [
                 'reportid' => new external_value(PARAM_INT, 'report id of report', VALUE_DEFAULT),
                 'instance' => new external_value(PARAM_INT, 'Instance', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_RAW, 'List of scheduled users', VALUE_DEFAULT),
+                'schuserslist' => new external_value(PARAM_TEXT, 'List of scheduled users', VALUE_DEFAULT),
             ]
         );
     }
@@ -382,9 +201,6 @@ class block_learnerscript_external extends external_api {
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:managereports', $context);
-
-        $pagevariables = get_pagevariables();
-        $pagevariables->set_context(context_system::instance());
 
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::schreportform_parameters(), ['reportid' => $reportid,
@@ -430,67 +246,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function schreportform_returns() {
-        return new external_value(PARAM_RAW, 'data');
-    }
-    /**
-     * Scheduled Timings parameters description
-     * @return external_function_parameters
-     */
-    public static function scheduledtimings_parameters() {
-        return new external_function_parameters(
-            [
-                'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
-                'reportid' => new external_value(PARAM_INT, 'report id of report', VALUE_DEFAULT),
-                'search' => new external_value(PARAM_TEXT, 'search value', VALUE_DEFAULT),
-                'length' => new external_value(PARAM_INT, 'length of string', VALUE_DEFAULT),
-                'courseid' => new external_value(PARAM_INT, 'The id for the course', VALUE_DEFAULT),
-            ]
-        );
-    }
-    /**
-     * Scheduled Timings description
-     * @param int $reportid Report ID
-     * @param int $courseid Course ID
-     * @param int $start Page start
-     * @param int $length Length of scheduled records
-     * @param string $search Search text
-     */
-    public static function scheduledtimings($reportid, $courseid, $start, $length, $search) {
-        $pagevariables = get_pagevariables();
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
-         // We always must pass webservice params through validate_parameters.
-        self::validate_parameters(self::scheduledtimings_parameters(), ['reportid' => $reportid,
-        'courseid' => $courseid, 'start' => $start, 'length' => $length, 'search' => $search, ]);
-
-        $learnerscript = $pagevariables->get_renderer('block_learnerscript');
-        if ((has_capability('block/learnerscript:managereports', $context) ||
-            has_capability('block/learnerscript:manageownreports', $context) ||
-            is_siteadmin()) && !empty($reportid)) {
-            $return = $learnerscript->schedulereportsdata($reportid, $courseid, false, $start, $length, $search['value']);
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * Scheduled Timings description
-     * @return external_description
-     */
-    public static function scheduledtimings_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Generate Plotgraph parameters description
@@ -503,19 +259,19 @@ class block_learnerscript_external extends external_api {
                 'courseid' => new external_value(PARAM_INT, 'course id of course', VALUE_DEFAULT),
                 'cmid' => new external_value(PARAM_INT, 'The course module id for the course', VALUE_DEFAULT),
                 'status' => new external_value(PARAM_TEXT, 'status', VALUE_DEFAULT),
-                'userid' => new external_value(PARAM_RAW, 'user id', VALUE_DEFAULT),
-                'lsfstartdate' => new external_value(PARAM_RAW, 'start date for date filter', VALUE_DEFAULT),
-                'lsfenddate' => new external_value(PARAM_RAW, 'end date for date filter', VALUE_DEFAULT),
-                'reporttype' => new external_value(PARAM_RAW, 'type of report', VALUE_DEFAULT),
-                'action' => new external_value(PARAM_RAW, 'action', VALUE_DEFAULT),
-                'singleplot' => new external_value(PARAM_RAW, 'single plot', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'user id', VALUE_DEFAULT),
+                'lsfstartdate' => new external_value(PARAM_INT, 'start date for date filter', VALUE_DEFAULT),
+                'lsfenddate' => new external_value(PARAM_INT, 'end date for date filter', VALUE_DEFAULT),
+                'reporttype' => new external_value(PARAM_TEXT, 'type of report', VALUE_DEFAULT),
+                'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
+                'singleplot' => new external_value(PARAM_INT, 'single plot', VALUE_DEFAULT),
                 'cols' => new external_value(PARAM_RAW, 'columns', VALUE_DEFAULT),
                 'instanceid' => new external_value(PARAM_RAW, 'id of instance', VALUE_DEFAULT),
-                'container' => new external_value(PARAM_RAW, 'container', VALUE_DEFAULT),
-                'filters' => new external_value(PARAM_RAW, 'applied filters', VALUE_DEFAULT),
-                'basicparams' => new external_value(PARAM_RAW, 'basic params required to generate graph', VALUE_DEFAULT),
+                'container' => new external_value(PARAM_TEXT, 'container', VALUE_DEFAULT),
+                'filters' => new external_value(PARAM_TEXT, 'applied filters', VALUE_DEFAULT),
+                'basicparams' => new external_value(PARAM_TEXT, 'basic params required to generate graph', VALUE_DEFAULT),
                 'columnDefs' => new external_value(PARAM_RAW, 'column definitions', VALUE_DEFAULT),
-                'reportdashboard' => new external_value(PARAM_RAW, 'report dashboard', VALUE_DEFAULT, true),
+                'reportdashboard' => new external_value(PARAM_BOOL, 'report dashboard', VALUE_DEFAULT, true),
             ]
         );
     }
@@ -533,7 +289,7 @@ class block_learnerscript_external extends external_api {
      * @param int $singleplot Singleplot
      * @param array $cols Report columns
      * @param int $instanceid Report instance ID
-     * @param int $container Report container
+     * @param string $container Report container
      * @param string $filters Report filters list
      * @param string $basicparams Mandatory filters list
      * @param array $columndefs Column definations
@@ -544,7 +300,6 @@ class block_learnerscript_external extends external_api {
         $container, $filters, $basicparams, $columndefs, $reportdashboard) {
         global $DB;
         $ls = new ls();
-        $pagevariables = get_pagevariables();
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::generate_plotgraph_parameters(), ['reportid' => $reportid,
         'courseid' => $courseid, 'cmid' => $cmid, 'status' => $status, 'userid' => $userid,
@@ -555,15 +310,13 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
+        require_capability('block/learnerscript:reportsaccess', $context);
 
         $filters = json_decode($filters, true);
         $basicparams = json_decode($basicparams, true);
         if (empty($basicparams)) {
             $basicparams = [];
         }
-        $pagevariables->set_context(context_system::instance());
-        $learnerscript = $pagevariables->get_renderer('block_learnerscript');
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
@@ -647,7 +400,7 @@ class block_learnerscript_external extends external_api {
                     foreach ($reportclass->finalreport->table->data as $key => $value) {
                         $data[$key] = array_values($value);
                     }
-                    $return['tdata'] = $learnerscript->render($reporttable);
+                    $return['tdata'] = (new ls)->get_viewreportdata($reporttable);
                     $return['data'] = [
                                             "draw" => true,
                                             "recordsTotal" => $reportclass->totalrecords,
@@ -668,74 +421,51 @@ class block_learnerscript_external extends external_api {
             }
         } else {
             if ($report->type != 'statistics') {
-                $seriesvalues = (isset($reportclass->componentdata['plot']['elements'])) ?
-                $reportclass->componentdata['plot']['elements'] : [];
+                $seriesvalues = (isset($reportclass->componentdata->plot->elements)) ?
+                $reportclass->componentdata->plot->elements : [];
                 $i = 0;
                 $reporttitle = get_string('report_' . $report->type, 'block_learnerscript');
                 $return['reportname'] = (new ls)->get_reporttitle($reporttitle, $basicparams);
                 foreach ($seriesvalues as $g) {
-                    if (($reporttype != '' && $g['id'] == $reporttype) || $i == 0) {
+                    if (($reporttype != '' && $g->id == $reporttype) || $i == 0) {
                         $return['plot'] = (new ls)->generate_report_plot($reportclass, $g);
-                        if ($reporttype != '' && $g['id'] == $reporttype) {
+                        if ($reporttype != '' && $g->id == $reporttype) {
                             break;
                         }
                     }
-                    $return['plotoptions'][] = ['id' => $g['id'],
-                    'title' => $g['formdata']->chartname, 'pluginname' => $g['pluginname'], ];
+                    $return['plotoptions'][] = ['id' => $g->id,
+                    'title' => $g->formdata->chartname, 'pluginname' => $g->pluginname, ];
                     $i++;
                 }
             } else {
-                if ($reporttype == 'pie') {
+                $i = 0;
+                $categorydata = [];
+                if (!empty($reportclass->finalreport->table->data[0])) {
                     foreach ($reportclass->finalreport->table->data[0] as $k => $r) {
-                        $r = strip_tags($r);
-                        if (is_numeric($r)) {
-                            $piedata[] = ['name' => $reportclass->finalreport->table->head[$k], 'y' => $r];
-                        }
-                    }
-                } else if ($reporttype == 'solidgauge') {
-                    $radius = 112;
-                    $innerradius = 88;
-                    $colors = ['#90ed7d', 'rgb(67, 67, 72)', 'rgb(124, 181, 236)'];
-                    foreach ($reportclass->finalreport->table->data[0] as $k => $r) {
-                        $r = strip_tags($r);
-                        $radius = $radius - 25;
-                        $innerradius = $innerradius - 25;
-                        if (is_numeric($r)) {
-                            $piedata[] = ['name' => $reportclass->finalreport->table->head[$k],
-                            'data' => [[ 'color' => $colors[$k], 'radius' => $radius.'%',
-                            'innerradius' => $innerradius.'%' , 'y' => $r, ], ], ];
-                        }
-                    }
-                } else {
-                    $i = 0;
-                    $categorydata = [];
-                    if (!empty($reportclass->finalreport->table->data[0])) {
-                        foreach ($reportclass->finalreport->table->data[0] as $k => $r) {
-                                $r = strip_tags($r);
-                                $r = is_numeric($r) ? $r : $r;
-                                $seriesdata[] = $reportclass->finalreport->table->head[$k];
-                                $graphdata[$i][] = $r;
-                                $categorydata[] = $reportclass->finalreport->table->head[$k];
-                                $i++;
-                        }
-                    }
-                    $comdata = [];
-                    $comdata['dataLabels'] = ['enabled' => 1];
-                    $comdata['borderRadius'] = 5;
-                    if (!empty($graphdata)) {
-                        $i = 0;
-                        foreach ($graphdata as $key => $value) {
-                            if ($reporttype == 'table') {
-                                $comdata['data'][] = [$value[0]];
-                            } else {
-                                $comdata['data'][] = ['y' => $value[0], 'label' => $value[0]];
-                            }
+                            $r = strip_tags($r);
+                            $r = is_numeric($r) ? $r : $r;
+                            $seriesdata[] = $reportclass->finalreport->table->head[$k];
+                            $graphdata[$i][] = $r;
+                            $categorydata[] = $reportclass->finalreport->table->head[$k];
                             $i++;
-                        }
-                        $piedata = [$comdata];
-                    } else {
-                        $piedata = $comdata;
                     }
+                }
+                $comdata = [];
+                $comdata['dataLabels'] = ['enabled' => 1];
+                $comdata['borderRadius'] = 5;
+                if (!empty($graphdata)) {
+                    $i = 0;
+                    foreach ($graphdata as $key => $value) {
+                        if ($reporttype == 'table') {
+                            $comdata['data'][] = [$value[0]];
+                        } else {
+                            $comdata['data'][] = ['y' => $value[0], 'label' => $value[0]];
+                        }
+                        $i++;
+                    }
+                    $piedata = [$comdata];
+                } else {
+                    $piedata = $comdata;
                 }
                 $return['plot'] = ['type' => $reporttype,
                                     'containerid' => 'reportcontainer' . $instanceid . '',
@@ -798,7 +528,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function frequency_schedule_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Report Object paramerters description
@@ -822,7 +552,7 @@ class block_learnerscript_external extends external_api {
 
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
+        require_capability('block/learnerscript:reportsaccess', $context);
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
@@ -840,20 +570,20 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function reportobject_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
-     * [Delete Component description]
+     * Delete component parameters function
      * @return external_function_parameters
      */
     public static function deletecomponenet_parameters() {
         return new external_function_parameters(
             [
                 'reportid' => new external_value(PARAM_INT, 'ReportID', VALUE_DEFAULT),
-                'action' => new external_value(PARAM_TEXT, 'The context id for the course', VALUE_DEFAULT),
-                'comp' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
-                'pname' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
-                'cid' => new external_value(PARAM_RAW, 'The context id for the course', VALUE_DEFAULT),
+                'action' => new external_value(PARAM_TEXT, 'Action.', VALUE_DEFAULT),
+                'comp' => new external_value(PARAM_TEXT, 'Report component', VALUE_DEFAULT),
+                'pname' => new external_value(PARAM_TEXT, 'Plugin name', VALUE_DEFAULT),
+                'cid' => new external_value(PARAM_INT, 'Component ID', VALUE_DEFAULT),
                 'delete' => new external_value(PARAM_INT, 'Confirm Delete', VALUE_DEFAULT),
             ]
         );
@@ -883,13 +613,13 @@ class block_learnerscript_external extends external_api {
         require_capability('block/learnerscript:managereports', $context);
 
         $components = (new ls)->cr_unserialize($report->components);
-        $elements = isset($components[$comp]['elements']) ? $components[$comp]['elements'] : [];
+        $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
         if (count($elements) == 1 && $report->disabletable == 1) {
             $success['success'] = true;
             $success['disabledelete'] = true;
         } else {
             foreach ($elements as $index => $e) {
-                if ($e['id'] == $cid) {
+                if ($e->id == $cid) {
                     if ($delete) {
                         unset($elements[$index]);
                         break;
@@ -902,7 +632,7 @@ class block_learnerscript_external extends external_api {
                     break;
                 }
             }
-            $components[$comp]['elements'] = $elements;
+            $components->$comp->elements = $elements;
             $report->components = (new ls)->cr_serialize($components);
             try {
                 $DB->update_record('block_learnerscript', $report);
@@ -922,8 +652,8 @@ class block_learnerscript_external extends external_api {
     public static function deletecomponenet_returns() {
         return new external_single_structure(
             [
-                'success' => new external_value(PARAM_RAW, 'success message'),
-                'disabledelete' => new external_value(PARAM_RAW, 'message'),
+                'success' => new external_value(PARAM_BOOL, 'success message'),
+                'disabledelete' => new external_value(PARAM_BOOL, 'message'),
             ]
         );
     }
@@ -949,17 +679,14 @@ class block_learnerscript_external extends external_api {
     }
     /**
      * Report Filter Form
-     * @param int $action Action
-     * @param object $reportid Report ID
+     * @param string $action Action
+     * @param int $reportid Report ID
      * @param int $instance Report instance
      */
     public static function reportfilterform($action, $reportid, $instance) {
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:viewreports', $context);
-
-        $pagevariables = get_pagevariables();
-        $pagevariables->set_context($context);
+        require_capability('block/learnerscript:reportsaccess', $context);
         // We always must pass webservice params through validate_parameters.
         self::validate_parameters(self::reportfilterform_parameters(), ['action' => $action,
         'reportid' => $reportid, 'instance' => $instance, ]);
@@ -987,7 +714,7 @@ class block_learnerscript_external extends external_api {
             [
                 'total' => new external_value(PARAM_INT, 'Total reports', VALUE_DEFAULT, 0),
                 'current' => new external_value(PARAM_INT, 'Current Report Position', VALUE_DEFAULT, 0),
-                'errorreportspositiondata' => new external_value(PARAM_RAW, 'error report positions', VALUE_DEFAULT, 0),
+                'errorreportspositiondata' => new external_value(PARAM_TEXT, 'error report positions', VALUE_DEFAULT, 0),
                 'lastreportposition' => new external_value(PARAM_INT, 'Last Report Position', VALUE_DEFAULT, 0),
             ]
         );
@@ -996,7 +723,7 @@ class block_learnerscript_external extends external_api {
      * Import Reports description
      * @param int $total Total reports count
      * @param int $current Report position
-     * @param int $errorreportspositiondata Error in report position data
+     * @param string $errorreportspositiondata Error in report position data
      * @param int $lastreportposition Last report position
      */
     public static function importreports($total, $current, $errorreportspositiondata, $lastreportposition = 0) {
@@ -1014,7 +741,7 @@ class block_learnerscript_external extends external_api {
         $learnerscriptreports = glob($path . '*.xml');
         $course = get_course(SITEID);
         if ($lastreportposition > 0) {
-            $errorreportsposition = unserialize($errorreportspositiondata);
+            $errorreportsposition = json_decode($errorreportspositiondata);
             foreach ($learnerscriptreports as $k => $learnerscriptreport) {
                 if ((!empty($errorreportsposition) && in_array($k, $errorreportsposition)) || $k >= $lastreportposition) {
                     $finalreports[$k] = $learnerscriptreport;
@@ -1091,7 +818,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function importreports_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
 
     /**
@@ -1124,7 +851,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function lsreportconfigimport_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Filter Courses parameters description
@@ -1136,11 +863,11 @@ class block_learnerscript_external extends external_api {
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'fiterdata' => new external_value(PARAM_RAW, 'fiterdata', VALUE_DEFAULT),
-                'basicparamdata' => new external_value(PARAM_RAW, 'basicparamdata', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'fiterdata' => new external_value(PARAM_TEXT, 'fiterdata', VALUE_DEFAULT),
+                'basicparamdata' => new external_value(PARAM_TEXT, 'basicparamdata', VALUE_DEFAULT),
                 'reportinstanceid' => new external_value(PARAM_INT, 'reportid', VALUE_DEFAULT),
-                'courses' => new external_value(PARAM_RAW, 'Course id of report', VALUE_DEFAULT),
+                'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
             ]
         );
     }
@@ -1160,10 +887,8 @@ class block_learnerscript_external extends external_api {
         global $DB, $CFG;
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:viewreports', $context);
+        require_capability('block/learnerscript:reportsaccess', $context);
 
-        $pagevariables = get_pagevariables();
-        $pagevariables->set_context($context);
         $search = $term;
 
         // We always must pass webservice params through validate_parameters.
@@ -1202,7 +927,7 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function filter_courses_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
     /**
      * Filter users parameters description
@@ -1214,9 +939,9 @@ class block_learnerscript_external extends external_api {
                 'action' => new external_value(PARAM_TEXT, 'action', VALUE_DEFAULT),
                 'maximumselectionlength' => new external_value(PARAM_INT, 'maximum selection length to search', VALUE_DEFAULT),
                 'term' => new external_value(PARAM_TEXT, 'Current search term in search box', VALUE_DEFAULT),
-                '_type' => new external_value(PARAM_RAW, 'A "request type" will be usually a query', VALUE_DEFAULT),
-                'fiterdata' => new external_value(PARAM_RAW, 'fiterdata', VALUE_DEFAULT),
-                'basicparamdata' => new external_value(PARAM_RAW, 'basicparamdata', VALUE_DEFAULT),
+                '_type' => new external_value(PARAM_TEXT, 'A "request type" will be usually a query', VALUE_DEFAULT),
+                'fiterdata' => new external_value(PARAM_TEXT, 'fiterdata', VALUE_DEFAULT),
+                'basicparamdata' => new external_value(PARAM_TEXT, 'basicparamdata', VALUE_DEFAULT),
                 'reportinstanceid' => new external_value(PARAM_INT, 'reportinstanceid', VALUE_DEFAULT),
                 'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
             ]
@@ -1238,10 +963,8 @@ class block_learnerscript_external extends external_api {
         global $DB, $CFG;
         $context = context_system::instance();
         self::validate_context($context);
-        require_capability('block/learnerscript:viewreports', $context);
+        require_capability('block/learnerscript:reportsaccess', $context);
 
-        $pagevariables = get_pagevariables();
-        $pagevariables->set_context($context);
         $search = $term;
 
         // We always must pass webservice params through validate_parameters.
@@ -1282,6 +1005,6 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function filterusers_returns() {
-        return new external_value(PARAM_RAW, 'data');
+        return new external_value(PARAM_TEXT, 'data');
     }
 }

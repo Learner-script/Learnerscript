@@ -58,7 +58,6 @@ if (!has_capability('block/learnerscript:managereports', $context)
 
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 $PAGE->requires->jquery_plugin('ui-css');
 
 if ($id) {
@@ -144,7 +143,6 @@ if ($delete && confirm_sesskey()) {
         $PAGE->set_heading($title);
         $PAGE->set_cacheable(true);
         echo $OUTPUT->header();
-        $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
         $message = get_string('confirmdeletereport', 'block_learnerscript');
         $optionsyes = ['id' => $report->id, 'delete' => $delete, 'sesskey' => sesskey(), 'confirm' => 1];
         $optionsno = [];
@@ -167,7 +165,7 @@ if (!empty($report)) {
 
 if (!empty($report)) {
     $components = (new ls)->cr_unserialize($reportclass->config->components);
-    $sqlconfig = (isset($components['customsql']['config'])) ? $components['customsql']['config'] : [];
+    $sqlconfig = (isset($components->customsql->config)) ? $components->customsql->config : new stdClass();
     if (!empty($sqlconfig->querysql)) {
         $report->querysql = $sqlconfig->querysql;
     }
@@ -188,7 +186,7 @@ if ($editform->is_cancelled()) {
         $data->courseid = $courseid;
         $data->visible = 1;
         if ($data->type == 'sql' && !has_capability('block/learnerscript:managesqlreports', $context)) {
-            throw new moodle_exception('nosqlpermissions');
+            throw new moodle_exception('nosqlpermissions', 'block_learnerscript');
         }
         $data->id = (new ls)->add_report($data, $context);
     } else {
@@ -213,8 +211,6 @@ $PAGE->set_heading($title);
 $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
-
 
 if ($id) {
     $renderer = $PAGE->get_renderer('block_learnerscript');

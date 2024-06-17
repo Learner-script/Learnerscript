@@ -34,7 +34,9 @@ use tabobject;
 class renderer extends plugin_renderer_base {
     /**
      * Render report table to display the data
-     * @param  reporttable $page   [description]
+     *
+     * @param  reporttable $page
+     *
      * @return bool|string
      */
     public function render_reporttable(reporttable $page) {
@@ -43,21 +45,12 @@ class renderer extends plugin_renderer_base {
     }
     /**
      * Render report plot options
-     * @param  \block_learnerscript\output\plotoption $page
+     * @param \block_learnerscript\output\plotoption $page
      * @return bool|string
      */
     public function render_plotoption(\block_learnerscript\output\plotoption $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('block_learnerscript/plotoption', $data);
-    }
-    /**
-     * Render report scheduled users
-     * @param  \block_learnerscript\output\scheduledusers $page
-     * @return bool|string
-     */
-    public function render_scheduledusers(\block_learnerscript\output\scheduledusers $page) {
-        $data = $page->export_for_template($this);
-        return parent::render_from_template('block_learnerscript/scheduledusers', $data);
     }
     /**
      * Render report graph tabs
@@ -93,7 +86,7 @@ class renderer extends plugin_renderer_base {
             $plots = $ls->get_components_data($report->id, 'plot');
             $components = $ls->cr_unserialize($reportclass->config->components);
             $calcbutton = false;
-            if (!empty($components['calculations']['elements'])) {
+            if (!empty($components->calculations->elements)) {
                 $calcbutton = true;
             }
             if (has_capability('block/learnerscript:managereports', $context) ||
@@ -190,7 +183,7 @@ class renderer extends plugin_renderer_base {
 
                 switch ($sreport->role) {
                     case 'admin':
-                        $originalrole = get_string('admin', 'block_learnerscript');
+                        $originalrole = get_string('admin');
                         break;
                     case 'manager':
                         $originalrole = get_string('manager', 'role');
@@ -229,7 +222,7 @@ class renderer extends plugin_renderer_base {
                 $buttons[] = html_writer::link(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
                 ['id' => $reportid, 'courseid' => $courseid, 'scheduleid' => $sreport->id, 'sesskey' => sesskey()]),
                 html_writer::empty_tag('img', ['src' => $this->output->image_url('t/edit'),
-                'alt' => get_string('edit'), 'class' => 'iconsmall', 'title' => 'Edit', ]));
+                'alt' => get_string('edit'), 'class' => 'iconsmall', 'title' => get_string('edit'), ]));
                 $buttons[] = html_writer::link(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
                 ['id' => $reportid, 'courseid' => $courseid,
                 'scheduleid' => $sreport->id, 'sesskey' => sesskey(), 'delete' => 1, ]),

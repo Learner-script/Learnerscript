@@ -31,7 +31,6 @@ use block_learnerscript\local\schedule;
 $PAGE->requires->jquery_plugin('ui-css');
 $PAGE->requires->css('/blocks/learnerscript/css/select2/select2.min.css', true);
 $PAGE->requires->css('/blocks/learnerscript/css/datatables/jquery.dataTables.min.css', true);
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 
 $reportid = required_param('id', PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
@@ -106,7 +105,6 @@ if ($delete) {
     $PAGE->navbar->add($strheading);
     $PAGE->set_title($strheading);
     echo $OUTPUT->header();
-    $PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
     echo $OUTPUT->heading($strheading);
     $yesurl = new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
     ['id' => $reportid, 'courseid' => $courseid, 'scheduleid' => $scheduledreportid,
@@ -203,7 +201,6 @@ if ($mform->is_cancelled()) {
 }
 $PAGE->set_heading($report->name);
 echo $OUTPUT->header();
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 echo html_writer::start_tag('div' , ['id' => 'licenseresult']);
 
 if (isset($SESSION->ls_ele_schedule) && $SESSION->ls_ele_schedule) {

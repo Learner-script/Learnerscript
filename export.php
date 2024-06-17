@@ -81,11 +81,12 @@ foreach ($blockinstances as $bi) {
     if (empty($bi->configdata)) {
         continue;
     }
+    $configdata = new stdClass;
     $configdata = unserialize(base64_decode($bi->configdata));
-    if ($configdata->reportlist != $id) {
+    if (isset($configdata->reportlist) && $configdata->reportlist != $id) {
         continue;
     }
-    if ($configdata->reportlist == $id) {
+    if (isset($configdata->reportlist) && $configdata->reportlist == $id) {
         $data .= "<instance version=\"$version\">";
         $bidata = (array) $bi;
         unset($bidata['id']);

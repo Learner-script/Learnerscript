@@ -22,9 +22,10 @@
 require_once("../../config.php");
 use block_learnerscript\form\import_form;
 use block_learnerscript\local\ls as ls;
+global $SESSION;
 
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
-$importurl = optional_param('importurl', '', PARAM_RAW);
+$importurl = optional_param('importurl', '', PARAM_TEXT);
 $contextlevel = optional_param('contextlevel', 10, PARAM_INT);
 if (!$course = $DB->get_record("course", ["id" => $courseid])) {
     throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
@@ -109,8 +110,6 @@ $PAGE->set_heading($title);
 $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
-
-$PAGE->requires->js(new moodle_url('/blocks/learnerscript/js/highchart.js'));
 
 if ($reports) {
     $table = new html_table();

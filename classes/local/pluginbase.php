@@ -116,6 +116,7 @@ class pluginbase {
     // Should be override.
     /**
      * Init function
+     * @return string
      */
     public function init() {
         return '';

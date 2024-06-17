@@ -50,7 +50,6 @@ class export_xls {
         $filter = ['Filters'];
         $filterrow = Row::fromValues($filter);
         $writer->addRow($filterrow);
-        $finalfilterdata = '';
         if (!empty($reportclass->selectedfilters)) {
             foreach ($reportclass->selectedfilters as $k => $filter) {
                 $filterrow = Row::fromValues([$k, $filter]);
@@ -61,7 +60,6 @@ class export_xls {
         $reporttype = $DB->get_field('block_learnerscript',  'type',  ['id' => $id]);
         if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
             if (!empty($table->head)) {
-                $keys = array_keys($table->head);
                 foreach ($table->head as $key => $heading) {
                     $head[] = $heading;
                 }
@@ -80,5 +78,53 @@ class export_xls {
         }
         $writer->addRows($datarow);
         $writer->close();
+    }
+
+    /**
+     * XLS report export attachment
+     * @param object $reportclass Report data
+     * @param string $filename File name
+     */
+    public function export_xls_attachment($reportclass, $filename) {
+        global $CFG;
+        require_once("$CFG->libdir/phpexcel/PHPExcel.php");
+        $report = $reportclass->finalreport;
+        $table = $report->table;
+
+        $filename = $filename . '.xls';
+
+        // Creating a workbook.
+        $workbook = new \PHPExcel();
+        $workbook->getActiveSheet()->setTitle(get_string('listofusers', 'block_learnerscript'));
+        $rownumber = 1;
+        $col = 'A';
+        foreach ($table->head as $key => $heading) {
+            $workbook->getActiveSheet()->setCellValue($col . $rownumber,
+            str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
+                        ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
+            $col++;
+        }
+        // Loop through the result set.
+        $rownumber = 2;
+        if (!empty($table->data)) {
+            foreach ($table->data as $rkey => $row) {
+                $col = 'A';
+                foreach ($row as $key => $item) {
+                    $workbook->getActiveSheet()->setCellValue($col . $rownumber,
+                    str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($item)),
+                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401)));
+                    $col++;
+                }
+                $rownumber++;
+            }
+        }
+
+        // Freeze pane so that the heading line won't scroll.
+        $workbook->getActiveSheet()->freezePane('A2');
+
+        // Save as an Excel BIFF (xls) file.
+        $objwriter = \PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
+
+        $objwriter->save($filename);
     }
 }

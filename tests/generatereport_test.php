@@ -28,8 +28,8 @@ use block_learnerscript\local\ls;
 class generatereport_test extends \advanced_testcase {
 
     /**
-     * test_addreport
-     * @return void
+     * Test add report
+     *
      */
     public function test_addreport() {
         global $DB, $USER;
@@ -46,7 +46,7 @@ class generatereport_test extends \advanced_testcase {
 
         // Create a report with dummy data.
         $report1 = new \stdClass();
-        $report1->name = 'Report 1';
+        $report1->name = get_string('report_one', 'block_learnerscript');
         $report1->type = 'courses';
         $report1->courseid = SITEID;
         $report1->ownerid = $USER->id;
@@ -55,7 +55,7 @@ class generatereport_test extends \advanced_testcase {
         $this->assertTrue($DB->record_exists('block_learnerscript', ['id' => $recordid1]));
 
         $report2 = new \stdClass();
-        $report2->name = 'Report SQL';
+        $report2->name = get_string('report_sql', 'block_learnerscript');
         $report2->type = 'sql';
         $report2->courseid = SITEID;
         $report2->ownerid = $USER->id;
@@ -71,8 +71,8 @@ class generatereport_test extends \advanced_testcase {
     }
 
     /**
-     * test_updatereport
-     * @return void
+     * Test update report
+     *
      */
     public function test_updatereport() {
         global $DB, $USER;
@@ -100,7 +100,7 @@ class generatereport_test extends \advanced_testcase {
         $this->assertTrue($DB->record_exists('block_learnerscript', ['id' => $report->id, 'name' => 'Report 1']));
 
         // Update the report name.
-        $report->name = 'Report 2';
+        $report->name = get_string('report_two', 'block_learnerscript');
         $report->global = 1;
         (new ls)->update_report($report, $context);
 
@@ -115,8 +115,8 @@ class generatereport_test extends \advanced_testcase {
     }
 
     /**
-     * test_deletereport
-     * @return void
+     * Test delete report
+     *
      */
     public function test_deletereport() {
         global $DB, $USER;
@@ -136,7 +136,7 @@ class generatereport_test extends \advanced_testcase {
 
         // Create a report with dummy data.
         $report = new \stdClass();
-        $report->name = 'Report 1';
+        $report->name = get_string('report_one', 'block_learnerscript');
         $report->type = 'courses';
         $report->courseid = SITEID;
         $report->ownerid = $USER->id;

@@ -67,7 +67,7 @@ class report_edit_form extends moodleform {
         $mform->disabledIf('querysql', 'type', 'in', $querysqloptions1);
         $mform->addElement('header', 'advancedoptions', get_string('advanced'));
         $mform->addElement('editor', 'description', get_string('summary'));
-        $mform->setType('description', PARAM_RAW);
+        $mform->setType('description', PARAM_TEXT);
 
         $mform->addElement('checkbox', 'disabletable',
             get_string('disabletable', 'block_learnerscript'),

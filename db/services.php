@@ -31,13 +31,6 @@ $functions = [
         'description' => 'case rolewiseusers',
         'ajax' => true,
     ],
-'block_learnerscript_roleusers' => [
-        'classname' => 'block_learnerscript_external',
-        'methodname' => 'roleusers',
-        'classpath' => 'blocks/learnerscript/externallib.php',
-        'description' => 'case roleusers'   ,
-        'ajax' => true,
-    ],
 'block_learnerscript_viewschuserstable' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'viewschuserstable',
@@ -45,25 +38,11 @@ $functions = [
         'description' => 'case viewschuserstable'   ,
         'ajax' => true,
     ],
-'block_learnerscript_manageschusers' => [
-        'classname' => 'block_learnerscript_external',
-        'methodname' => 'manageschusers',
-        'classpath' => 'blocks/learnerscript/externallib.php',
-        'description' => 'case manageschusers',
-        'ajax' => true,
-    ],
 'block_learnerscript_schreportform' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'schreportform',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'case schreportform',
-        'ajax' => true,
-    ],
-'block_learnerscript_scheduledtimings' => [
-        'classname' => 'block_learnerscript_external',
-        'methodname' => 'scheduledtimings',
-        'classpath' => 'blocks/learnerscript/externallib.php',
-        'description' => 'case scheduledtimings'    ,
         'ajax' => true,
     ],
 'block_learnerscript_generate_plotgraph' => [
@@ -128,5 +107,5 @@ $functions = [
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Filter users',
         'ajax' => true,
-],
+    ],
 ];

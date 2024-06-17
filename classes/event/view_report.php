@@ -43,6 +43,7 @@ class view_report extends \core\event\base {
 
     /**
      * Gets the report description to view
+     * @return string
      */
     public function get_description() {
         return "The user with id {$this->userid} Viewed report with id {$this->objectid}.";
@@ -50,6 +51,7 @@ class view_report extends \core\event\base {
 
     /**
      * Gets the report URL to view
+     * @return string
      */
     public function get_url() {
         return new \moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $this->objectid]);

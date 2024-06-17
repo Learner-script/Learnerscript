@@ -182,24 +182,6 @@ class report_useractivities extends reportbase implements report {
                 $this->sql .= ", cmc.completionstate as completionstatus";
             }
         }
-        if (in_array('moduletype', $this->selectedcolumns)) {
-            $this->sql .= ", m.name AS moduletype";
-        }
-        if (in_array('firstaccess', $this->selectedcolumns)) {
-            $this->sql .= ", (SELECT MIN(lsl.timecreated) FROM {logstore_standard_log} lsl
-            WHERE lsl.contextinstanceid = main.id AND lsl.userid = u.id ) AS firstaccess";
-        }
-        if (in_array('lastaccess', $this->selectedcolumns)) {
-            $this->sql .= ", (SELECT MAX(lsl.timecreated) FROM {logstore_standard_log} lsl
-            WHERE lsl.contextinstanceid = main.id AND lsl.userid = u.id ) AS lastaccess";
-        }
-        if (in_array('completedon', $this->selectedcolumns)) {
-            $this->sql .= ", (SELECT timemodified FROM {course_modules_completion}
-                        WHERE completionstate <> 0 AND userid= $userid AND coursemoduleid = main.id) as completedon";
-        }
-        if (in_array('completionstatus', $this->selectedcolumns)) {
-            $this->sql .= ", cmc.completionstate as completionstatus";
-        }
 
         parent::select();
     }

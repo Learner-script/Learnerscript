@@ -101,7 +101,7 @@ class plugin_coursesoverview extends pluginbase {
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $inprogressactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id,
-                'filter_status' => 'notcompleted',
+                'filter_status' => get_string('notcompleted', 'block_learnerscript'),
                 'filter_modules' => $this->reportfilterparams['filter_modules'],
                 'filter_users' => $this->reportfilterparams['filter_users'], ]);
         $completedactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
@@ -180,13 +180,29 @@ class plugin_coursesoverview extends pluginbase {
                     }
                 }
                 if ($reporttype == 'table') {
-                    $row->{$data->column} = !empty($grades) ? (($gradeone == 1) ?
-                    '<span class="text-success">'.$grades.'<span>' : (($gradeone == 2) ?
-                    '<span class="text-danger">'.$grades.'<span>' : '<span class="text-info">'.$grades.'<span>')) : 0;
+                    if (!empty($grades)) {
+                        if ($gradeone == 1) {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-success']);
+                        } else if ($gradeone == 2) {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-danger']);
+                        } else {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-info']);
+                        }
+                    } else {
+                        $row->{$data->column} = 0;
+                    }
                 } else {
-                    $row->{$data->column} = !empty($grades) ? (($gradeone == 1) ?
-                    '<span class="text-success">'.$grades.'<span>' : (($gradeone == 2) ?
-                    '<span class="text-danger">'.$grades.'<span>' : '<span class="text-info">'.$grades.'<span>')) : 0;
+                    if (!empty($grades)) {
+                        if ($gradeone == 1) {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-success']);
+                        } else if ($gradeone == 2) {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-danger']);
+                        } else {
+                            $row->{$data->column} = html_writer::tag('span', $grades, ['class' => 'text-info']);
+                        }
+                    } else {
+                        $row->{$data->column} = 0;
+                    }
                 }
                 break;
             case 'totaltimespent':
