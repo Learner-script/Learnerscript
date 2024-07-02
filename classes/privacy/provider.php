@@ -112,6 +112,7 @@ class provider implements \core_privacy\local\metadata\provider,
      * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
+        $contextlist = new \core_privacy\local\request\contextlist;
         $params = ['userid' => $userid, 'contextlevel' => CONTEXT_USER];
         $sql = "SELECT ctx.id
                 FROM {context} ctx

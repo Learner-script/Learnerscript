@@ -33,196 +33,39 @@ $rawjson = file_get_contents('php://input');
 
 $requests = json_decode($rawjson, true);
 
-if (empty($requests['scheduleid'])) {
-    $scheduleid = 0;
-} else {
-    $scheduleid = $requests['scheduleid'];
-}
-if (empty($requests['selectedroleid'])) {
-    $selectedroleid = '';
-} else {
-    $selectedroleid = $requests['selectedroleid'];
-}
-if (empty($requests['roleid'])) {
-    $roles = 0;
-} else {
-    $roles = $requests['roleid'];
-}
-if (empty($requests['term'])) {
-    $search = '';
-} else {
-    $search = $requests['term'];
-}
-if (empty($requests['type'])) {
-    $type = '';
-} else {
-    $type = $requests['type'];
-}
-if (empty($requests['schuserslist'])) {
-    $schuserslist = '';
-} else {
-    $schuserslist = $requests['schuserslist'];
-}
-if (empty($requests['validdate'])) {
-    $validdate = 0;
-} else {
-    $validdate = $requests['validdate'];
-}
-if (empty($requests['page'])) {
-    $page = 0;
-} else {
-    $page = $requests['page'];
-}
-if (empty($requests['start'])) {
-    $start = 0;
-} else {
-    $start = $requests['start'];
-}
-if (empty($requests['length'])) {
-    $length = 0;
-} else {
-    $length = $requests['length'];
-}
-if (empty($requests['courseid'])) {
-    $courseid = 0;
-} else {
-    $courseid = $requests['courseid'];
-}
-if (empty($requests['frequency'])) {
-    $frequency = 0;
-} else {
-    $frequency = $requests['frequency'];
-}
-if (empty($requests['instance'])) {
-    $instance = 0;
-} else {
-    $instance = $requests['instance'];
-}
-if (empty($requests['cmid'])) {
-    $cmid = 0;
-} else {
-    $cmid = $requests['cmid'];
-}
-if (empty($requests['status'])) {
-    $status = '';
-} else {
-    $status = $requests['status'];
-}
-if (empty($requests['userid'])) {
-    $userid = 0;
-} else {
-    $userid = $requests['userid'];
-}
-if (empty($requests['components'])) {
-    $components = '';
-} else {
-    $components = $requests['components'];
-}
-if (empty($requests['component'])) {
-    $component = '';
-} else {
-    $component = $requests['component'];
-}
-if (empty($requests['pname'])) {
-    $pname = '';
-} else {
-    $pname = $requests['pname'];
-}
-if (empty($requests['jsonformdata'])) {
-    $jsonformdata = '';
-} else {
-    $jsonformdata = $requests['jsonformdata'];
-}
-if (empty($requests['export'])) {
-    $export = '';
-} else {
-    $export = $requests['export'];
-}
-if (empty($requests['lsfstartdate'])) {
-    $lsfstartdate = 0;
-} else {
-    $lsfstartdate = $requests['lsfstartdate'];
-}
-if (empty($requests['lsfenddate'])) {
-    $lsfenddate = 0;
-} else {
-    $lsfenddate = $requests['lsfenddate'];
-}
-if (empty($requests['cid'])) {
-    $cid = '';
-} else {
-    $cid = $requests['cid'];
-}
-if (empty($requests['reporttype'])) {
-    $reporttype = '';
-} else {
-    $reporttype = $requests['reporttype'];
-}
-if (empty($requests['categoryid'])) {
-    $categoryid = 0;
-} else {
-    $categoryid = $requests['categoryid'];
-}
-if (empty($requests['filters'])) {
-    $filters = '';
-} else {
-    $filters = $requests['filters'];
-}
-if (empty($requests['basicparams'])) {
-    $basicparams = '';
-} else {
-    $basicparams = $requests['basicparams'];
-}
-if (empty($requests['elementsorder'])) {
-    $elementsorder = '';
-} else {
-    $elementsorder = $requests['elementsorder'];
-}
-if (empty($requests['contextlevel'])) {
-    $contextlevel = 0;
-} else {
-    $contextlevel = $requests['contextlevel'];
-}
-if (empty($requests['reportid'])) {
-    $reportid = 0;
-} else {
-    $reportid = $requests['reportid'];
-}
 $action = $requests['action'];
-$reportid = optional_param('reportid', $reportid, PARAM_INT);
-$scheduleid = optional_param('scheduleid', $scheduleid, PARAM_INT);
-$selectedroleid = optional_param('selectedroleid', $selectedroleid, PARAM_INT);
-$roles = optional_param('roleid', $roles, PARAM_INT);
-$search = optional_param('search', $search, PARAM_TEXT);
-$type = optional_param('type', $type, PARAM_TEXT);
-$schuserslist = optional_param('schuserslist', $schuserslist, PARAM_RAW);
-$expireddate = optional_param('validdate', $validdate, PARAM_INT);
-$page = optional_param('page', $page, PARAM_INT);
-$start = optional_param('start', $start, PARAM_INT);
-$length = optional_param('length', $length, PARAM_INT);
-$courseid = optional_param('courseid', $courseid, PARAM_INT);
-$frequency = optional_param('frequency', $frequency, PARAM_INT);
-$instance = optional_param('instance', $instance, PARAM_INT);
-$cmid = optional_param('cmid', $cmid, PARAM_INT);
-$status = optional_param('status', $status, PARAM_TEXT);
-$userid = optional_param('userid', $userid, PARAM_INT);
-$components = optional_param('components', $components, PARAM_RAW);
-$component = optional_param('component', $component, PARAM_RAW);
-$pname = optional_param('pname', $pname, PARAM_TEXT);
-$jsonformdata = optional_param('jsonformdata', $jsonformdata, PARAM_TEXT);
-$conditionsdata = optional_param('conditions', $conditionsdata, PARAM_RAW);
-$export = optional_param('export', $export, PARAM_RAW);
-$lsfstartdate = optional_param('lsfstartdate', $lsfstartdate, PARAM_INT);
-$lsfenddate = optional_param('lsfenddate', $lsfenddate, PARAM_INT);
-$cid = optional_param('cid', $cid, PARAM_INT);
-$reporttype = optional_param('reporttype', $reporttype, PARAM_TEXT);
-$categoryid = optional_param('categoryid', $categoryid, PARAM_INT);
-$filters = optional_param('filters', $filters, PARAM_TEXT);
+$reportid = optional_param('reportid', $requests['reportid'], PARAM_INT);
+$scheduleid = optional_param('scheduleid', $requests['scheduleid'], PARAM_INT);
+$selectedroleid = optional_param('selectedroleid', $requests['selectedroleid'], PARAM_INT);
+$roles = optional_param('roleid', $requests['roleid'], PARAM_INT);
+$search = optional_param('search', $requests['term'], PARAM_TEXT);
+$type = optional_param('type', $requests['type'], PARAM_TEXT);
+$schuserslist = optional_param('schuserslist', $requests['schuserslist'], PARAM_TEXT);
+$expireddate = optional_param('validdate', $requests['validdate'], PARAM_INT);
+$page = optional_param('page', $requests['page'], PARAM_INT);
+$start = optional_param('start', $requests['start'], PARAM_INT);
+$length = optional_param('length', $requests['length'], PARAM_INT);
+$courseid = optional_param('courseid', $requests['courseid'], PARAM_INT);
+$frequency = optional_param('frequency', $requests['frequency'], PARAM_INT);
+$instance = optional_param('instance', $requests['instance'], PARAM_INT);
+$cmid = optional_param('cmid', $requests['cmid'], PARAM_INT);
+$status = optional_param('status', $requests['status'], PARAM_TEXT);
+$userid = optional_param('userid', $requests['userid'], PARAM_INT);
+$components = optional_param('components', $requests['components'], PARAM_TEXT);
+$component = optional_param('component', $requests['component'], PARAM_TEXT);
+$pname = optional_param('pname', $requests['pname'], PARAM_TEXT);
+$jsonformdata = optional_param('jsonformdata', $requests['jsonformdata'], PARAM_TEXT);
+$lsfstartdate = optional_param('lsfstartdate', $requests['lsfstartdate'], PARAM_INT);
+$lsfenddate = optional_param('lsfenddate', $requests['lsfenddate'], PARAM_INT);
+$cid = optional_param('cid', $requests['cid'], PARAM_INT);
+$reporttype = optional_param('reporttype', $requests['reporttype'], PARAM_TEXT);
+$categoryid = optional_param('categoryid', $requests['categoryid'], PARAM_INT);
+$filters = optional_param('filters', $requests['filters'], PARAM_TEXT);
 $filters = json_decode($filters, true);
-$basicparams = optional_param('basicparams', $basicparams, PARAM_TEXT);
+$basicparams = optional_param('basicparams', $requests['basicparams'], PARAM_TEXT);
 $basicparams = json_decode($basicparams, true);
-$elementsorder = optional_param('elementsorder', $elementsorder, PARAM_RAW);
-$contextlevel = optional_param('contextlevel', $contextlevel, PARAM_INT);
+$elementsorder = optional_param('elementsorder', $requests['elementsorder'], PARAM_TEXT);
+$contextlevel = optional_param('contextlevel', $requests['contextlevel'], PARAM_INT);
 
 $context = context_system::instance();
 $ls = new ls();

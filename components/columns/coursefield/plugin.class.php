@@ -111,12 +111,10 @@ class plugin_coursefield extends pluginbase {
                     break;
                 case 'fullname':
                     if (is_siteadmin()) {
-                        $courserecord->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot.
-                                                    '/blocks/reportdashboard/courseprofile.php',
+                        $courserecord->{$data->column} = html_writer::link(new \moodle_url('/blocks/reportdashboard/courseprofile.php',
                                 ['filter_courses' => $courserecord->id]), $courserecord->{$data->column});
                     } else {
-                        $courserecord->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot.
-                                                    '/blocks/reportdashboard/courseprofile.php',
+                        $courserecord->{$data->column} = html_writer::link(new \moodle_url('/blocks/reportdashboard/courseprofile.php',
                                 ['filter_courses' => $courserecord->id,
                                 'role' => $SESSION->role,
                                 'contextlevel' => $SESSION->ls_contextlevel, ]), $courserecord->{$data->column});

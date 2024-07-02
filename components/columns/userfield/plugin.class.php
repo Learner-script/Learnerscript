@@ -25,6 +25,8 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\reportbase;
 use context_system;
 use html_writer;
+use moodle_url;
+
 /**
  * user field
  */
@@ -90,11 +92,11 @@ class plugin_userfield extends pluginbase {
         (new reportbase($userprofilereport))->check_permissions($context, $USER->id);
         if (is_siteadmin()) {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
-            ['href' => $CFG->wwwroot.'/blocks/reportdashboard/profilepage.php?filter_users='.$row->id]);
+            ['href' => new \moodle_url('/blocks/reportdashboard/profilepage.php', ['filter_users' => $row->id])]);
         } else {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
-            ['href' => $CFG->wwwroot.'/blocks/reportdashboard/profilepage.php?filter_users='.$row->id.
-            '&role='.$SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, ]);
+            ['href' => new moodle_url('/blocks/reportdashboard/profilepage.php', ['filter_users' => $row->id,
+            'role' => $SESSION->role, 'contextlevel' => $SESSION->ls_contextlevel])]);
         }
         $userrecord->fullname .= html_writer::end_span();
         $userfullname = $userrecord->fullname;

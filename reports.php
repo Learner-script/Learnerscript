@@ -49,7 +49,7 @@ $PAGE->set_pagelayout('admin');
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 if (empty($SESSION->role)) {
@@ -100,8 +100,7 @@ $PAGE->set_cacheable(true);
 
 echo $OUTPUT->header();
 echo html_writer::start_tag('div', ['id' => 'listofreports']);
-echo html_writer::div(html_writer::link(new \moodle_url($CFG->wwwroot .
-    '/blocks/reportdashboard/dashboard.php',
+echo html_writer::div(html_writer::link(new \moodle_url('/blocks/reportdashboard/dashboard.php',
     ['role' => $SESSION->role, 'contextlevel' => $SESSION->ls_contextlevel]),
     get_string('dashboard', 'block_reportdashboard'), ['class' => 'btn linkbtn btn-primary']), '',
     ['style' => "float:right;"]);
@@ -113,8 +112,7 @@ if ($reports) {
     $table->align = ['left', 'left'];
     foreach ($reports as $r) {
         $reporttype = $DB->get_record_sql("SELECT type FROM {block_learnerscript} WHERE id = :reportid", ['reportid' => $r['id']]);
-        $table->data[] = [html_writer::link(new moodle_url($CFG->wwwroot .
-        '/blocks/learnerscript/viewreport.php', ['id' => $r['id']]), $r['name']),
+        $table->data[] = [html_writer::link(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $r['id']]), $r['name']),
         get_string('report_' . $reporttype->type, 'block_learnerscript'), ];
     }
     echo html_writer::div(html_writer::table($table), 'cmp_overflow');

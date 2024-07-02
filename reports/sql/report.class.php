@@ -230,13 +230,13 @@ class report_sql extends reportbase {
             $sql = $config->querysql;
             if (!empty($reportfilters)) {
                 foreach ($reportfilters as $f) {
-                    if ($f['formdata']->value) {
+                    if ($f->formdata->value) {
                         require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                                $f['pluginname'] . '/plugin.class.php');
-                        $classname = 'block_learnerscript\lsreports\plugin_' . $f['pluginname'];
+                                $f->pluginname . '/plugin.class.php');
+                        $classname = 'block_learnerscript\lsreports\plugin_' . $f->pluginname;
                         $class = new $classname($this->config);
 
-                        $sql = $class->execute($sql, $f['formdata'], $this->params);
+                        $sql = $class->execute($sql, $f->formdata, $this->params);
                     }
                 }
             }
@@ -308,7 +308,7 @@ class report_sql extends reportbase {
             $blockinstanceid = $this->config->id;
         }
 
-        $table = new stdclass;
+        $table = new stdClass;
         $table->id = 'reporttable_' . $blockinstanceid . '';
         $table->data = $finaldata['finaltable'];
         $table->head = $finaldata['tablehead'];
@@ -317,7 +317,7 @@ class report_sql extends reportbase {
         $table->size = $finaldata['tablesize'];
         $this->tablehead = $finaldata['tablehead'];
         if (!$this->finalreport) {
-            $this->finalreport = new StdClass;
+            $this->finalreport = new stdClass;
         }
         $this->finalreport->table = $table;
 

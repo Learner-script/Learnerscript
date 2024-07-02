@@ -40,7 +40,7 @@ global $USER, $CFG, $SESSION;
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 
@@ -249,20 +249,20 @@ if (!$download) {
         (has_capability('block/learnerscript:manageownreports', $context)) &&
         $report->ownerid == $USER->id) {
         if (is_siteadmin()) {
-            $managereporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php');
+            $managereporturl = new moodle_url('/blocks/learnerscript/managereport.php');
         } else {
-            $managereporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php?role'.$SESSION->role.
-            '&contextlevel='.$SESSION->ls_contextlevel);
+            $managereporturl = new moodle_url('/blocks/learnerscript/managereport.php', ['role' => $SESSION->role,
+            'contextlevel' => $SESSION->ls_contextlevel]);
         }
         $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $managereporturl);
     } else {
-        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?role='.
-        $SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
+        $dashboardurl = new moodle_url('/blocks/learnerscript/reports.php', ['role' =>
+        $SESSION->role, 'contextlevel' => $SESSION->ls_contextlevel]);
 
         $PAGE->navbar->add(get_string("reports_view", 'block_learnerscript'), $dashboardurl);
     }
     if ($drillid > 0) {
-        $drillreporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php', ['id' => $drillid]);
+        $drillreporturl = new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $drillid]);
         $drillreportname = $DB->get_field('block_learnerscript', 'name', ['id' => $drillid]);
         $PAGE->navbar->add($drillreportname, $drillreporturl);
     }
@@ -306,6 +306,7 @@ if (!$download) {
     echo $OUTPUT->footer();
 } else {
     $reportclass->reporttype = 'table';
+    $reportclass->downloading = true;
     $reportclass->create_report();
     $exportclass = 'block_learnerscript\export\export_' . $format;
     if (class_exists($exportclass)) {

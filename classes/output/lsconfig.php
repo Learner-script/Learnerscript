@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace block_learnerscript\output;
+
+use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
@@ -61,9 +63,9 @@ class lsconfig implements renderable, templatable {
 
         $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
         if ($reportdashboardblockexists) {
-            $redirecturl = $CFG->wwwroot . '/blocks/reportdashboard/dashboard.php';
+            $redirecturl = new moodle_url('/blocks/reportdashboard/dashboard.php');
         } else {
-            $redirecturl = $CFG->wwwroot . '/blocks/learnerscript/managereport.php';
+            $redirecturl = new moodle_url('/blocks/learnerscript/managereport.php');
         }
 
         $data->redirecturl = $redirecturl;

@@ -220,10 +220,10 @@ class block_learnerscript_external extends external_api {
             } else {
                 $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
             }
-            $scheduleform = new scheduled_reports_form($CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php',
+            $scheduleform = new scheduled_reports_form(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
             ['id' => $reportid, 'scheduleid' => $scheduleid, 'AjaxForm' => true, 'roles_list' => $roleslist,
                 'schusers' => $schusers, 'schusersids' => $schusersids, 'exportoptions' => $exportoptions,
-                'schedule_list' => $schedulelist, 'frequencyselect' => $frequencyselect, 'instance' => $instance, ]);
+                'schedule_list' => $schedulelist, 'frequencyselect' => $frequencyselect, 'instance' => $instance, ]));
             $return = $scheduleform->render();
         } else {
             $termsdata = [];

@@ -80,7 +80,7 @@ class scheduled_reports_form extends moodleform {
         'required', null, 'client', false, false);
 
         $scheduleusers = $mform->addElement('select', 'users_data', get_string('fullname'),
-        $schusers, ['data-select2-ajax' => true, 'data-ajax-url' => $CFG->wwwroot . '/blocks/learnerscript/ajax.php',
+        $schusers, ['data-select2-ajax' => true, 'data-ajax-url' => new moodle_url('/blocks/learnerscript/ajax.php'),
         'id' => 'id_users_data' . $reportinstance, 'data-reportid' => $reportid, 'data-instanceid' => $instance,
             'data-id' => $reportid, 'class' => 'schusers_data', 'onchange' =>
             '(function(e){ require("block_learnerscript/schedule").addschusers({reportid: ' . $reportid . ',

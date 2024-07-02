@@ -29,6 +29,7 @@ use context_course;
 use core_course_category;
 
 use block_learnerscript\local\schedule;
+use moodle_url;
 
 define('DAILY', 1);
 define('WEEKLY', 2);
@@ -508,10 +509,7 @@ class ls {
         if (empty($parents)) {
             $parents = [];
         }
-        $all = $DB->get_records_sql('SELECT id, parent
-        FROM {course_categories}
-        WHERE visible = :visible
-        ORDER BY sortorder', ['visible' => 1]);
+        $all = $DB->get_records('course_categories', ['visible' => 1], '', 'id, parent');
         foreach ($all as $record) {
             if ($record->parent) {
                 $parents[$record->id] = array_merge($parents[$record->parent], [$record->parent]);
@@ -706,9 +704,9 @@ class ls {
      * @param array $reports Reports list
      */
     public function add_customreports_sql($reports) {
-        global $DB, $CFG;
+        global $DB;
         foreach ($reports as $report) {
-            $importurl = urldecode($CFG->wwwroot . '/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml');
+            $importurl = urldecode(new moodle_url('/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml'));
             $fcontents = file_get_contents($importurl);
             $course = $DB->get_record("course", ["id" => SITEID]);
             if ($this->cr_import_xml($fcontents, $course, false)) {
@@ -916,7 +914,7 @@ class ls {
 
         if ($statistics) {
             $statisticsreports = [];
-            $roles = $DB->get_records_sql("SELECT id, shortname FROM {role}");
+            $roles = $DB->get_records('role', [], '', 'id, shortname');
             foreach ($roles as $role) {
                 $rolereports = (new ls)->rolewise_statisticsreports($role->shortname);
                 foreach ($rolereports as $key => $value) {
@@ -1349,27 +1347,24 @@ class ls {
         $values -= $minutes * 60;
         $dateimage = $OUTPUT->pix_icon('courseprofile/date', '', 'block_reportdashboard', ['class' => 'dateicon']);
         if (!empty($hours)) {
-            $hrs = ($hours == 1) ? $hours. get_string('hr', 'block_learnerscript').' ' :
-                            $hours. get_string('hrs', 'block_learnerscript').' ';
+            $hrs = $hours;
         } else {
-            $hrs = '';
+            $hrs = 0;
         }
         if (!empty($minutes)) {
-            $min = $minutes. get_string('mins', 'block_learnerscript').' ';
+            $min = $minutes;
         } else {
-            $min = '';
+            $min = 0;
         }
         if (!empty($values)) {
-            $sec = $values. get_string('sec', 'block_learnerscript');
+            $sec = $values;
         } else {
-            $sec = '';
+            $sec = 0;
         }
-        if ($day == 1) {
-            $days = $dateimage . $day. get_string('day', 'block_learnerscript').' ';
-        } else if ($day > 1) {
-            $days = $dateimage . $day. get_string('days', 'block_learnerscript').' ';
+        if (!empty($day)) {
+            $days = $day;
         } else {
-            $days = '';
+            $days = 0;
         }
         $timeimage = '';
         if (empty($totalval)) {
@@ -1377,7 +1372,14 @@ class ls {
         } else {
             $timeimage = $OUTPUT->pix_icon('courseprofile/time1', '', 'block_reportdashboard', ['class' => 'timeicon']);
         }
-        $result = $days . $timeimage . $hrs . $min . $sec;
+        $accesstimedata = new stdclass;
+        $accesstimedata->dateimage = $dateimage;
+        $accesstimedata->days = $days;
+        $accesstimedata->timeimage = $timeimage;
+        $accesstimedata->hours = $hrs;
+        $accesstimedata->minutes = $min;
+        $accesstimedata->seconds = $sec;
+        $result = get_string('time', 'block_learnerscript', $accesstimedata);
         return $result;
     }
 
@@ -1532,7 +1534,14 @@ class ls {
             $weekdayslist[] = $weekdays;
             strtotime($weekdaysql . ' 09:00:00');
         }
-        $timingslist = ['09-10Am', '10-11Am', '11-12Pm', '02-03Pm', '03-04Pm', '04-05Pm', '05-06Pm', '06-07Pm'];
+        $timingslist = [get_string('firsthr', 'block_learnerscript'),
+                        get_string('secondhr', 'block_learnerscript'),
+                        get_string('thirdhr', 'block_learnerscript'),
+                        get_string('fourthhr', 'block_learnerscript'),
+                        get_string('fifthhr', 'block_learnerscript'),
+                        get_string('sixthhr', 'block_learnerscript'),
+                        get_string('seventhhr', 'block_learnerscript'),
+                        get_string('eighthr', 'block_learnerscript')];
         $timings = ['09-10', '10:00:01-11', '11:00:01-12', '14:00:01-15', '15:00:01-16',
                         '16:00:01-17', '17:00:01-18', '18:00:01-19', ];
         $users = $DB->get_records_sql("SELECT DISTINCT ue.userid AS id

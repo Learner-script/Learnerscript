@@ -109,10 +109,10 @@ class plugin_activityfield extends pluginbase {
                 ['id' => $courserecord->course]);
                 $checkpermissions = empty($reportid) ? false : (new reportbase($reportid))->check_permissions($context, $USER->id);
                 if (empty($reportid) || empty($checkpermissions)) {
-                        $courserecord->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot . '/course/view.php',
+                        $courserecord->{$data->column} = html_writer::link(new \moodle_url('/course/view.php',
                                                             ['id' => $courserecord->course]), $coursename);
                 } else {
-                    $courserecord->{$data->column} = html_writer::link(new \moodle_url($CFG->wwwroot .
+                    $courserecord->{$data->column} = html_writer::link(new \moodle_url(
                                                     '/blocks/learnerscript/viewreport.php',
                                                     ['id' => $reportid, 'filter_courses' => $courserecord->course]),
                                                     $coursename);

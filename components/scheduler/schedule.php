@@ -167,12 +167,11 @@ if ($mform->is_cancelled()) {
     $role = explode('_', $data->role);
     $fromform->roleid = $role[0];
     $fromform->contextlevel = isset($role[1]) ? $role[1] : 10;
-    $fromform->sendinguserid = $data->schuserslist;
+    $fromform->sendinguserid = $data->users_data;
     $fromform->exportformat = $data->exportformat;
     $fromform->frequency = $data->frequency;
     $fromform->schedule = $data->schedule;
     $fromform->userid = $USER->id;
-    $fromform->sendinguserid = $data->users_data;
     $fromform->nextschedule = $scheduling->next($fromform, null, false);
     if ($scheduledreportid > 0) {
         $fromform->timemodified = time();

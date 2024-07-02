@@ -81,7 +81,7 @@ class plugin_courseactivitiescolumns extends pluginbase {
     public function execute($data, $row, $reporttype) {
         global $DB, $OUTPUT, $USER, $CFG;
         $context = context_system::instance();
-        $searchicon = '<img class = "searchicon" src = "'.$CFG->wwwroot.'/blocks/reportdashboard/pix/courseprofile/search.png" />';
+        $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         $module = $DB->get_field('modules', 'name', ['id' => $row->moduleid]);
         switch($data->column){
             case 'activityname':
@@ -128,10 +128,15 @@ class plugin_courseactivitiescolumns extends pluginbase {
                     $progress = $row->{$data->column};
                 }
                 $progress = empty($progress) ? 0 : round($progress);
-                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progress . '%', "progress-bar",
+                $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
+                html_writer::start_div('mr-2 flex-grow-1 progress') . 
+                html_writer::div('', "progress-bar",
                 ['role' => "progressbar", 'aria-valuenow' => $progress,
-                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progress . "%"]) .
-                html_writer::end_div();
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => (($progress == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $progress . "%"))
+                ]) .
+                html_writer::end_div().
+                 html_writer::span($progress.'%', 'progressvalue').
+                 html_writer::end_div();
             break;
             case 'grades';
                 $gradesreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'grades'], IGNORE_MULTIPLE);
@@ -140,7 +145,7 @@ class plugin_courseactivitiescolumns extends pluginbase {
                 if (empty($gradesreportid) || empty($checkpermissions)) {
                     $row->{$data->column} = 'N/A';
                 } else {
-                    $row->{$data->column} = html_writer::link(new moodle_url("$CFG->wwwroot/blocks/learnerscript/viewreport.php",
+                    $row->{$data->column} = html_writer::link(new moodle_url("/blocks/learnerscript/viewreport.php",
                     ['id' => $gradesreportid, 'filter_courses' => $row->course, 'filter_activities' => $row->id]),
                     'Grades'.$searchicon);
                 }
@@ -168,7 +173,7 @@ class plugin_courseactivitiescolumns extends pluginbase {
                 if (empty($reportid) || empty($checkpermissions)) {
                     $row->{$data->column} = get_string('numviews', 'report_outline', $numviews).$searchicon;
                 } else {
-                    $row->{$data->column} = html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
+                    $row->{$data->column} = html_writer::link(new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'filter_courses' => $row->course, 'filter_activities' => $row->id]),
                     get_string('numviews', 'report_outline', $numviews).$searchicon, ["target" => "_blank"]);
                 }

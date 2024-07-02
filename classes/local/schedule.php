@@ -30,6 +30,8 @@ use block_learnerscript\local\ls;
 use context_helper;
 use moodle_exception;
 use html_writer;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/calendar/lib.php');
 
@@ -272,8 +274,8 @@ class schedule {
                 $messagedetails->exporttype = get_string($schedule->exportformat . 'format', 'block_learnerscript');
                 $messagedetails->reporturl = html_writer::link(new \moodle_url($reporturl), 'View Report');
                 $messagedetails->scheduledreportsindex =
-                $CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php?id=' .
-                $schedule->reportid;
+                new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php', ['id' =>
+                $schedule->reportid]);
 
                 $messagedetails->schedule = $this->get_formatted($schedule->frequency,
                 $schedule->schedule, $user);
@@ -484,8 +486,7 @@ class schedule {
      * @return string URL of the report provided or false
      */
     public function get_report_url($reportid) {
-        global $CFG;
-        return $CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $reportid;
+        return new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $reportid]);
     }
 
     /**

@@ -89,7 +89,7 @@ define(['jquery',
                     title_img = "<img class='dialog_title_icon' alt='Schedule' src='" +
                         M.util.image_url("schreportform", "block_learnerscript") + "' />";
                     position = "#inst" + args.instanceid;
-                    width = '60%';
+                    width = '80%';
                     my = "center";
                     at = "center";
                 } else if (args.action == 'sendreportemail') {
@@ -97,7 +97,7 @@ define(['jquery',
                     title_img = "<img class='dialog_title_icon' alt='Email' src='" +
                     M.util.image_url("email_icon", "block_learnerscript") + "'/>";
                     position = "#inst" + args.instanceid;
-                    width = '60%';
+                    width = '80%';
                     my = "center";
                     at = "center";
                 }

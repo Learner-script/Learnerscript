@@ -93,10 +93,15 @@ class plugin_usercoursescolumns extends pluginbase {
             case 'progressbar':
                 $progressbar = \core_completion\progress::get_course_progress_percentage($course, $row->userid);
                 $progressbar = !empty($progressbar) ? floor($progressbar) : 0;
-                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progressbar . '%', "progress-bar",
+                $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
+                html_writer::start_div('mr-2 flex-grow-1 progress').
+                html_writer::div('', "progress-bar",
                 ['role' => "progressbar", 'aria-valuenow' => $progressbar,
-                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progressbar . "%"]) .
-                html_writer::end_div();
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => (($progressbar == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $progressbar . "%"))
+                ]) .
+                html_writer::end_div().
+                 html_writer::span($progressbar.'%', 'progressvalue').
+                 html_writer::end_div();
                 break;
             case 'status':
                 require_once("{$CFG->libdir}/completionlib.php");

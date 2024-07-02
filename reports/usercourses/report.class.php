@@ -236,11 +236,10 @@ class report_usercourses extends reportbase implements report {
         switch ($columnname) {
             case 'grade':
                 $identity = 'gg.userid';
-                $query = "SELECT (gg.finalgrade/gi.grademax) AS grade
+                $query = "SELECT (gg.finalgrade/gi.grademax) * 100 AS grade
                                         FROM {grade_items} gi
                                         JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
                                         WHERE gi.courseid = $filtercourseid $where ";
-
             break;
             case 'totaltimespent':
                 $identity = 'bt.userid';

@@ -27,15 +27,15 @@ $import = optional_param('import', 0, PARAM_INT);
 require_login();
 
 $context = context_system::instance();
+require_capability('block/learnerscript:managereports', $context);
 
 $PAGE->requires->jquery_plugin('ui');
 $PAGE->requires->jquery_plugin('ui-css');
 $PAGE->requires->css('/blocks/learnerscript/css/slideshow.css');
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
-$PAGE->set_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php');
+$PAGE->set_url(new moodle_url('/blocks/learnerscript/lsconfig.php'));
 $PAGE->set_context($context);
-$PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('lsconfigtitle', 'block_learnerscript'));
 $PAGE->set_heading(get_string('lsreportsconfig', 'block_learnerscript'));
 

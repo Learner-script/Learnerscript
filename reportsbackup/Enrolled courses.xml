@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<report version="2024050701"><visible><![CDATA[1]]></visible>
+<report version="2021051713.06"><visible><![CDATA[1]]></visible>
 <name><![CDATA[Enrolled courses]]></name>
-<summary><![CDATA[<p>The number of courses enrolled to by a Teacher.</p>]]></summary>
+<summary><![CDATA[The number of courses enrolled to by a Teacher.]]></summary>
 <type><![CDATA[statistics]]></type>
-<components><![CDATA[eyJjdXN0b21zcWwiOnsiY29uZmlnIjp7Im5hbWUiOiJFbnJvbGxlZCtjb3Vyc2VzIiwidHlwZSI6InN0YXRpc3RpY3MiLCJxdWVyeXNxbCI6IlNFTEVDVCtDT1VOVCUyOERJU1RJTkNUK2MuaWQlMjkrQVMrJTIyRW5yb2xsZWQrY291cnNlcyUyMiUwRCUwQUZST00rcHJlZml4X3JvbGVfYXNzaWdubWVudHMrQVMrcmwlMEQlMEFKT0lOK3ByZWZpeF9jb250ZXh0K0FTK2N4dCtPTitjeHQuaWQrJTNEK3JsLmNvbnRleHRpZCUwRCUwQUpPSU4rcHJlZml4X3VzZXIrQVMrdStPTit1LmlkJTNEcmwudXNlcmlkJTBEJTBBSk9JTitwcmVmaXhfdXNlcl9lbnJvbG1lbnRzK0FTK3VlK09OKyt1ZS51c2VyaWQlM0R1LmlkJTBEJTBBSk9JTitwcmVmaXhfZW5yb2wrQVMrZW4rT04rdWUuZW5yb2xpZCslM0QrZW4uaWQlMEQlMEFKT0lOK3ByZWZpeF9jb3Vyc2UrQVMrYytPTitjLmlkJTNEZW4uY291cnNlaWQrJTBEJTBBSk9JTitwcmVmaXhfcm9sZStyK09OK3IuaWQrJTNEK3JsLnJvbGVpZCUwRCUwQVdIRVJFK3VlLnVzZXJpZCUzRHUuaWQrQU5EK3JsLnVzZXJpZCUzRTIrQU5EK2MudmlzaWJsZSslM0QrMStBTkQrYy5pZCslM0QrY3h0Lmluc3RhbmNlaWQrJTI1JTI1REFTSEJPQVJEUk9MRSUzQXIuc2hvcnRuYW1lJTI1JTI1JTBEJTBBQU5EK2N4dC5jb250ZXh0bGV2ZWwrJTNENTArQU5EK3JsLnVzZXJpZCslM0QrJTI1JTI1VVNFUklEJTI1JTI1K0FORCtybC50aW1lbW9kaWZpZWQrQkVUV0VFTislMjUlMjVMU19TVEFSVERBVEUlMjUlMjUrQU5EKyUyNSUyNUxTX0VORERBVEUlMjUlMjUiLCJkZXNjcmlwdGlvbiI6eyJ0ZXh0IjoiJTNDcCUzRVRoZStudW1iZXIrb2YrY291cnNlcytlbnJvbGxlZCt0bytieSthK1RlYWNoZXIuJTNDJTJGcCUzRSIsImZvcm1hdCI6IjEifSwiZ2xvYmFsIjoiMSIsImlkIjo5LCJjb3Vyc2VpZCI6MSwibWZvcm1faXNleHBhbmRlZF9pZF9hZHZhbmNlZG9wdGlvbnMiOjEsInN1Ym1pdGJ1dHRvbiI6Ik5leHQiLCJkaXNhYmxldGFibGUiOjAsInN1bW1hcnkiOiIlM0NwJTNFVGhlK251bWJlcitvZitjb3Vyc2VzK2Vucm9sbGVkK3RvK2J5K2ErVGVhY2hlci4lM0MlMkZwJTNFIn19LCJwZXJtaXNzaW9ucyI6eyJjb25maWciOnsiY29uZGl0aW9uZXhwcjEiOiIiLCJjb25kaXRpb25leHByMiI6IiUyOGMxJTI5IiwiY29uZGl0aW9uZXhwciI6IiUyOGMxJTI5In0sImVsZW1lbnRzIjpbeyJpZCI6Imdpbk5hckRua2RqcmppQSIsImZvcm1kYXRhIjp7ImNvbnRleHRsZXZlbCI6IjUwIiwic3VibWl0YnV0dG9uIjoiQWRkIiwicm9sZWlkIjoiMyJ9LCJwbHVnaW5uYW1lIjoicm9sZWluY291cnNlIiwicGx1Z2luZnVsbG5hbWUiOiJVc2VyK3dpdGgrdGhlK3NlbGVjdGVkK3JvbGUlMkZzIiwic3VtbWFyeSI6ImVkaXRpbmd0ZWFjaGVyK2F0K0NvdXJzZStsZXZlbCJ9XX19]]></components>
+<components><![CDATA[eyJjdXN0b21zcWwiOnsiY29uZmlnIjp7Im5hbWUiOiJFbnJvbGxlZCtjb3Vyc2VzIiwidHlwZSI6InN0YXRpc3RpY3MiLCJxdWVyeXNxbCI6IlNFTEVDVCtDT1VOVCUyOERJU1RJTkNUK2MuaWQlMjkrQVMrJTIyRW5yb2xsZWQrY291cnNlcyUyMiUwRCUwQUZST00rcHJlZml4X3JvbGVfYXNzaWdubWVudHMrQVMrcmwlMEQlMEFKT0lOK3ByZWZpeF9jb250ZXh0K0FTK2N4dCtPTitjeHQuaWQrJTNEK3JsLmNvbnRleHRpZCUwRCUwQUpPSU4rcHJlZml4X3VzZXIrQVMrdStPTit1LmlkJTNEcmwudXNlcmlkJTBEJTBBSk9JTitwcmVmaXhfdXNlcl9lbnJvbG1lbnRzK0FTK3VlK09OKyt1ZS51c2VyaWQlM0R1LmlkJTBEJTBBSk9JTitwcmVmaXhfZW5yb2wrQVMrZW4rT04rdWUuZW5yb2xpZCslM0QrZW4uaWQlMEQlMEFKT0lOK3ByZWZpeF9jb3Vyc2UrQVMrYytPTitjLmlkJTNEZW4uY291cnNlaWQrJTBEJTBBSk9JTitwcmVmaXhfcm9sZStyK09OK3IuaWQrJTNEK3JsLnJvbGVpZCUwRCUwQVdIRVJFK3VlLnVzZXJpZCUzRHUuaWQrQU5EK2MudmlzaWJsZSslM0QrMStBTkQrYy5pZCslM0QrY3h0Lmluc3RhbmNlaWQrJTI1JTI1REFTSEJPQVJEUk9MRSUzQXIuc2hvcnRuYW1lJTI1JTI1JTBEJTBBQU5EK2N4dC5jb250ZXh0bGV2ZWwrJTNENTArQU5EK3JsLnVzZXJpZCslM0QrJTI1JTI1VVNFUklEJTI1JTI1K0FORCtybC50aW1lbW9kaWZpZWQrQkVUV0VFTislMjUlMjVMU19TVEFSVERBVEUlMjUlMjUrQU5EKyUyNSUyNUxTX0VORERBVEUlMjUlMjUiLCJkZXNjcmlwdGlvbiI6eyJ0ZXh0IjoiVGhlK251bWJlcitvZitjb3Vyc2VzK2Vucm9sbGVkK3RvK2J5K2ErVGVhY2hlci4iLCJmb3JtYXQiOiIxIn0sImlkIjo5LCJjb3Vyc2VpZCI6MSwibWZvcm1faXNleHBhbmRlZF9pZF9hZHZhbmNlZG9wdGlvbnMiOjAsInN1Ym1pdGJ1dHRvbiI6Ik5leHQiLCJnbG9iYWwiOjEsImRpc2FibGV0YWJsZSI6MCwic3VtbWFyeSI6IlRoZStudW1iZXIrb2YrY291cnNlcytlbnJvbGxlZCt0bytieSthK1RlYWNoZXIuIn19LCJwZXJtaXNzaW9ucyI6eyJjb25maWciOnsiY29uZGl0aW9uZXhwcjEiOiIiLCJjb25kaXRpb25leHByMiI6IiUyOGMxJTI5IiwiY29uZGl0aW9uZXhwciI6IiUyOGMxJTI5In0sImVsZW1lbnRzIjpbeyJpZCI6Imdpbk5hckRua2RqcmppQSIsImZvcm1kYXRhIjp7ImNvbnRleHRsZXZlbCI6IjUwIiwic3VibWl0YnV0dG9uIjoiQWRkIiwicm9sZWlkIjoiMyJ9LCJwbHVnaW5uYW1lIjoicm9sZWluY291cnNlIiwicGx1Z2luZnVsbG5hbWUiOiJVc2VyK3dpdGgrdGhlK3NlbGVjdGVkK3JvbGUlMkZzIiwic3VtbWFyeSI6ImVkaXRpbmd0ZWFjaGVyK2F0K0NvdXJzZStsZXZlbCJ9XX19]]></components>
 <export><![CDATA[]]></export>
 <global><![CDATA[1]]></global>
-<lastexecutiontime><![CDATA[0]]></lastexecutiontime>
+<lastexecutiontime><![CDATA[1]]></lastexecutiontime>
 <disabletable><![CDATA[0]]></disabletable>
-<instance version="2024050701"><blockname><![CDATA[reporttiles]]></blockname>
+<instance version="2021051713.06"><blockname><![CDATA[reporttiles]]></blockname>
 <parentcontextid><![CDATA[1]]></parentcontextid>
-<showinsubcontexts><![CDATA[1]]></showinsubcontexts>
+<showinsubcontexts><![CDATA[0]]></showinsubcontexts>
 <requiredbytheme><![CDATA[0]]></requiredbytheme>
 <pagetypepattern><![CDATA[blocks-reportdashboard-dashboard-editingteacher_50]]></pagetypepattern>
 <subpagepattern><![CDATA[Dashboard]]></subpagepattern>
 <defaultregion><![CDATA[reportdb-second]]></defaultregion>
 <defaultweight><![CDATA[0]]></defaultweight>
-<timecreated><![CDATA[1717580344]]></timecreated>
-<timemodified><![CDATA[1717580499]]></timemodified>
+<timecreated><![CDATA[1719812987]]></timecreated>
+<timemodified><![CDATA[1719812987]]></timemodified>
 <title><![CDATA[Enrolled courses]]></title>
+<reportcontenttype><![CDATA[]]></reportcontenttype>
 <reporttype><![CDATA[table]]></reporttype>
 <logo><![CDATA[568811774]]></logo>
-<contextlevel><![CDATA[50]]></contextlevel>
-<blocktitle><![CDATA[]]></blocktitle>
-<reportduration><![CDATA[all]]></reportduration>
-<tileformat><![CDATA[fill]]></tileformat>
 <tilescolourpicker><![CDATA[FFFFFF]]></tilescolourpicker>
+<tileformat><![CDATA[fill]]></tileformat>
+<reportduration><![CDATA[all]]></reportduration>
 <tilescolour><![CDATA[000000]]></tilescolour>
 <url><![CDATA[]]></url>
-</instance><position version="2024050701"></position></report>
+</instance><position version="2021051713.06"></position></report>

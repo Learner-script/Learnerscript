@@ -23,6 +23,7 @@ namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 /** NoOfView Columns */
 class plugin_noofviews extends pluginbase {
+    
     /**
      * No. of views init function
      */
@@ -42,6 +43,7 @@ class plugin_noofviews extends pluginbase {
     /**
      * This function return field column format
      * @param object $data Field data
+     * @return array
      */
     public function colformat($data) {
         $align = (isset($data->align)) ? $data->align : '';

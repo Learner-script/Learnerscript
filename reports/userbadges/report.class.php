@@ -229,7 +229,7 @@ class report_userbadges extends reportbase implements report {
                     $params['startdate'] = $this->lsstartdate;
                     $params['enddate'] = $this->lsenddate;
                 }
-                $activityinforeport->name = html_writer::link(new \moodle_url($CFG->wwwroot .
+                $activityinforeport->name = html_writer::link(new \moodle_url(
                 '/badges/overview.php', ['id' => $badge->badgeid]), $badgeimage.'  '.$badge->name,
                 ['class' => 'edit', 'target' => '_blank']);
                 $activityinforeport->issuername = $badge->issuername;
@@ -239,13 +239,13 @@ class report_userbadges extends reportbase implements report {
                     $reportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'courseprofile'], IGNORE_MULTIPLE);
                     $permissions = empty($reportid) ? false : (new reportbase($reportid))->check_permissions($context, $USER->id);
                     if (empty($reportid) || empty($permissions)) {
-                        $activityinforeport->coursename = html_writer::link(new \moodle_url($CFG->wwwroot .
+                        $activityinforeport->coursename = html_writer::link(new \moodle_url(
                                                             '/course/view.php',
                                                             ['id' => $courserecord->id]),
                                                             ($courserecord->fullname ? $courserecord->fullname : 'System'),
                                                             ['target' => '_blank', 'class' => 'edit']);
                     } else {
-                        $activityinforeport->coursename = html_writer::link(new \moodle_url($CFG->wwwroot .
+                        $activityinforeport->coursename = html_writer::link(new \moodle_url(
                                                             '/blocks/reportdashboard/courseprofile.php',
                                                             ['filter_courses' => $courserecord->id]),
                                                             ($courserecord->fullname ? $courserecord->fullname : 'System'),

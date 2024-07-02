@@ -150,7 +150,8 @@ class report_noofviews extends reportbase implements report {
      */
     public function filters() {
         if (!empty($this->params['filter_activities'])) {
-            $this->sql .= " AND lsl.contextinstanceid IN (:filter_activities) AND lsl.contextlevel = 70 ";
+            $this->sql .= " AND lsl.contextinstanceid IN (:filter_activities) AND lsl.contextlevel = 70
+            AND lsl.target = 'course_module'";
         }
         if (!empty($this->params['filter_courses']) && $this->params['filter_courses'] <> SITEID  && !$this->scheduling) {
             $this->sql .= " AND lsl.courseid IN (:filter_courses) ";

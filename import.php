@@ -28,6 +28,7 @@ $import = optional_param('import', 0, PARAM_INT);
 require_login();
 
 $context = context_system::instance();
+require_capability('block/learnerscript:managereports', $context);
 
 $PAGE->requires->jquery_plugin('ui');
 $PAGE->requires->jquery_plugin('ui-css');
@@ -35,7 +36,7 @@ $PAGE->requires->css('/blocks/learnerscript/css/slideshow.css');
 
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
-$PAGE->set_url($CFG->wwwroot . '/blocks/learnerscript/import.php');
+$PAGE->set_url(new moodle_url('/blocks/learnerscript/import.php'));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('maintenance');
 $PAGE->set_title(get_string('importreports', 'block_learnerscript'));
@@ -110,9 +111,9 @@ if (!empty($slideshowimages)) {
 
 $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
 if ($reportdashboardblockexists) {
-    $redirecturl = $CFG->wwwroot . '/blocks/reportdashboard/dashboard.php';
+    $redirecturl = new moodle_url('/blocks/reportdashboard/dashboard.php');
 } else {
-    $redirecturl = $CFG->wwwroot . '/blocks/learnerscript/managereport.php';
+    $redirecturl = new moodle_url('/blocks/learnerscript/managereport.php');
 }
 
 if ($importstatus && !$lsreportconfigstatus) {

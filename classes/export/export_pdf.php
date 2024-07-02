@@ -172,7 +172,7 @@ class export_pdf {
     public function pdf_reportheader() {
         $headerimagepath = block_learnerscript_get_reportheader_imagepath();
         $headerimgpath = "";
-        if (@getimagesize($headerimagepath)) {
+        if (isset($headerimagepath) && @getimagesize($headerimagepath)) {
             $headerimgpath = $headerimagepath;
         }
         if ($headerimgpath) {

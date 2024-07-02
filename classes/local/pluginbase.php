@@ -83,6 +83,23 @@ class pluginbase {
     public $rolewisecourses = '';
 
     /**
+     * @var int $reportinstance
+     */
+    public $reportinstance;
+    /**
+     * @var object $reportfilterparams
+     */
+    public $reportfilterparams;
+    /**
+     * @var int $role
+     */
+    public $role;
+    /**
+     * @var boolean $downloading
+     */
+    public $downloading;
+
+    /**
      * Construct
      * @param  object $report Report data
      */

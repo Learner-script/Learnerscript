@@ -227,7 +227,7 @@ class report_statistics extends reportbase {
             $blockinstanceid = $this->config->id;
         }
 
-        $table = new stdclass;
+        $table = new stdClass;
         $table->id = 'reporttable_' . $blockinstanceid . '';
         $table->data = $finaltable;
         $table->head = $tablehead;
@@ -238,7 +238,7 @@ class report_statistics extends reportbase {
         $calcs->head = $tablehead;
 
         if (!$this->finalreport) {
-            $this->finalreport = new StdClass;
+            $this->finalreport = new stdClass;
         }
         $this->finalreport->table = $table;
         $this->finalreport->calcs = $calcs;

@@ -140,19 +140,19 @@ class block_learnerscript extends block_list {
         if ($reportdashboardblockexists) {
             if (!is_siteadmin()) {
                 if ($roleshortname == 'student') {
-                    $this->content->items[] = html_writer::link(new moodle_url($CFG->wwwroot .
+                    $this->content->items[] = html_writer::link(new moodle_url(
                     '/blocks/reportdashboard/profilepage.php',
                     ['filter_users' => $USER->id, 'role' => $roleshortname, 'contextlevel' => $rolecontextlevel]),
                     get_string('pluginname', 'block_learnerscript'), ['class' => 'ls-block_reportdashboard']);
                 } else {
-                    $this->content->items[] = html_writer::link(new moodle_url($CFG->wwwroot .
+                    $this->content->items[] = html_writer::link(new moodle_url(
                     '/blocks/reportdashboard/dashboard.php',
                     ['role' => $roleshortname, 'contextlevel' => $rolecontextlevel]),
                     get_string('pluginname', 'block_learnerscript'), ['class' => 'ls-block_reportdashboard']);
                 }
 
             } else {
-                $this->content->items[] = html_writer::link(new moodle_url($CFG->wwwroot .
+                $this->content->items[] = html_writer::link(new moodle_url(
                 '/blocks/reportdashboard/dashboard.php', []), get_string('pluginname', 'block_learnerscript'),
                 ['class' => 'ls-block_reportdashboard']);
             }
@@ -168,7 +168,7 @@ class block_learnerscript extends block_list {
                         $rname = format_string($report->name);
 
                         $this->content->items[] =
-                        html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
+                        html_writer::link(new moodle_url('/blocks/learnerscript/viewreport.php',
                         ['id' => $report->id, 'courseid' => $course->id, "alt" => $rname]), $rname,
                         ['class' => 'ls-block_reportlist_reportname']);
                     }
@@ -186,7 +186,7 @@ class block_learnerscript extends block_list {
                 if (!$report->global && $report->visible && (new ls)->cr_check_report_permissions($report, $USER->id, $context)) {
                     $rname = format_string($report->name);
                     $this->content->items[] =
-                    html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
+                    html_writer::link(new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $report->id, 'courseid' => $course->id, "alt" => $rname]), $rname,
                     ['class' => 'ls-block_reportlist_reportname']);;
                 }
@@ -197,11 +197,11 @@ class block_learnerscript extends block_list {
             has_capability('block/learnerscript:manageownreports', $context)) {
             if (is_siteadmin()) {
                 $this->content->items[] =
-                html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php',
+                html_writer::link(new moodle_url('/blocks/learnerscript/managereport.php',
                         []), get_string('managereports', 'block_learnerscript'),
                         ['class' => 'ls-block_managereports']);
             } else {
-                $this->content->items[] = html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php',
+                $this->content->items[] = html_writer::link(new moodle_url('/blocks/learnerscript/managereport.php',
                 ['role' => $roleshortname, 'contextlevel' => $rolecontextlevel]),
                 get_string('managereports', 'block_learnerscript'), ['class' => 'ls-block_managereports']);
             }
@@ -209,7 +209,7 @@ class block_learnerscript extends block_list {
 
         if (!has_capability('block/learnerscript:managereports', $context) ||
             !has_capability('block/learnerscript:manageownreports', $context)) {
-            $this->content->items[] = html_writer::link(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php',
+            $this->content->items[] = html_writer::link(new moodle_url('/blocks/learnerscript/reports.php',
             ['role' => $roleshortname, 'contextlevel' => $rolecontextlevel]),
             get_string('managereports', 'block_learnerscript'), ['class' => 'ls-block_managereports']);
         }

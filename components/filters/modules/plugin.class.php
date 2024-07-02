@@ -79,9 +79,8 @@ class plugin_modules extends pluginbase {
             get_string('filter_module', 'block_learnerscript') :
             get_string('select') .' '. get_string('modules', 'block_learnerscript');
         }
-        $modules = $DB->get_records_sql('SELECT id, name
-            FROM {modules}
-            WHERE visible = :visible', ['visible' => 1]);
+
+        $modules = $DB->get_records('modules', ['visible' => 1], '', 'id, name');
         if (!empty($modules)) {
             foreach ($modules as $module) {
                 $modulesoptions[$module->id] = get_string('pluginname', $module->name);

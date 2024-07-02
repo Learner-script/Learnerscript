@@ -68,12 +68,13 @@ class plotoption implements renderable, templatable {
         if (!empty($SESSION->role) && ($SESSION->role != 'manager')) {
             $reports = (new ls)->listofreportsbyrole();
         } else {
-            $reportlist = $DB->get_records_sql("SELECT * FROM {block_learnerscript}
-                                                 WHERE global = :global AND visible = :visible
-                                                 AND type != :type",
-                                                 ['global' => 1, 'visible' => 1, 'type' => 'statistics']);
+            $reportlist = $DB->get_records('block_learnerscript', ['global' => 1,
+                        'visible' => 1], '', '*', IGNORE_MISSING);
             $reports = [];
             foreach ($reportlist as $report) {
+                if ($report->type == 'statistics') {
+                    continue;
+                }
                 $reports[] = ['id' => $report->id, 'name' => $report->name];
             }
         }

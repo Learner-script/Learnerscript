@@ -61,7 +61,7 @@ class plugin_coursecompetency extends pluginbase {
         global $DB, $OUTPUT, $CFG;
         switch($data->column) {
             case 'competency':
-                $compurl = html_writer::link(new moodle_url($CFG->wwwroot . '/admin/tool/lp/user_competency_in_course.php',
+                $compurl = html_writer::link(new moodle_url('/admin/tool/lp/user_competency_in_course.php',
                 ['courseid' => $row->courseid, 'competencyid' => $row->id]), $row->competency);
                 $competency = $compurl;
                 $row->{$data->column} = !empty($competency) ? $competency : '--';

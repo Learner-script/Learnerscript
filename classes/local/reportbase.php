@@ -30,6 +30,7 @@ use html_table;
 use EvalMath;
 use block_learnerscript\local\ls as ls;
 use context_system;
+use moodle_url;
 
 /** Reportbase */
 class reportbase {
@@ -190,11 +191,6 @@ class reportbase {
     public $courselevel = false;
 
     /**
-     * @var boolean $conditionsenabled
-     */
-    public $conditionsenabled = false;
-
-    /**
      * @var string $reporttype
      */
     public $reporttype = 'table';
@@ -250,11 +246,6 @@ class reportbase {
     public $selectedfilters;
 
     /**
-     * @var array $conditionfinalelements
-     */
-    public $conditionfinalelements = [];
-
-    /**
      * @var stdClass $config
      */
     public $config;
@@ -298,6 +289,36 @@ class reportbase {
      * @var string $reportcontenttype Report contenttype
      */
     public $reportcontenttype;
+    /**
+     * @var bool $singleselection
+     */
+    public $singleselection;
+
+    /**
+     * @var mixed $placeholder
+     */
+    public $placeholder;
+
+    /**
+     * @var int $maxlength
+     */
+    public $maxlength;
+    /**
+     * @var array $searchable
+     */
+    public $searchable;
+    /**
+     * @var array $excludedroles
+     */
+    public $excludedroles;
+    /**
+     * @var array $basicparamdata Basic params list
+     */
+    public $basicparamdata;
+    /**
+     * @var boolean $downloading downloadfile
+     */
+    public $downloading = false;
 
     /**
      * Construct
@@ -557,8 +578,8 @@ class reportbase {
                 if ($action) {
                     redirect($action);
                 } else {
-                    redirect("$CFG->wwwroot/blocks/learnerscript/viewreport.php?id=" .
-                        $this->config->id . "&courseid=" . $this->config->courseid);
+                    redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' =>
+                        $this->config->id, 'courseid' => $this->config->courseid]));
                 }
                 die;
             }
@@ -804,6 +825,7 @@ class reportbase {
                     $class->colformat = $this->colformat;
                     $class->reportinstance = $blockinstanceid ? $blockinstanceid : $this->config->id;
                     $class->reportfilterparams = $this->params;
+                    $class->downloading = $this->downloading;
                     $rid = isset($r->id) ? $r->id : 0;
                     if (isset($c->formdata->column) &&
                         (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')

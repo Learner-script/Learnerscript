@@ -53,7 +53,7 @@ $PAGE->set_pagelayout('report');
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 $PAGE->requires->jquery_plugin('ui-css');
@@ -76,13 +76,13 @@ $SESSION->rolecontextlist = $rcontext;
 if ($importurl) {
     $c = new curl();
     if ($data = $c->get($importurl)) {
-         $data = json_decode($data);
-         $xml = base64_decode($data->content);
+        $data = json_decode($data);
+        $xml = base64_decode($data->content);
     } else {
         throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
     }
     if ((new ls)->cr_import_xml($xml, $course)) {
-         redirect("$CFG->wwwroot/blocks/learnerscript/managereport.php", get_string('reportcreated', 'block_learnerscript'));
+        redirect(new moodle_url('/blocks/learnerscript/managereport.php'), get_string('reportcreated', 'block_learnerscript'));
     } else {
         throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
     }
@@ -93,7 +93,7 @@ $mform = new import_form(null, $course->id);
 if ($data = $mform->get_data()) {
     if ($xml = $mform->get_file_content('userfile')) {
         if ((new ls)->cr_import_xml($xml, $course)) {
-            redirect("$CFG->wwwroot/blocks/learnerscript/managereport.php", get_string('reportcreated', 'block_learnerscript'));
+            redirect(new moodle_url('/blocks/learnerscript/managereport.php'), get_string('reportcreated', 'block_learnerscript'));
         } else {
             throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
         }
@@ -127,8 +127,7 @@ if ($reports) {
 
     foreach ($reports as $r) {
         $editcell = '';
-        $editcell .= html_writer::link(new \moodle_url($CFG->wwwroot .
-        '/blocks/learnerscript/editreport.php', ['id' => $r->id]),
+        $editcell .= html_writer::link(new \moodle_url('/blocks/learnerscript/editreport.php', ['id' => $r->id]),
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/edit'), 'class' => "iconsmall",
         'alt' => $stredit, ]), ['title' => $stredit]);
 

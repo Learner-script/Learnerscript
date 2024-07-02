@@ -42,6 +42,7 @@ class plugin_gradecolumns extends pluginbase {
     /**
      * This function return field column format
      * @param object $data Field data
+     * @return array
      */
     public function colformat($data) {
         $align = (isset($data->align)) ? $data->align : '';

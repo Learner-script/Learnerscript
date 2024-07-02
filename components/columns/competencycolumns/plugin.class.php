@@ -76,14 +76,13 @@ class plugin_competencycolumns extends pluginbase {
                 foreach ($courseslist as $course) {
                     if ($this->report->type == 'courseprofile' || empty($coursereportid) || empty($checkpermissions)) {
                         $row->{$data->column} .= html_writer::tag('li',
-                        html_writer::link(new \moodle_url($CFG->wwwroot . '/course/view.php',
+                        html_writer::link(new \moodle_url('/course/view.php',
                         ['id' => $course->id]), $course->fullname) . ', ');
                     } else if ($coursereportid) {
                         $row->{$data->column} .= html_writer::tag(
                             'li',
                             html_writer::link(
-                                new \moodle_url(
-                                    $CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
+                                new \moodle_url('/blocks/learnerscript/viewreport.php',
                                     ['id' => $coursereportid, 'filter_courses' => $course->id]
                                 ),
                                 $course->fullname

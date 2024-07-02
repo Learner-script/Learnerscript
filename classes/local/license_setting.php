@@ -16,6 +16,7 @@
 
 namespace block_learnerscript\local;
 use html_writer;
+use moodle_url;
 
 /**
  * Class license_setting
@@ -46,13 +47,13 @@ class license_setting extends \admin_setting_configtext {
         set_config('ls_'.$this->name, $learnerscript, 'block_learnerscript');
         $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
         if (!$lsreportconfigstatus) {
-            redirect($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1');
+            redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
         } else {
             $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
             if ($reportdashboardblockexists) {
-                redirect($CFG->wwwroot . '/blocks/reportdashboard/dashboard.php');
+                redirect(new moodle_url('/blocks/reportdashboard/dashboard.php'));
             } else {
-                redirect($CFG->wwwroot . '/blocks/learnerscript/managereport.php');
+                redirect(new moodle_url('/blocks/learnerscript/managereport.php'));
             }
         }
         exit;
@@ -90,8 +91,7 @@ class license_setting extends \admin_setting_configtext {
         if ($error) {
             $errormsg = implode(', ', $errordata);
             $return .= html_writer::div(html_writer::link(get_string('installenable', 'block_learnerscript') . $errormsg .
-            get_string('pluginclick', 'block_learnerscript') . new \moodle_url($CFG->wwwroot .
-            '/admin/tool/installaddon/index.php'),
+            get_string('pluginclick', 'block_learnerscript') . new \moodle_url('/admin/tool/installaddon/index.php'),
             get_string('installplugins', 'block_learnerscript'),
             ['title' => get_string('installplugin', 'block_learnerscript')]), "alert alert-notice");
             $disabled = 'disabled';
