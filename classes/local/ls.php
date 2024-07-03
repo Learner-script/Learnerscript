@@ -722,7 +722,7 @@ class ls {
      * @return array List of scheduled reports
      */
     public function schedulereportsquery($frequency = false) {
-        global $DB, $CFG;
+        global $DB;
         core_date::set_default_server_timezone();
         $now = new DateTime("now", core_date::get_server_timezone_object());
         $date = $now->format('Y-m-d');
@@ -738,8 +738,9 @@ class ls {
                   JOIN {user} as u ON crs.userid = u.id
                  WHERE u.confirmed = :confirmed AND u.suspended = :suspended AND u.deleted = :deleted $frequencyquery";
         $schereports = $DB->get_records_sql($sql, ['confirmed' => 1, 'suspended' => 0, 'deleted' => 0]);
+
         foreach ($schereports as $sch => $repo) {
-            $scheduledate = userdate($repo->nextschedule, '%Y-%m-%d');
+            $scheduledate = userdate($repo->nextschedule, '%Y-%m-%d', '', false);
             $scheduletime = userdate($repo->nextschedule, '%H');
             if (($scheduledate == $date) && ($scheduletime == $hour)) {
                 $scheduledreports[] = $repo;
@@ -757,8 +758,7 @@ class ls {
         $schedule = new schedule;
         $scheduledreports = (new self)->schedulereportsquery($frequency);
         $totalschedulereports = count($scheduledreports);
-        mtrace(get_string('processing', 'block_learnerscript') . ' ' . $totalschedulereports .
-                    ' ' . get_string('scheduledreport', 'block_learnerscript'));
+        mtrace(get_string('processingschedulereport', 'block_learnerscript', $totalschedulereports));
         if ($totalschedulereports > 0) {
             foreach ($scheduledreports as $scheduled) {
                 switch ($scheduled->exporttofilesystem) {

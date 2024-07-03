@@ -5383,7 +5383,7 @@ body#page-my-index .spark-report .highcharts-container {
 }
 
 body.path-blocks-learnerscript .map_report_container sup#communicate {
-    top: 1em;
+    top: 0em;
 }
 
 body.path-blocks-learnerscript #profile-page .courseoverview_card {
@@ -5449,4 +5449,15 @@ body.path-blocks-learnerscript .ls-report_graph_container canvas {
 body.path-blocks-reportdashboard .progresscontainer .progressvalue,
 body.path-blocks-learnerscript .progresscontainer .progressvalue {
   font-size: 75%;
+}
+
+body.path-blocks-reportdashboard .ls.icon.sendsms,
+body.path-blocks-learnerscript .ls.icon.sendsms {
+  width: 22px;
+  height: 16px;
+  float: right;
+  margin-right: 0;
+  max-width: 16px;
+  max-height: 16px;
+  overflow: hidden;
 }

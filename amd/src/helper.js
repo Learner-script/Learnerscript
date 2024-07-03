@@ -28,6 +28,7 @@ define(['jquery',
         'core/modal_events',
         'core/ajax',
         'core/notification',
+        'block_learnerscript/bootstrapnotify/bootstrapnotify',
         'block_learnerscript/smartfilter'
     ],
     function($, ajax, AjaxForms, Str, ModalFactory, ModalEvents, Ajax, notification, smartfilter) {

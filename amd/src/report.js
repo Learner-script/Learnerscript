@@ -65,6 +65,16 @@ define(['jquery',
                 $('#plotreportcontainer' + reportid).html('');
 
             });
+
+            $(document).on('click', ".sendusermsg", function(e) {
+                var userid = $(this).data('userid');
+                var reportinstance = $(this).data('reportinstance');
+                var userfullname = $(this).data('userfullname');
+
+                helper.sendmessage({userid: userid, reportinstance: reportinstance}, userfullname);
+                e.stopImmediatePropagation();  
+            });
+            
             /**
              * Select2 initialization
              */
