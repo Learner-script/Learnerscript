@@ -24,7 +24,9 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 
-/** Courses filter */
+/**
+ * Courses filter
+ */
 class plugin_courses extends pluginbase {
 
     /** @var mixed $singleselection  */
@@ -39,7 +41,10 @@ class plugin_courses extends pluginbase {
     /** @var mixed $maxlength  */
     public $maxlength;
 
-    /** Courses filter init function*/
+    /**
+     * Courses filter init function
+     *
+     */
     public function init() {
         $this->form = false;
         $this->unique = true;
@@ -67,7 +72,8 @@ class plugin_courses extends pluginbase {
         return get_string('filter_courses_summary', 'block_learnerscript');
     }
 
-    /** Execute
+    /**
+     * Execute
      * @param  string $finalelements Final elements
      * @param  object $data          Filter data
      * @param  array $filters       Filter params

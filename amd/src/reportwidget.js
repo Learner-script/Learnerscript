@@ -169,16 +169,6 @@ define(['jquery',
                     }
                 }
             });
-
-            /** 
-             * Statistics report help text
-             */
-            $(document).on('click', ".statisticshelptext", function() {
-                var reportid = $(this).data('reportid');
-                require(['block_learnerscript/report'], function(report) {
-                    report.block_statistics_help(reportid);
-                });
-            });
         },
         /**
          * Creates single dashboard widget for requested report and type

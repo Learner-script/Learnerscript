@@ -95,7 +95,7 @@ class pluginbase {
      */
     public $role;
     /**
-     * @var boolean $downloading
+     * @var bool $downloading
      */
     public $downloading;
 

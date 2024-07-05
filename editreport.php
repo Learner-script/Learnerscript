@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script - Report Creation
- * @package   block_learnerscript
- * @copyright 2023 Moodle India Information Solutions Private Limited
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/**
+ * Learner Script - Report Creation
+ *
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India Information Solutions Private Limited
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
-use block_learnerscript\form;
 use block_learnerscript\local\ls;
 
 $id = optional_param('id', 0, PARAM_INT);

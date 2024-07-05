@@ -14,14 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
-/** Course views Columns */
+/**
+ * Course views Columns
+ */
 class plugin_courseviews extends pluginbase {
     /**
      * Course views init function

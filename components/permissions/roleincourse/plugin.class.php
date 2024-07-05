@@ -26,7 +26,9 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\permissionslib;
 use context_helper;
 
-/** Role in course permissions*/
+/**
+ * Role in course permissions
+ */
 class plugin_roleincourse extends pluginbase {
 
     /** @var $role */
@@ -37,7 +39,10 @@ class plugin_roleincourse extends pluginbase {
      */
     public $userroles;
 
-    /** Role in course */
+    /**
+     * Role in course
+     *
+     */
     public function init() {
         $this->form = true;
         $this->unique = false;
@@ -48,7 +53,8 @@ class plugin_roleincourse extends pluginbase {
         'courseprofile', 'courseactivities', 'courseviews', ];
     }
 
-    /** Summary
+    /**
+     * Summary
      * @param  object $data Columns data
      * @return string
      */
@@ -59,7 +65,8 @@ class plugin_roleincourse extends pluginbase {
         return $rolename . ' at ' . $contextname .' level';
     }
 
-    /** Execute
+    /**
+     * Execute
      * @param  int $userid  User id
      * @param  object $context User context
      * @param  object $data    Report columns data

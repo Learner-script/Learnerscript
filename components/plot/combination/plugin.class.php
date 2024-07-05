@@ -24,13 +24,18 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 
-/** Combination graph */
+/**
+ * Combination graph
+ */
 class plugin_combination extends pluginbase {
 
     /** @var bool $ordering */
     public $ordering;
 
-    /** Graph init */
+    /**
+     * Graph init
+     *
+     */
     public function init() {
         $this->fullname = get_string('combination', 'block_learnerscript');
         $this->form = true;
@@ -39,7 +44,8 @@ class plugin_combination extends pluginbase {
                             'useractivities', 'usercourses', 'users', ];
     }
 
-    /** Graph summary
+    /**
+     * Graph summary
      * @param  object $data Graph data
      * @return string
      */
@@ -47,7 +53,8 @@ class plugin_combination extends pluginbase {
         return get_string('combinationsummary', 'block_learnerscript');
     }
 
-    /** Plugin configuration data.
+    /**
+     * Plugin configuration data.
      * @param  int $id             Report graph id
      * @param  object $data        Report graph data
      * @param  object $finalreport Final report data
@@ -80,7 +87,7 @@ class plugin_combination extends pluginbase {
             $i++;
         }
 
-        return new moodle_url('/blocks/learnerscript/components/plot/combination/graph.php', [
+        return new \moodle_url('/blocks/learnerscript/components/plot/combination/graph.php', [
             'reportid' => $this->report->id,
             'id' => $id.$params,
             'min' => $minvalue,

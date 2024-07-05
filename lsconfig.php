@@ -14,11 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script - Report Configuration/Design for LearnerScript Reports
+/**
+ * Learner Script - Report Configuration/Design for LearnerScript Reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
 use block_learnerscript\local\ls as ls;

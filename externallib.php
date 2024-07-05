@@ -14,8 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * External lib functions
+ * @package   block_learnerscript
+ * @copyright 2023 Moodle India Information Solutions Private Limited
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
+defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 use core_external\external_api;
@@ -30,9 +36,6 @@ use block_learnerscript\local\license_setting as lssetting;
 /**
  * Learnerscript external functions
  *
- * @package    block_learnerscript
- * @copyright  2023 Moodle India Information Solutions Private Limited
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_learnerscript_external extends external_api {
     /**
@@ -120,61 +123,6 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function rolewiseusers_returns() {
-        return new external_value(PARAM_TEXT, 'data');
-    }
-    /**
-     * View Schedule Users parameters description
-     * @return external_function_parameters
-     */
-    public static function viewschuserstable_parameters() {
-        return new external_function_parameters(
-            [
-                'reportid' => new external_value(PARAM_INT, 'Report id of report', VALUE_DEFAULT),
-                'scheduleid' => new external_value(PARAM_INT, 'selected schedule for report', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_TEXT, 'list of scheduled users', VALUE_DEFAULT),
-            ]
-        );
-    }
-    /**
-     * View Schedule Users
-     * @param int $reportid Report ID
-     * @param int $scheduleid Report scheduled ID
-     * @param string $schuserslist Scheduled users list
-     */
-    public static function viewschuserstable($reportid, $scheduleid, $schuserslist) {
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
-        self::validate_parameters(self::viewschuserstable_parameters(), ['reportid' => $reportid,
-        'scheduleid' => $scheduleid, 'schuserslist' => $schuserslist, ]);
-
-        if ((has_capability('block/learnerscript:managereports', $context) ||
-            has_capability('block/learnerscript:manageownreports', $context) ||
-            is_siteadmin()) && !empty($schuserslist)) {
-            $stable = new stdClass();
-            $stable->table = true;
-            $return = (new schedule)->viewschusers($reportid, $scheduleid, $schuserslist, $stable);
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($schuserslist)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'Schedule Users List');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * View Schedule Users
-     * @return external_description
-     */
-    public static function viewschuserstable_returns() {
         return new external_value(PARAM_TEXT, 'data');
     }
     /**

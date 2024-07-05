@@ -24,7 +24,9 @@
 namespace block_learnerscript\task;
 use block_learnerscript\local\ls;
 
-/** User SCORM timespent schedule task */
+/**
+ * User SCORM timespent schedule task
+ */
 class userscormtimespent extends \core\task\scheduled_task {
 
     /**

@@ -28,9 +28,11 @@ require_once($CFG->dirroot . '/lib/formslib.php');
  */
 class scheduled_reports_form extends moodleform {
 
-    /** Form defination */
+    /**
+     * Form defination
+     *
+     */
     public function definition() {
-        global $DB, $CFG;
         $mform = &$this->_form;
 
         $reportid = $this->_customdata['id'];

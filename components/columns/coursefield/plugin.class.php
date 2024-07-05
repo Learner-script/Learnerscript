@@ -26,7 +26,9 @@ use block_learnerscript\local\pluginbase;
 use html_writer;
 use context_system;
 
-/** Course Field Columns */
+/**
+ * Course Field Columns
+ */
 class plugin_coursefield extends pluginbase {
 
     /** @var string $reportinstance  */

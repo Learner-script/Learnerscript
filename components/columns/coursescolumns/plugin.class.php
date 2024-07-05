@@ -27,7 +27,9 @@ use block_learnerscript\local\reportbase;
 use block_learnerscript\local\ls;
 use context_system;
 use html_writer;
-/** Courses Columns */
+/**
+ * Courses Columns
+ */
 class plugin_coursescolumns extends pluginbase {
 
     /** @var string $reportinstance  */
@@ -73,7 +75,7 @@ class plugin_coursescolumns extends pluginbase {
      * @return object|string
      */
     public function execute($data, $row, $reporttype = 'table') {
-        global $DB, $CFG, $USER, $OUTPUT;
+        global $DB, $USER, $OUTPUT;
         $context = context_system::instance();
         $usercoursesreportid = $DB->get_field('block_learnerscript', 'id',
         ['type' => 'usercourses', 'name' => 'Learners activity summary'], IGNORE_MULTIPLE);

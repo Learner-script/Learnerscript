@@ -526,54 +526,6 @@ class schedule {
         return $data;
     }
     /**
-     * List Of scheduled users list
-     * @param  integer $reportid   ReportID
-     * @param  integer $scheduleid   ScheduledID
-     * @param  string $schuserslist List of userids with comma seperated
-     * @param  object $stable contains search value, start, length and table
-     * @return array|int List of users with id and fullname
-     */
-    public function viewschusers($reportid, $scheduleid, $schuserslist, $stable) {
-        global $DB;
-
-        if (!$reportid) {
-            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
-        }
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new moodle_exception(get_string('reportnotavailable', 'block_learnerscript'));
-        }
-        if ($stable->table) {
-            $schuserscountsql = "SELECT COUNT(u.id) as count
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-        } else {
-            $schuserscountsql = "SELECT COUNT(u.id) as count
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0
-            AND u.deleted = 0";
-            $schuserssql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname, u.email
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-        }
-
-        if (!empty($stable->table)) {
-            return $DB->count_records_sql($schuserscountsql);
-        } else {
-            $fields = ["CONCAT(u.firstname, ' ', u.lastname) ", "u.email"];
-            $fields = implode(" LIKE '%" . $stable->search . "%' OR ", $fields);
-            $fields .= " LIKE '%" . $stable->search . "%' ";
-            if ($stable->search) {
-                $schuserscountsql .= " AND ( $fields ) ";
-                $schuserssql .= " AND ( $fields ) ";
-            }
-            $viewschuserscount = $DB->count_records_sql($schuserscountsql);
-            $schuserssql .= ' ORDER BY u.id ASC';
-            $schedulingdata = $DB->get_records_sql($schuserssql, [], $stable->start, $stable->length);
-            return compact('schedulingdata', 'viewschuserscount');
-        }
-    }
-    /**
      * Get List of scheduled reports and total count by using report ID
      * @param  integer  $reportid ReportID
      * @param  boolean $table table head (true)/ body (false)

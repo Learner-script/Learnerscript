@@ -24,7 +24,9 @@
 namespace block_learnerscript\task;
 use block_learnerscript\local\ls;
 
-/** User quiz timespent schedule task */
+/**
+ * User quiz timespent schedule task
+ */
 class userquiztimespent extends \core\task\scheduled_task {
 
     /**

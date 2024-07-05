@@ -24,7 +24,9 @@
 
 namespace block_learnerscript\local;
 
-/** Component base */
+/**
+ * Component base
+ */
 class componentbase {
 
     /** @var stdClass $config  */

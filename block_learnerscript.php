@@ -116,15 +116,22 @@ class block_learnerscript extends block_list {
         $reportdashboardblockexists = $this->page->blocks->is_known_block_type('reportdashboard', false);
         if (!is_siteadmin()) {
             $userrolesql = "SELECT CONCAT(ra.roleid, '_',c.contextlevel) AS rolecontext, r.shortname, c.contextlevel
-            FROM {role_assignments} ra
-            JOIN {context} c ON c.id = ra.contextid
-            JOIN {role} r ON r.id = ra.roleid
-            WHERE 1 = 1 AND ra.userid = :userid AND (";
+                FROM {role_assignments} ra
+                JOIN {context} c ON c.id = ra.contextid
+                JOIN {role} r ON r.id = ra.roleid
+                WHERE 1 = 1 AND ra.userid = :userid AND (";
+            $userroleparams['userid'] = $USER->id;
+            $i = 0;
             foreach ($USER->access['ra'] as $key => $value) {
-                $userrolesql .= " c.path LIKE '".$key."' OR ";
+                $i++;
+                $statsql[] = $DB->sql_like('c.path', ":queryparam$i");
+                $userroleparams["queryparam$i"] = $key;
             }
-            $userrolesql .= " 1 = 1) GROUP BY ra.roleid, c.contextlevel, r.shortname ";
-            $userroles = $DB->get_record_sql($userrolesql, ['userid' => $USER->id], IGNORE_MULTIPLE);
+            $userrolesql .= implode(" OR ", $statsql);
+
+            $userrolesql .= ") GROUP BY ra.roleid, c.contextlevel, r.shortname";
+
+            $userrolescount = $DB->get_records_sql($userrolesql, $userroleparams, IGNORE_MULTIPLE);
             if (!empty($userroles)) {
                 $roleshortname = $userroles->shortname;
                 if ($roleshortname == 'editingteacher' && $userroles->contextlevel == 10) {

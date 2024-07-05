@@ -25,7 +25,9 @@ namespace block_learnerscript\task;
 use core\task;
 use block_learnerscript\local\ls;
 
-/** Send emails task */
+/**
+ * Send emails task
+ */
 class send_emails extends \core\task\scheduled_task {
 
     /**

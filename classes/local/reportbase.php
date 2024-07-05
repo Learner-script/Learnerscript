@@ -32,7 +32,9 @@ use block_learnerscript\local\ls as ls;
 use context_system;
 use moodle_url;
 
-/** Reportbase */
+/**
+ * Reportbase
+ */
 class reportbase {
 
     /**
@@ -181,12 +183,12 @@ class reportbase {
     public $contextlevel;
 
     /**
-     * @var boolean $parent
+     * @var bool $parent
      */
     public $parent = true;
 
     /**
-     * @var boolean $courselevel
+     * @var bool $courselevel
      */
     public $courselevel = false;
 
@@ -196,22 +198,22 @@ class reportbase {
     public $reporttype = 'table';
 
     /**
-     * @var boolean $scheduling
+     * @var bool $scheduling
      */
     public $scheduling = false;
 
     /**
-     * @var boolean $colformat
+     * @var bool $colformat
      */
     public $colformat = false;
 
     /**
-     * @var boolean $calculations
+     * @var bool $calculations
      */
     public $calculations = false;
 
     /**
-     * @var boolean $singleplot
+     * @var bool $singleplot
      */
     public $singleplot;
 
@@ -281,7 +283,7 @@ class reportbase {
     public $defaultcolumn;
 
     /**
-     * @var boolean $customheader Custom header
+     * @var bool $customheader Custom header
      */
     public $customheader;
 
@@ -316,7 +318,7 @@ class reportbase {
      */
     public $basicparamdata;
     /**
-     * @var boolean $downloading downloadfile
+     * @var bool $downloading downloadfile
      */
     public $downloading = false;
 

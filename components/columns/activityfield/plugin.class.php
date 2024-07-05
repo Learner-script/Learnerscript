@@ -25,7 +25,9 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\reportbase;
 use html_writer;
 use context_system;
-/** Activity Field column */
+/**
+ * Activity Field column
+ */
 class plugin_activityfield extends pluginbase {
 
     /**
