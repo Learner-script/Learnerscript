@@ -23,7 +23,6 @@ namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 /** NoOfView Columns */
 class plugin_noofviews extends pluginbase {
-    
     /**
      * No. of views init function
      */

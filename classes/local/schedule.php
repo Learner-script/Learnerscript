@@ -277,9 +277,8 @@ class schedule {
 
                 $messagedetails->nodata = '';
                 if (empty($attachment)) {
-                    $messagedetails->nodata = html_writer::div(get_string('nodataavailable', 'block_learnerscript'), '',
-                    ['style' => "background-color:#fcf8e3;color:#8a6d3b;border-color:#faebcc;width: 30%;
-                    text-align: center;padding: 5px;", ]);
+                    $messagedetails->nodata = html_writer::div(get_string('nodataavailable', 'block_learnerscript'),
+                    "alert alert-info", []);
                 }
 
                 $message = get_string('scheduledreportmessage', 'block_learnerscript',

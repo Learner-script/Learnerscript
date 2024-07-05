@@ -31,7 +31,7 @@ define(['jquery',
         'block_learnerscript/bootstrapnotify/bootstrapnotify',
         'block_learnerscript/smartfilter'
     ],
-    function($, ajax, AjaxForms, Str, ModalFactory, ModalEvents, Ajax, notification, smartfilter) {
+    function($, ajax, AjaxForms, Str, ModalFactory, ModalEvents, Ajax, notification, bootstrapnotify, smartfilter) {
         var helper = {
             sendmessage: function(args, username) {
                     Str.get_strings([{

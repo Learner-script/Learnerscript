@@ -102,8 +102,7 @@ echo $OUTPUT->header();
 echo html_writer::start_tag('div', ['id' => 'listofreports']);
 echo html_writer::div(html_writer::link(new \moodle_url('/blocks/reportdashboard/dashboard.php',
     ['role' => $SESSION->role, 'contextlevel' => $SESSION->ls_contextlevel]),
-    get_string('dashboard', 'block_reportdashboard'), ['class' => 'btn linkbtn btn-primary']), '',
-    ['style' => "float:right;"]);
+    get_string('dashboard', 'block_reportdashboard'), ['class' => 'btn linkbtn btn-primary']), '', );
 
 if ($reports) {
     $table = new html_table();

@@ -187,7 +187,7 @@ class plugin_usercolumns extends pluginbase {
                          'aria-valuenow' => $progress,
                          'aria-valuemin' => "0",
                          'aria-valuemax' => "100",
-                         'style' => (($progress == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $progress . "%"))
+                         'style' => (($progress == 0) ? '' : ("width:" . $progress . "%")),
                      ]) .
                  html_writer::end_div().
                  html_writer::span($progress.'%', 'progressvalue').

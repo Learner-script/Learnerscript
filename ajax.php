@@ -442,6 +442,9 @@ switch ($action) {
         break;
     case  'learnerscriptdata':
         $report = $DB->get_record('block_learnerscript', ['id' => $reportid]);
+        if (empty($report->summary)) {
+            $report->summary = get_string('report_'.$report->type.'_help', 'block_learnerscript');
+        }
         $return = $report;
     break;
 }

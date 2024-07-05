@@ -58,7 +58,8 @@ class report_edit_form extends moodleform {
         $mform->addHelpButton('type', 'typeofreport', 'block_learnerscript');
         $select->setSelected('sql');
 
-        $mform->addElement('textarea', 'querysql', get_string('querysql', 'block_learnerscript'), 'rows="15" cols="80" disabled=disabled');
+        $mform->addElement('textarea', 'querysql', get_string('querysql', 'block_learnerscript'),
+        'rows="15" cols="80" disabled=disabled');
 
         $mform->addElement('header', 'advancedoptions', get_string('advanced'));
         $mform->addElement('editor', 'description', get_string('summary'));

@@ -81,7 +81,11 @@ class plugin_line extends pluginbase {
             $i++;
         }
 
-        return $CFG->wwwroot . '/blocks/learnerscript/components/plot/line/graph.php?reportid=' . $this->report->id .
-        '&id=' . $id . $params . '&amp;min=' . $minvalue . '&amp;max=' . $maxvalue;
+        return new moodle_url('/blocks/learnerscript/components/plot/line/graph.php', [
+            'reportid' => $this->report->id,
+            'id' => $id.$params,
+            'min' => $minvalue,
+            'max' => $maxvalue,
+        ]);
     }
 }

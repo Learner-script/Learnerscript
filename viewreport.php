@@ -279,8 +279,9 @@ if (!$download) {
         echo $OUTPUT->heading($report->name."  ".
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'),
                 'title' => get_string('helpwith', 'block_learnerscript') . $report->name,
-                'alt' => get_string('help'), 'href' => "javascript:void(0)",
-        'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
+                'alt' => get_string('help'),
+                'class' => 'statisticshelptext',
+                'data-reportid' => $report->id ]));
 
     } else {
         echo $OUTPUT->heading($report->name.$OUTPUT->help_icon('report_' . $report->type,

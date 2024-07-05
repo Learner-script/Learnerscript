@@ -103,7 +103,7 @@ class plugin_userfield extends pluginbase {
         if ($CFG->messaging) {
             $userrecord->fullname .= html_writer::start_tag('sup', ['id' => 'communicate']);
             $userrecord->fullname .= html_writer::start_span('ls icon sendsms', [
-                'id' => "sendsms_" . $this->reportinstance . "_" . $row->id, 'class' => "sendusermsg", 
+                'id' => "sendsms_" . $this->reportinstance . "_" . $row->id, 'class' => "sendusermsg",
                 'data-userid' => $row->id,
                 'data-reportinstance' => $this->reportinstance,
                 'data-userfullname' => $userfullname,

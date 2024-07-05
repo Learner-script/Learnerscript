@@ -41,7 +41,7 @@ if (!$pname) {
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url( . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 

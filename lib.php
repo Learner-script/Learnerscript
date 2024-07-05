@@ -236,7 +236,8 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
         require_once($CFG->dirroot . '/blocks/reportdashboard/email_form.php');
         $emailform = new block_reportdashboard_emailform(new moodle_url('/blocks/reportdashboard/dashboard.php'),
         ['reportid' => $reportid,
-        'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '', null, true, $ajaxformdata,);
+        'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '',
+        null, true, $ajaxformdata, );
 
         if (!empty($ajaxformdata) && $emailform->is_validated()) {
             // If we were passed non-empty form data we want the mform to call validation functions and show errors.

@@ -97,7 +97,8 @@ class plugin_usercoursescolumns extends pluginbase {
                 html_writer::start_div('mr-2 flex-grow-1 progress').
                 html_writer::div('', "progress-bar",
                 ['role' => "progressbar", 'aria-valuenow' => $progressbar,
-                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => (($progressbar == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $progressbar . "%"))
+                'aria-valuemin' => "0", 'aria-valuemax' => "100",
+                'style' => (($progressbar == 0) ? '' : ("width:" . $progressbar . "%")),
                 ]) .
                 html_writer::end_div().
                  html_writer::span($progressbar.'%', 'progressvalue').

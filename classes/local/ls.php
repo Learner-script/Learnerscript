@@ -1640,4 +1640,20 @@ class ls {
         $arraydata = (array)$data + $reportdata->tableproperties;
         return $arraydata;
     }
+
+    /**
+     * Get sub directories
+     *
+     * @param string $dir
+     * @return array
+     */
+    public function getsubdirectories($dir = null) {
+        $subdir = [];
+        $directories = array_filter(glob($dir), 'is_dir');
+        $subdir = array_merge($subdir, $directories);
+        foreach ($directories as $directory) {
+            $subdir = array_merge($subdir, $this->getsubdirectories($directory.'/*'));
+        }
+         return $subdir;
+    }
 }

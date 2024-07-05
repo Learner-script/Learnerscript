@@ -129,14 +129,14 @@ class plugin_courseactivitiescolumns extends pluginbase {
                 }
                 $progress = empty($progress) ? 0 : round($progress);
                 $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
-                html_writer::start_div('mr-2 flex-grow-1 progress') . 
+                html_writer::start_div('mr-2 flex-grow-1 progress') .
                 html_writer::div('', "progress-bar",
                 ['role' => "progressbar", 'aria-valuenow' => $progress,
-                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => (($progress == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $progress . "%"))
+                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => (($progress == 0) ? '' : ("width:" . $progress . "%")),
                 ]) .
                 html_writer::end_div().
-                 html_writer::span($progress.'%', 'progressvalue').
-                 html_writer::end_div();
+                html_writer::span($progress.'%', 'progressvalue').
+                html_writer::end_div();
             break;
             case 'grades';
                 $gradesreportid = $DB->get_field('block_learnerscript', 'id', ['type' => 'grades'], IGNORE_MULTIPLE);

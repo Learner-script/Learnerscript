@@ -5063,6 +5063,7 @@ body.path-blocks-learnerscript .highcharts-label.highcharts-tooltip .activatebad
 
 body#page-blocks-learnerscript-reports #listofreports a.btn {
     color: #fff;
+    float: right;
 }
 
 body#page-blocks-learnerscript-editreport textarea#id_querysql {

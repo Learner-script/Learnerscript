@@ -107,7 +107,7 @@ class plugin_coursescolumns extends pluginbase {
                          'aria-valuenow' => $avgcompletedlink,
                          'aria-valuemin' => "0",
                          'aria-valuemax' => "100",
-                         'style' => (($avgcompletedlink == 0) ? ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $avgcompletedlink . "%"))
+                         'style' => (($avgcompletedlink == 0) ? '' : ("width:" . $avgcompletedlink . "%")),
                      ]) .
                  html_writer::end_div().
                  html_writer::span($avgcompletedlink.'%', 'progressvalue').
@@ -277,14 +277,13 @@ class plugin_coursescolumns extends pluginbase {
                                       AND u2.suspended = 0
                                       AND ra.contextid = ctx.id
                                       AND ctx.contextlevel = 50
-                                      AND c.visible = 1 AND c.id = :course)", ['courseid' => $row->course, 'course' => $row->course]);
+                                      AND c.visible = 1 AND c.id = :course)", ['courseid' => $row->course,
+                                      'course' => $row->course]);
                             $row->{$data->column} = !empty($numviews) ? get_string('numviews', 'report_outline', $numviews) : '--';
                         } else {
                             $row->{$data->column} = $row->{$data->column};
                         }
                     }
-                    
-                    
                 }
             break;
             case 'status':
