@@ -130,8 +130,7 @@ class block_learnerscript extends block_list {
             $userrolesql .= implode(" OR ", $statsql);
 
             $userrolesql .= ") GROUP BY ra.roleid, c.contextlevel, r.shortname";
-
-            $userroles = $DB->get_records_sql($userrolesql, $userroleparams, IGNORE_MULTIPLE);
+            $userroles = $DB->get_record_sql($userrolesql, $userroleparams, IGNORE_MISSING);
             if (!empty($userroles)) {
                 $roleshortname = $userroles->shortname;
                 if ($roleshortname == 'editingteacher' && $userroles->contextlevel == 10) {
