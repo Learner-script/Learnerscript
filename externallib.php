@@ -219,7 +219,7 @@ class block_learnerscript_external extends external_api {
                 'filters' => new external_value(PARAM_TEXT, 'applied filters', VALUE_DEFAULT),
                 'basicparams' => new external_value(PARAM_TEXT, 'basic params required to generate graph', VALUE_DEFAULT),
                 'columnDefs' => new external_value(PARAM_RAW, 'column definitions', VALUE_DEFAULT),
-                'reportdashboard' => new external_value(PARAM_BOOL, 'report dashboard', VALUE_DEFAULT, true),
+                'reportdashboard' => new external_value(PARAM_TEXT, 'report dashboard', VALUE_DEFAULT, true),
             ]
         );
     }
@@ -531,7 +531,7 @@ class block_learnerscript_external extends external_api {
                 'action' => new external_value(PARAM_TEXT, 'Action.', VALUE_DEFAULT),
                 'comp' => new external_value(PARAM_TEXT, 'Report component', VALUE_DEFAULT),
                 'pname' => new external_value(PARAM_TEXT, 'Plugin name', VALUE_DEFAULT),
-                'cid' => new external_value(PARAM_INT, 'Component ID', VALUE_DEFAULT),
+                'cid' => new external_value(PARAM_TEXT, 'Component ID', VALUE_DEFAULT),
                 'delete' => new external_value(PARAM_INT, 'Confirm Delete', VALUE_DEFAULT),
             ]
         );
@@ -815,7 +815,7 @@ class block_learnerscript_external extends external_api {
                 'fiterdata' => new external_value(PARAM_TEXT, 'fiterdata', VALUE_DEFAULT),
                 'basicparamdata' => new external_value(PARAM_TEXT, 'basicparamdata', VALUE_DEFAULT),
                 'reportinstanceid' => new external_value(PARAM_INT, 'reportid', VALUE_DEFAULT),
-                'courses' => new external_value(PARAM_INT, 'Course id of report', VALUE_DEFAULT),
+                'courses' => new external_value(PARAM_TEXT, 'Course id of report', VALUE_DEFAULT),
             ]
         );
     }

@@ -107,7 +107,7 @@ class report_statistics extends reportbase {
             $activitylist[] = $modulename.'.name';
             $fields1[] = "COALESCE($modulename.name,'')";
         }
-        $activities = $DB->sql_concat($fields1);
+        $activities = $DB->sql_concat(...$fields1);
         $sql = str_replace('%%ACTIVITIESLIST%%', $activities, $sql);
         foreach ($aliases as $alias) {
             $activitiesquery .= " LEFT JOIN {".$alias."} AS $alias ON $alias.id = cm.instance AND m.name = '$alias'";

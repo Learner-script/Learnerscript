@@ -264,7 +264,7 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
                     $data->timemodified = 0;
                     $data->userid = $USER->id;
                     $data->roleid = $roleid;
-                    $data->nextschedule = 0;
+                    $data->nextschedule = time();
                     $data->contextlevel = $rolecontext;
                     $insert = $DB->insert_record('block_ls_schedule', $data);
                     return ['error' => false, 'data' => $validateddata];
