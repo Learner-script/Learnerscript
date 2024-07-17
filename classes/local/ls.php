@@ -119,7 +119,7 @@ class ls {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
         $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-        $reportproperties = new stdclass();
+        $reportproperties = new stdClass();
         $reportclass = new $reportclassname($report->id, $reportproperties);
         $components = self::cr_unserialize($reportclass->config->components);
         $components->customsql->config = $report;
@@ -903,10 +903,13 @@ class ls {
      * @param  boolean $statistics
      * @param  boolean $parentcheck
      * @param  boolean $reportslist
+     * @param  boolean $reportdashboard
      * @return array Report roles
      */
-    public function listofreportsbyrole($coursels = false, $statistics = false, $parentcheck = false, $reportslist = false) {
+    public function listofreportsbyrole($coursels = false, $statistics = false, $parentcheck = false, $reportslist = false,
+                    $reportdashboard = false) {
         global $DB, $PAGE, $SESSION;
+
         // Course context reports.
         if ($PAGE->context->contextlevel == 50 || $PAGE->context->contextlevel == 70) {
             $coursels = true;
@@ -971,6 +974,11 @@ class ls {
                 }
                 if ($coursels) {
                     if (!$report->courselevel) {
+                        continue;
+                    }
+                }
+                if ($reportdashboard) {
+                    if (!$report->parent) {
                         continue;
                     }
                 }

@@ -354,7 +354,7 @@ class report_useractivities extends reportbase implements report {
                 $query = "SELECT COUNT(lsl.id) AS numviews
                               FROM {logstore_standard_log} lsl
                          WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND
-                           lsl.userid = $filteruserid $where";
+                           lsl.userid = $filteruserid AND lsl.target = 'course_module' $where";
             break;
         }
         $query = str_replace('%placeholder%', $identity, $query);
