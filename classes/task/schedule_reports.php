@@ -25,7 +25,9 @@ namespace block_learnerscript\task;
 use core\task\scheduled_task;
 use block_learnerscript\local\ls;
 
-/** Report schedule task */
+/**
+ * Report schedule task
+ */
 class schedule_reports extends scheduled_task {
 
     /**

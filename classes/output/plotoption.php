@@ -68,12 +68,13 @@ class plotoption implements renderable, templatable {
         if (!empty($SESSION->role) && ($SESSION->role != 'manager')) {
             $reports = (new ls)->listofreportsbyrole();
         } else {
-            $reportlist = $DB->get_records_sql("SELECT * FROM {block_learnerscript}
-                                                 WHERE global = :global AND visible = :visible
-                                                 AND type != :type",
-                                                 ['global' => 1, 'visible' => 1, 'type' => 'statistics']);
+            $reportlist = $DB->get_records('block_learnerscript', ['global' => 1,
+                        'visible' => 1], '', '*', IGNORE_MISSING);
             $reports = [];
             foreach ($reportlist as $report) {
+                if ($report->type == 'statistics') {
+                    continue;
+                }
                 $reports[] = ['id' => $report->id, 'name' => $report->name];
             }
         }
@@ -86,6 +87,7 @@ class plotoption implements renderable, templatable {
      * @return stdClass
      */
     public function export_for_template(renderer_base $output) {
+        global $CFG;
         $data = new stdClass();
         $ls = new ls();
         if ($this->active == 'viewreport') {
@@ -103,7 +105,32 @@ class plotoption implements renderable, templatable {
         $data->viewreport = 'viewreport';
         $data->searchreport = 'searchreport';
         $data->reports = $this->reports;
-        $data->params = $_SERVER['QUERY_STRING'];
+
+        $dir = $CFG->dirroot . '/blocks/learnerscript/components/filters/';
+        $folders = (new \block_learnerscript\local\ls)->getsubdirectories($dir);
+        $customfilters = array_map('basename', $folders);
+        array_push($customfilters, 'status');
+        array_shift($customfilters);
+        array_push($customfilters, 'lsfstartdate', 'lsfenddate');
+
+        foreach ($customfilters as $k => $v) {
+            if ($v == 'status') {
+                $urlfilterparams['filter_'.$v] = optional_param('filter_'.$v, '', PARAM_TEXT);
+            } else {
+                if (strpos($v, 'date') !== false) {
+                    $datefilterrequests[$v] = optional_param($v, 0, PARAM_INT);
+                } else {
+                    $urlfilterparams['filter_'.$v] = optional_param('filter_'.$v, 0, PARAM_INT);
+                }
+            }
+        }
+        $urlrequests = array_filter($urlfilterparams);
+        $filterparams = '';
+        foreach ($urlrequests as $key => $querystring) {
+            $filterparams .= '&' . $key . '=' . $querystring;
+        }
+        $querystringparams = 'id=' . $this->reportid . $filterparams;
+        $data->params = $querystringparams;
         unset($data->{$activetab});
         $data->{$activetab} = $activetab.'-active';
             $properties = new stdClass();

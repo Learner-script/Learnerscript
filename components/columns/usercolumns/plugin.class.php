@@ -179,10 +179,20 @@ class plugin_usercolumns extends pluginbase {
                     $progress = $row->{$data->column};
                 }
                 $progress = empty($progress) ? 0 : round($progress);
-                $row->{$data->column} = html_writer::start_div('progress') . html_writer::div($progress . '%', "progress-bar",
-                ['role' => "progressbar", 'aria-valuenow' => $progress,
-                'aria-valuemin' => "0", 'aria-valuemax' => "100", 'style' => "width:" . $progress . "%"]) .
-                html_writer::end_div();
+                $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
+                html_writer::start_div('mr-2 flex-grow-1 progress').
+                 html_writer::div('', "progress-bar",
+                     [
+                         'role' => "progressbar",
+                         'aria-valuenow' => $progress,
+                         'aria-valuemin' => "0",
+                         'aria-valuemax' => "100",
+                         'style' => (($progress == 0) ? '' : ("width:" . $progress . "%")),
+                     ]) .
+                 html_writer::end_div().
+                 html_writer::span($progress.'%', 'progressvalue').
+                 html_writer::end_div();
+
             break;
             case 'status':
                 $userstatus = $DB->get_record_sql('SELECT suspended, deleted

@@ -1075,6 +1075,9 @@ body#page-blocks-learnerscript-viewreport #licenseresult #reportbox_shadow .repo
     margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 body#page-blocks-learnerscript-viewreport #licenseresult #reportbox_shadow .reportcustomfilters.show form.filterform fieldset {
@@ -1088,6 +1091,9 @@ body#page-blocks-learnerscript-viewreport #licenseresult form.basicparamsform {
     box-shadow: 0 5px 6px 3px #b1b5b5;
     margin-bottom: 14px;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .block.block_reportdashboard .reportdashboard_header span.dropdown a i {
@@ -5057,6 +5063,7 @@ body.path-blocks-learnerscript .highcharts-label.highcharts-tooltip .activatebad
 
 body#page-blocks-learnerscript-reports #listofreports a.btn {
     color: #fff;
+    float: right;
 }
 
 body#page-blocks-learnerscript-editreport textarea#id_querysql {
@@ -5377,7 +5384,7 @@ body#page-my-index .spark-report .highcharts-container {
 }
 
 body.path-blocks-learnerscript .map_report_container sup#communicate {
-    top: 1em;
+    top: 0em;
 }
 
 body.path-blocks-learnerscript #profile-page .courseoverview_card {
@@ -5438,4 +5445,20 @@ body.path-blocks-learnerscript .report_header_skew_content .report_header_showhi
 body.path-blocks-learnerscript .ls-report_graph_container canvas {
     position: relative;
     max-height: 550px;
+}
+
+body.path-blocks-reportdashboard .progresscontainer .progressvalue,
+body.path-blocks-learnerscript .progresscontainer .progressvalue {
+  font-size: 75%;
+}
+
+body.path-blocks-reportdashboard .ls.icon.sendsms,
+body.path-blocks-learnerscript .ls.icon.sendsms {
+  width: 22px;
+  height: 16px;
+  float: right;
+  margin-right: 0;
+  max-width: 16px;
+  max-height: 16px;
+  overflow: hidden;
 }

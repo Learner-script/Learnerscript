@@ -23,7 +23,9 @@
  */
 use block_learnerscript\local\componentbase;
 
-/** Plot component */
+/**
+ * Plot component
+ */
 class component_plot extends componentbase {
     /**
      * @var bool $plugins Plugins

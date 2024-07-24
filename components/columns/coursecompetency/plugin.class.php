@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -23,7 +24,9 @@ namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 use html_writer;
 use moodle_url;
-/** Course Competency */
+/**
+ * Course Competency
+ */
 class plugin_coursecompetency extends pluginbase {
     /**
      * Course competency init function
@@ -61,7 +64,7 @@ class plugin_coursecompetency extends pluginbase {
         global $DB, $OUTPUT, $CFG;
         switch($data->column) {
             case 'competency':
-                $compurl = html_writer::link(new moodle_url($CFG->wwwroot . '/admin/tool/lp/user_competency_in_course.php',
+                $compurl = html_writer::link(new moodle_url('/admin/tool/lp/user_competency_in_course.php',
                 ['courseid' => $row->courseid, 'competencyid' => $row->id]), $row->competency);
                 $competency = $compurl;
                 $row->{$data->column} = !empty($competency) ? $competency : '--';

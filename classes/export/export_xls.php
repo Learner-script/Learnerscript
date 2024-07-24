@@ -16,8 +16,6 @@
 
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
-ini_set("memory_limit", "-1");
-ini_set('max_execution_time', 6000);
 
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\Common\Creator\WriterFactory;

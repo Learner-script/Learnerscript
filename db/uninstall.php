@@ -14,12 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Definition of Schedule Reports scheduled tasks.
+/**
+ * Definition of Schedule Reports scheduled tasks.
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-/** Perform the post-uninstall procedures. */
+/**
+ * Perform the post-uninstall procedures.
+ *
+ */
 function xmldb_block_learnerscript_uninstall() {
     global $CFG, $DB;
     $DB->delete_records('logstore_standard_log',

@@ -28,9 +28,11 @@ require_once($CFG->dirroot . '/lib/formslib.php');
  */
 class scheduled_reports_form extends moodleform {
 
-    /** Form defination */
+    /**
+     * Form defination
+     *
+     */
     public function definition() {
-        global $DB, $CFG;
         $mform = &$this->_form;
 
         $reportid = $this->_customdata['id'];
@@ -71,21 +73,34 @@ class scheduled_reports_form extends moodleform {
         $mform->setType('scheduleid', PARAM_INT);
 
         $mform->addElement('select', 'role', get_string('role', 'block_learnerscript'),
-        $roleslist, ['data-select2' => true, 'id' => 'id_role' . $reportinstance,
-        'data-id' => $reportid, 'data-class' => $requireclass, 'data-element' => 'role',
-            'onchange' => '(function(e){ require("block_learnerscript/schedule").rolewiseusers({reportid: ' . $reportid . ',
-                reportinstance : ' . $reportinstance . '}) })(event);',
-            'data-placeholder' => get_string('selectroles', 'block_learnerscript'), ]);
+        $roleslist, [
+            'data-select2' => true,
+            'id' => 'id_role' . $reportinstance,
+            'data-id' => $reportid,
+            'data-class' => $requireclass,
+            'data-element' => 'role',
+            'data-reportid' => $reportid,
+            'data-reportinstance' => $reportinstance,
+            'data-placeholder' => get_string('selectroles', 'block_learnerscript'),
+            'class' => 'schuserroleslist',
+        ]);
         $mform->addRule('role', get_string('pleaseselectrole', 'block_learnerscript'),
         'required', null, 'client', false, false);
 
         $scheduleusers = $mform->addElement('select', 'users_data', get_string('fullname'),
-        $schusers, ['data-select2-ajax' => true, 'data-ajax-url' => $CFG->wwwroot . '/blocks/learnerscript/ajax.php',
-        'id' => 'id_users_data' . $reportinstance, 'data-reportid' => $reportid, 'data-instanceid' => $instance,
-            'data-id' => $reportid, 'class' => 'schusers_data', 'onchange' =>
-            '(function(e){ require("block_learnerscript/schedule").addschusers({reportid: ' . $reportid . ',
-                reportinstance : ' . $reportinstance . '}) })(event);', 'data-class' => $requireclass,
-            'data-element' => 'users_data', 'data-placeholder' => get_string('selectusers', 'block_learnerscript'), ]);
+        $schusers, ['data-select2-ajax' => true,
+            'data-ajax-url' => new moodle_url('/blocks/learnerscript/ajax.php'),
+            'id' => 'id_users_data' . $reportinstance,
+            'data-reportid' => $reportid,
+            'data-instanceid' => $instance,
+            'data-reportinstance' => $reportinstance,
+            'data-id' => $reportid,
+            'class' => 'schusers_data',
+            'data-class' => $requireclass,
+            'data-element' => 'users_data',
+            'data-placeholder' => get_string('selectusers', 'block_learnerscript'),
+        ]);
+
         $mform->addRule('users_data', get_string('pleaseselectuser', 'block_learnerscript'),
                     'required', null, 'client', false, false);
 
@@ -113,12 +128,16 @@ class scheduled_reports_form extends moodleform {
         }
 
         $newscheduledata = [];
+
         $newscheduledata[] = &$mform->createElement('select', 'frequency',
         get_string('schedule', 'block_learnerscript'), $frequencyselect,
-        ['id' => 'id_frequency' . $reportinstance, 'onchange' => '(function(e){
-            require("block_learnerscript/schedule").frequency_schedule({reportid: ' . $reportid . ',
-                reportinstance: ' . $reportinstance . '}) })(event);',
-            'data-id' => $reportid, 'data-class' => $requireclass, 'data-element' => 'frequency', ]);
+        ['id' => 'id_frequency' . $reportinstance,
+        'data-id' => $reportid,
+        'data-class' => $requireclass,
+        'data-element' => 'frequency',
+        'data-reportinstance' => $reportinstance,
+        'class' => 'frequencydate',
+        ]);
 
         $newscheduledata[] = &$mform->createElement('select', 'schedule',
         get_string('updatefrequency', 'block_learnerscript'), $schedulelist,

@@ -61,14 +61,15 @@ class report_usercourses extends reportbase implements report {
         $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $columns = ['timeenrolled', 'status', 'grade', 'totaltimespent', 'progressbar',
                 'completedassignments', 'completedquizzes', 'completedscorms', 'marks',
-                'badgesissued', 'completedactivities', ];
+                'badgesissued', 'completedactivities', 'attemptedgradepercent', ];
         $this->columns = ['userfield' => ['userfield'], 'usercoursescolumns' => $columns];
         $this->basicparams = [['name' => 'courses']];
         $this->parent = false;
         $this->courselevel = true;
         $this->filters = ['users'];
         $this->orderable = ['fullname', 'timeenrolled', 'completedassignments', 'completedquizzes',
-                'completedscorms', 'completedactivities', 'marks', 'grade', 'badgesissued', 'totaltimespent', ];
+                'completedscorms', 'completedactivities', 'marks', 'grade', 'badgesissued',
+                'totaltimespent', 'attemptedgradepercent', ];
         $this->defaultcolumn = 'u.id';
         $this->excludedroles = ["'student'"];
     }
@@ -236,11 +237,10 @@ class report_usercourses extends reportbase implements report {
         switch ($columnname) {
             case 'grade':
                 $identity = 'gg.userid';
-                $query = "SELECT (gg.finalgrade/gi.grademax) AS grade
+                $query = "SELECT (gg.finalgrade/gi.grademax) * 100 AS grade
                                         FROM {grade_items} gi
                                         JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
                                         WHERE gi.courseid = $filtercourseid $where ";
-
             break;
             case 'totaltimespent':
                 $identity = 'bt.userid';
@@ -296,6 +296,13 @@ class report_usercourses extends reportbase implements report {
                                        WHERE  cm.visible = 1 AND cm.deletioninprogress = 0 AND cm.course = $filtercourseid
                                          AND cmc.completionstate != 0 $where";
             break;
+            case 'attemptedgradepercent':
+
+                $identity = 'gg.userid';
+                $query = "SELECT (gg.finalgrade/gg.rawgrademax) * 100 AS attemptedgradepercent
+                                        FROM {grade_items} gi
+                                        JOIN {grade_grades} gg ON gg.itemid = gi.id AND gi.itemtype = 'course'
+                                        WHERE gi.courseid = $filtercourseid $where ";
         }
         $query = str_replace('%placeholder%', $identity, $query);
         return $query;

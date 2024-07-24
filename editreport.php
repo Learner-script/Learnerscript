@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Learner Script - Report Creation
- * @package   block_learnerscript
- * @copyright 2023 Moodle India Information Solutions Private Limited
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/**
+ * Learner Script - Report Creation
+ *
+ * @package    block_learnerscript
+ * @copyright  2023 Moodle India Information Solutions Private Limited
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
-use block_learnerscript\form;
 use block_learnerscript\local\ls;
 
 $id = optional_param('id', 0, PARAM_INT);
@@ -34,7 +36,7 @@ $duplicate = optional_param('duplicate', 0, PARAM_BOOL);
 $report = null;
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 
@@ -100,7 +102,7 @@ if ($report) {
     $title = get_string('report', 'block_learnerscript');
 }
 
-$courseurl = new moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $courseid]);
+$courseurl = new moodle_url('/course/view.php', ['id' => $courseid]);
 $PAGE->navbar->add($course->shortname, $courseurl);
 
 if (!empty($report->courseid)) {
@@ -109,7 +111,7 @@ if (!empty($report->courseid)) {
     $params = ['courseid' => $courseid];
 }
 
-$managereporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php');
+$managereporturl = new moodle_url('/blocks/learnerscript/managereport.php');
 $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $managereporturl);
 
 $PAGE->navbar->add($title);
@@ -175,9 +177,9 @@ if (!empty($report)) {
 
 if ($editform->is_cancelled()) {
     if (!empty($report)) {
-        redirect($CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $report->id);
+        redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $report->id]));
     } else {
-        redirect($CFG->wwwroot . '/blocks/learnerscript/managereport.php');
+        redirect(new moodle_url('/blocks/learnerscript/managereport.php'));
     }
 
 } else if ($data = $editform->get_data()) {
@@ -194,9 +196,9 @@ if ($editform->is_cancelled()) {
         (new ls)->update_report($data, $context);
     }
     if ($data->type == 'statistics') {
-        redirect($CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $data->id . '');
+        redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $data->id]));
     } else {
-        redirect($CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $data->id . '');
+        redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $data->id]));
     }
 }
 

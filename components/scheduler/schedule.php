@@ -21,8 +21,8 @@
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once('../../../../config.php');
 
+require_once('../../../../config.php');
 global $CFG, $DB, $USER, $OUTPUT;
 
 require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
@@ -167,12 +167,11 @@ if ($mform->is_cancelled()) {
     $role = explode('_', $data->role);
     $fromform->roleid = $role[0];
     $fromform->contextlevel = isset($role[1]) ? $role[1] : 10;
-    $fromform->sendinguserid = $data->schuserslist;
+    $fromform->sendinguserid = $data->users_data;
     $fromform->exportformat = $data->exportformat;
     $fromform->frequency = $data->frequency;
     $fromform->schedule = $data->schedule;
     $fromform->userid = $USER->id;
-    $fromform->sendinguserid = $data->users_data;
     $fromform->nextschedule = $scheduling->next($fromform, null, false);
     if ($scheduledreportid > 0) {
         $fromform->timemodified = time();

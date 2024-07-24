@@ -26,13 +26,18 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\ls as ls;
 use stdClass;
 
-/** Course modules */
+/**
+ * Course modules
+ */
 class plugin_coursemodules extends pluginbase {
 
     /** @var mixed $singleselection  */
     public $singleselection;
 
-    /** Course modules */
+    /**
+     * Course modules
+     *
+     */
     public function init() {
         $this->form = false;
         $this->unique = true;
@@ -50,7 +55,8 @@ class plugin_coursemodules extends pluginbase {
         return get_string('filtercoursemodules_summary', 'block_learnerscript');
     }
 
-    /** Execute
+    /**
+     * Execute
      * @param  string $finalelements Final elements
      * @param  object $data          Filter data
      * @return string

@@ -15,21 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace block_learnerscript\local;
-use pdf;
 use DateTime;
 use DateTimeZone;
 use context_system;
 use context_course;
-use csv_export_writer;
 use stdClass;
-use MoodleODSWorkbook;
-use MoodleODSWriter;
-use PHPExcel;
-use PHPExcel_IOFactory;
 use block_learnerscript\local\ls;
 use context_helper;
 use moodle_exception;
 use html_writer;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/calendar/lib.php');
 
@@ -264,7 +260,6 @@ class schedule {
             }
 
             $attachment = $this->scheduledreport_create_attachment($schedule, $user);
-
             if ($schedule->exporttofilesystem != REPORT_EXPORT) {
                 $reporturl = $this->get_report_url($schedule->reportid);
                 $messagedetails = new stdClass();
@@ -272,8 +267,8 @@ class schedule {
                 $messagedetails->exporttype = get_string($schedule->exportformat . 'format', 'block_learnerscript');
                 $messagedetails->reporturl = html_writer::link(new \moodle_url($reporturl), 'View Report');
                 $messagedetails->scheduledreportsindex =
-                $CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php?id=' .
-                $schedule->reportid;
+                new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php', ['id' =>
+                $schedule->reportid]);
 
                 $messagedetails->schedule = $this->get_formatted($schedule->frequency,
                 $schedule->schedule, $user);
@@ -282,9 +277,8 @@ class schedule {
 
                 $messagedetails->nodata = '';
                 if (empty($attachment)) {
-                    $messagedetails->nodata = html_writer::div(get_string('nodataavailable', 'block_learnerscript'), '',
-                    ['style' => "background-color:#fcf8e3;color:#8a6d3b;border-color:#faebcc;width: 30%;
-                    text-align: center;padding: 5px;", ]);
+                    $messagedetails->nodata = html_writer::div(get_string('nodataavailable', 'block_learnerscript'),
+                    "alert alert-info", []);
                 }
 
                 $message = get_string('scheduledreportmessage', 'block_learnerscript',
@@ -447,14 +441,14 @@ class schedule {
             $role = '';
             $rolelist = (new ls)->get_currentuser_roles($user->id);
             $components = (new ls)->cr_unserialize($reportclass->config->components);
-            $permissions = (isset($components['permissions'])) ? $components['permissions'] : [];
-            if (empty($permissions['elements'])) {
+            $permissions = (isset($components->permissions)) ? $components->permissions : [];
+            if (empty($permissions->elements)) {
                 $role = '';
             } else {
                 $rolepermissions = [];
-                foreach ($permissions['elements'] as $p) {
-                    if ($p['pluginname'] == 'roleincourse') {
-                         $rolepermissions[] = $p['formdata']->roleid;
+                foreach ($permissions->elements as $p) {
+                    if ($p->pluginname == 'roleincourse') {
+                         $rolepermissions[] = $p->formdata->roleid;
                     }
                 }
                 sort($rolepermissions);
@@ -484,8 +478,7 @@ class schedule {
      * @return string URL of the report provided or false
      */
     public function get_report_url($reportid) {
-        global $CFG;
-        return $CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $reportid;
+        return new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $reportid]);
     }
 
     /**
@@ -531,126 +524,6 @@ class schedule {
             }
         }
         return $data;
-    }
-    /**
-     * Handling users for bulk selecting to schedule a report
-     * Handling both condition to add or remove users to schedule report.
-     * @param  integer $reportid           ReportID
-     * @param  integer $scheduleid         ScheduleID
-     * @param  string  $type               Type usually 'add' or 'remove'
-     * @param  array   $roleid             Fetching users by using roles
-     * @param  string  $search
-     * @param  array  $bullkselectedusers List of users with comma seperatred value
-     * @param  integer $contextlevel       User contextlevel
-     * @return array List of users with id and fullname
-     */
-    public function schroleusers($reportid, $scheduleid, $type, $roleid,
-    $search = '', $bullkselectedusers = [], $contextlevel = 10) {
-        global $DB;
-
-        if (!$reportid) {
-            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
-        }
-
-        if (!$type) {
-            throw new moodle_exception(get_string('missingtype', 'block_learnerscript'));
-        }
-
-        if (empty($roleid)) {
-            throw new moodle_exception(get_string('missingrole', 'block_learnerscript'));
-        }
-
-        if ($search) {
-            $searchsql = " AND " . $DB->sql_like("CONCAT(u.firstname, ' ', u.lastname)", ':search', false);
-        } else {
-            $searchsql = " ";
-        }
-
-        if ($bullkselectedusers) {
-            $bullkselectedusers = implode(',', $bullkselectedusers);
-            $escselsql = " AND u.id NOT IN ($bullkselectedusers) ";
-        } else {
-            $escselsql = " ";
-        }
-
-        switch ($type) {
-            case 'add':
-                $sql = " SELECT u.id,
-                        CONCAT(u.firstname, ' ' , u.lastname) as fullname
-                        FROM {user}  as u
-                        JOIN {role_assignments} as ra
-                        JOIN {context} as ctx ON ctx.id = ra.contextid AND ctx.contextlevel =:contextlevel
-                        WHERE u.id = ra.userid  AND ra.roleid = :roleid $searchsql $escselsql
-                        AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-                $users = $DB->get_records_sql($sql, ['contextlevel' => $contextlevel, 'roleid' => $roleid,
-                            'search' => '%' . $search . '%', ]);
-                break;
-
-            case 'remove':
-                $userslistsql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
-                        FROM {user} as u
-                        JOIN {block_ls_schedule} as bcs ON u.id = bcs.sendinguserid)
-                        WHERE bcs.reportid = :reportid $searchsql  AND u.confirmed = 1
-                        AND u.suspended = 0 AND u.deleted = 0 ";
-
-                $users = $DB->get_records_sql($userslistsql, ['reportid' => $reportid,
-                            'search' => '%' . $search . '%', ]);
-
-                break;
-        }
-        $data = [];
-        foreach ($users as $userdetail) {
-            $data[] = ['id' => $userdetail->id, 'fullname' => $userdetail->fullname];
-        }
-        return $data;
-    }
-    /**
-     * List Of scheduled users list
-     * @param  integer $reportid   ReportID
-     * @param  integer $scheduleid   ScheduledID
-     * @param  string $schuserslist List of userids with comma seperated
-     * @param  object $stable contains search value, start, length and table
-     * @return array|int List of users with id and fullname
-     */
-    public function viewschusers($reportid, $scheduleid, $schuserslist, $stable) {
-        global $DB;
-
-        if (!$reportid) {
-            throw new moodle_exception(get_string('missingreportid', 'block_learnerscript'));
-        }
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new moodle_exception(get_string('reportnotavailable', 'block_learnerscript'));
-        }
-        if ($stable->table) {
-            $schuserscountsql = "SELECT COUNT(u.id) as count
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-        } else {
-            $schuserscountsql = "SELECT COUNT(u.id) as count
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0
-            AND u.deleted = 0";
-            $schuserssql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname, u.email
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.") AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-        }
-
-        if (!empty($stable->table)) {
-            return $DB->count_records_sql($schuserscountsql);
-        } else {
-            $fields = ["CONCAT(u.firstname, ' ', u.lastname) ", "u.email"];
-            $fields = implode(" LIKE '%" . $stable->search . "%' OR ", $fields);
-            $fields .= " LIKE '%" . $stable->search . "%' ";
-            if ($stable->search) {
-                $schuserscountsql .= " AND ( $fields ) ";
-                $schuserssql .= " AND ( $fields ) ";
-            }
-            $viewschuserscount = $DB->count_records_sql($schuserscountsql);
-            $schuserssql .= ' ORDER BY u.id ASC';
-            $schedulingdata = $DB->get_records_sql($schuserssql, [], $stable->start, $stable->length);
-            return compact('schedulingdata', 'viewschuserscount');
-        }
     }
     /**
      * Get List of scheduled reports and total count by using report ID
@@ -876,61 +749,5 @@ class schedule {
         }
 
         return [$schusers, $schusersids];
-    }
-
-    /**
-     * Select users list
-     *
-     * @param array $schuserslist Scheduled users list
-     * @return array
-     */
-    public function selectesuserslist($schuserslist) {
-        global $DB;
-        if ($schuserslist) {
-            $selecteduserssql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
-            FROM {user} u
-            WHERE u.id IN (".$schuserslist.")
-            AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
-            $selectedusers = $DB->get_records_sql_menu($selecteduserssql);
-        } else {
-            $selectedusers = false;
-        }
-        foreach ($selectedusers as $key => $value) {
-            $scheduledusers[] = ['key' => $key, 'value' => $value];
-        }
-        return $scheduledusers;
-    }
-
-    /**
-     * Get schedule reports list
-     *
-     * @param  int $frequency schedule frequerncy
-     * @return array
-     */
-    public function getschedulelist($frequency) {
-        if ($frequency == 1) {
-            $i = 0;
-            for ($i = 0; $i < 24; $i++) {
-                if ($i < 10) {
-                    $times[] = '0' . $i;
-                } else {
-                    $times[] = $i;
-                }
-            }
-            $schedule = $times;
-        } else if ($frequency == 2) {
-            $weeks = [get_string('sun', 'block_learnerscript'), get_string('mon', 'block_learnerscript'),
-            get_string('tue', 'block_learnerscript'), get_string('wed', 'block_learnerscript'),
-            get_string('thu', 'block_learnerscript'), get_string('fri', 'block_learnerscript'),
-            get_string('sat', 'block_learnerscript'), ];
-            $schedule = $weeks;
-        } else if ($frequency == 3) {
-            $i = 0;
-            for ($i = 1; $i <= 31; $i++) {
-                $months[] = $i;
-            }
-            $schedule = $months;
-        }
-        return $schedule;
     }
 }

@@ -63,9 +63,6 @@ class export_pdf {
             }
         }
         if (!empty($table->head)) {
-            $countcols = count($table->head);
-            $keys = array_keys($table->head);
-            $lastkey = end($keys);
             foreach ($table->head as $key => $heading) {
                 $matrix[0][$key] = str_replace("\n", ' ', htmlspecialchars_decode(strip_tags(nl2br($heading)),
                                 ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
@@ -82,13 +79,12 @@ class export_pdf {
 
         $table = "";
         $table .= html_writer::start_tag('table', ['border' => '1', 'cellpadding' => '5']);
-        $s = count($matrix);
         reset($matrix);
         $firstkey = key($matrix);
         $reporttype = $DB->get_field('block_learnerscript',  'type',  ['id' => $id]);
         if ($matrix) {
             if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
-                $table .= html_writer::start_tag('thead') . html_writer::start_tag('tr', ['style' => 'color:#000000;']);
+                $table .= html_writer::start_tag('thead') . html_writer::start_tag('tr');
                 for ($i = $firstkey; $i < ($firstkey + 1); $i++) {
                     foreach ($matrix[$i] as $col) {
                         $table .= html_writer::tag('td', $col);
@@ -172,7 +168,7 @@ class export_pdf {
     public function pdf_reportheader() {
         $headerimagepath = block_learnerscript_get_reportheader_imagepath();
         $headerimgpath = "";
-        if (@getimagesize($headerimagepath)) {
+        if (isset($headerimagepath) && @getimagesize($headerimagepath)) {
             $headerimgpath = $headerimagepath;
         }
         if ($headerimgpath) {

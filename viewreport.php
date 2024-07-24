@@ -21,6 +21,7 @@
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 use block_learnerscript\local\ls as ls;
 $id = required_param('id', PARAM_INT);
@@ -40,7 +41,7 @@ global $USER, $CFG, $SESSION;
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 
@@ -249,20 +250,20 @@ if (!$download) {
         (has_capability('block/learnerscript:manageownreports', $context)) &&
         $report->ownerid == $USER->id) {
         if (is_siteadmin()) {
-            $managereporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php');
+            $managereporturl = new moodle_url('/blocks/learnerscript/managereport.php');
         } else {
-            $managereporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/managereport.php?role'.$SESSION->role.
-            '&contextlevel='.$SESSION->ls_contextlevel);
+            $managereporturl = new moodle_url('/blocks/learnerscript/managereport.php', ['role' => $SESSION->role,
+            'contextlevel' => $SESSION->ls_contextlevel]);
         }
         $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $managereporturl);
     } else {
-        $dashboardurl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/reports.php?role='.
-        $SESSION->role.'&contextlevel='.$SESSION->ls_contextlevel, []);
+        $dashboardurl = new moodle_url('/blocks/learnerscript/reports.php', ['role' =>
+        $SESSION->role, 'contextlevel' => $SESSION->ls_contextlevel]);
 
         $PAGE->navbar->add(get_string("reports_view", 'block_learnerscript'), $dashboardurl);
     }
     if ($drillid > 0) {
-        $drillreporturl = new moodle_url($CFG->wwwroot . '/blocks/learnerscript/viewreport.php', ['id' => $drillid]);
+        $drillreporturl = new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $drillid]);
         $drillreportname = $DB->get_field('block_learnerscript', 'name', ['id' => $drillid]);
         $PAGE->navbar->add($drillreportname, $drillreporturl);
     }
@@ -279,8 +280,9 @@ if (!$download) {
         echo $OUTPUT->heading($report->name."  ".
         html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('help', 'core'),
                 'title' => get_string('helpwith', 'block_learnerscript') . $report->name,
-                'alt' => get_string('help'), 'href' => "javascript:void(0)",
-        'onclick' => "(function(e){ require('block_learnerscript/report').block_statistics_help({$report->id}) }) (event)", ]));
+                'alt' => get_string('help'),
+                'class' => 'statisticshelptext',
+                'data-reportid' => $report->id ]));
 
     } else {
         echo $OUTPUT->heading($report->name.$OUTPUT->help_icon('report_' . $report->type,
@@ -306,6 +308,7 @@ if (!$download) {
     echo $OUTPUT->footer();
 } else {
     $reportclass->reporttype = 'table';
+    $reportclass->downloading = true;
     $reportclass->create_report();
     $exportclass = 'block_learnerscript\export\export_' . $format;
     if (class_exists($exportclass)) {

@@ -23,9 +23,14 @@
  */
 use block_learnerscript\local\componentbase;
 
-/** Filter components */
+/**
+ * Filter components
+ */
 class component_filters extends componentbase {
-    /** Filter components init function */
+    /**
+     * Filter components init function
+     *
+     */
     public function init() {
         $this->plugins = true;
         $this->ordering = true;

@@ -78,7 +78,7 @@ function block_learnerscript_get_reportheader_imagepath($excel = false) {
             $filename = $file->get_filename();
             if ($filename !== '.') {
                 if ($excel) {
-                    $reportheaderimagepath = $CFG->wwwroot . '/blocks/learnerscript/pix/logo.jpg';
+                    $reportheaderimagepath = new moodle_url('/blocks/learnerscript/pix/logo.jpg');
                 } else {
                     $url = moodle_url::make_pluginfile_url($syscontext->id,
                         'block_learnerscript', 'logo', 0, '/', $file->get_filename(), false);
@@ -87,7 +87,7 @@ function block_learnerscript_get_reportheader_imagepath($excel = false) {
             }
         }
     } else {
-         $reportheaderimagepath = $CFG->wwwroot . '/blocks/learnerscript/pix/logo.jpg';
+         $reportheaderimagepath = new moodle_url('/blocks/learnerscript/pix/logo.jpg');
     }
     return $reportheaderimagepath;
 }
@@ -129,7 +129,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
         } else {
             $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
         }
-        $scheduleurl = $CFG->wwwroot . '/blocks/learnerscript/components/scheduler/schedule.php';
+        $scheduleurl = new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php');
         $scheduleform = new scheduled_reports_form($scheduleurl, ['id' => $reportid,
                                 'scheduleid' => $scheduleid, 'roles_list' => $roleslist,
                                 'schusers' => $schusers, 'schusersids' => $schusersids,
@@ -234,9 +234,10 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
         has_capability('block/learnerscript:manageownreports', $context) ||
         is_siteadmin()) && !empty($reportid)) {
         require_once($CFG->dirroot . '/blocks/reportdashboard/email_form.php');
-        $emailform = new block_reportdashboard_emailform($CFG->wwwroot . '/blocks/reportdashboard/dashboard.php',
+        $emailform = new block_reportdashboard_emailform(new moodle_url('/blocks/reportdashboard/dashboard.php'),
         ['reportid' => $reportid,
-        'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '', null, true, $ajaxformdata, );
+        'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '',
+        null, true, $ajaxformdata, );
 
         if (!empty($ajaxformdata) && $emailform->is_validated()) {
             // If we were passed non-empty form data we want the mform to call validation functions and show errors.
@@ -263,7 +264,7 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
                     $data->timemodified = 0;
                     $data->userid = $USER->id;
                     $data->roleid = $roleid;
-                    $data->nextschedule = 0;
+                    $data->nextschedule = time();
                     $data->contextlevel = $rolecontext;
                     $insert = $DB->insert_record('block_ls_schedule', $data);
                     return ['error' => false, 'data' => $validateddata];

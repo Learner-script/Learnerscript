@@ -65,6 +65,35 @@ define(['jquery',
                 $('#plotreportcontainer' + reportid).html('');
 
             });
+            /** 
+             * Send message to user from username otion in report
+             */
+            $(document).on('click', ".sendusermsg", function(e) {
+                var userid = $(this).data('userid');
+                var reportinstance = $(this).data('reportinstance');
+                var userfullname = $(this).data('userfullname');
+
+                helper.sendmessage({userid: userid, reportinstance: reportinstance}, userfullname);
+                e.stopImmediatePropagation();  
+            });
+
+            /** 
+             * Report graphs display
+             */
+            $(document).on('click', ".ls-plotgraph_link", function(e) {
+                var reportid = $(this).data('reportid');
+                var reporttype = $(this).data('reporttype');
+                reportwidget.CreateDashboardwidget({reportid: reportid, reporttype: reporttype});
+            });
+
+            /** 
+             * Statistics report help text
+             */
+            $(document).on('click', ".statisticshelptext", function() {
+                var reportid = $(this).data('reportid');
+                report.block_statistics_help(reportid);
+            });
+
             /**
              * Select2 initialization
              */

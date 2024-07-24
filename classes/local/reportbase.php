@@ -30,8 +30,11 @@ use html_table;
 use EvalMath;
 use block_learnerscript\local\ls as ls;
 use context_system;
+use moodle_url;
 
-/** Reportbase */
+/**
+ * Reportbase
+ */
 class reportbase {
 
     /**
@@ -180,19 +183,14 @@ class reportbase {
     public $contextlevel;
 
     /**
-     * @var boolean $parent
+     * @var bool $parent
      */
     public $parent = true;
 
     /**
-     * @var boolean $courselevel
+     * @var bool $courselevel
      */
     public $courselevel = false;
-
-    /**
-     * @var boolean $conditionsenabled
-     */
-    public $conditionsenabled = false;
 
     /**
      * @var string $reporttype
@@ -200,22 +198,22 @@ class reportbase {
     public $reporttype = 'table';
 
     /**
-     * @var boolean $scheduling
+     * @var bool $scheduling
      */
     public $scheduling = false;
 
     /**
-     * @var boolean $colformat
+     * @var bool $colformat
      */
     public $colformat = false;
 
     /**
-     * @var boolean $calculations
+     * @var bool $calculations
      */
     public $calculations = false;
 
     /**
-     * @var boolean $singleplot
+     * @var bool $singleplot
      */
     public $singleplot;
 
@@ -248,11 +246,6 @@ class reportbase {
      * @var array $selectedfilters
      */
     public $selectedfilters;
-
-    /**
-     * @var array $conditionfinalelements
-     */
-    public $conditionfinalelements = [];
 
     /**
      * @var stdClass $config
@@ -290,7 +283,7 @@ class reportbase {
     public $defaultcolumn;
 
     /**
-     * @var boolean $customheader Custom header
+     * @var bool $customheader Custom header
      */
     public $customheader;
 
@@ -298,6 +291,36 @@ class reportbase {
      * @var string $reportcontenttype Report contenttype
      */
     public $reportcontenttype;
+    /**
+     * @var bool $singleselection
+     */
+    public $singleselection;
+
+    /**
+     * @var mixed $placeholder
+     */
+    public $placeholder;
+
+    /**
+     * @var int $maxlength
+     */
+    public $maxlength;
+    /**
+     * @var array $searchable
+     */
+    public $searchable;
+    /**
+     * @var array $excludedroles
+     */
+    public $excludedroles;
+    /**
+     * @var array $basicparamdata Basic params list
+     */
+    public $basicparamdata;
+    /**
+     * @var bool $downloading downloadfile
+     */
+    public $downloading = false;
 
     /**
      * Construct
@@ -557,8 +580,8 @@ class reportbase {
                 if ($action) {
                     redirect($action);
                 } else {
-                    redirect("$CFG->wwwroot/blocks/learnerscript/viewreport.php?id=" .
-                        $this->config->id . "&courseid=" . $this->config->courseid);
+                    redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' =>
+                        $this->config->id, 'courseid' => $this->config->courseid]));
                 }
                 die;
             }
@@ -804,6 +827,7 @@ class reportbase {
                     $class->colformat = $this->colformat;
                     $class->reportinstance = $blockinstanceid ? $blockinstanceid : $this->config->id;
                     $class->reportfilterparams = $this->params;
+                    $class->downloading = $this->downloading;
                     $rid = isset($r->id) ? $r->id : 0;
                     if (isset($c->formdata->column) &&
                         (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')

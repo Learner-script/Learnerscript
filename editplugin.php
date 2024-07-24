@@ -41,7 +41,7 @@ if (!$pname) {
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 if (!$lsreportconfigstatus) {
-    redirect(new moodle_url($CFG->wwwroot . '/blocks/learnerscript/lsconfig.php?import=1'));
+    redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
     exit;
 }
 
@@ -165,9 +165,9 @@ if (isset($pluginclass->form) && $pluginclass->form) {
 
     if ($editform->is_cancelled()) {
         if (!empty($report)) {
-            redirect($CFG->wwwroot . '/blocks/learnerscript/editcomp.php?id=' . $report->id . '&comp=' .$comp);
+            redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $report->id, 'comp' => $comp]));
         } else {
-            redirect($CFG->wwwroot . '/blocks/learnerscript/editreport.php');
+            redirect(new moodle_url('/blocks/learnerscript/editreport.php'));
         }
     } else if ($data = $editform->get_data()) {
         $allelements = (new ls)->cr_unserialize($report->components);
@@ -247,8 +247,8 @@ if (isset($pluginclass->form) && $pluginclass->form) {
 
 $title = format_string($report->name) . ' ' . get_string($comp, 'block_learnerscript');
 
-$PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), $CFG->wwwroot . '/blocks/learnerscript/managereport.php');
-$PAGE->navbar->add($title, $CFG->wwwroot . '/blocks/learnerscript/editcomp.php?id=' . $id . '&amp;comp=' . $comp);
+$PAGE->navbar->add(get_string('managereports', 'block_learnerscript'), new moodle_url('/blocks/learnerscript/managereport.php'));
+$PAGE->navbar->add($title, new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
 $PAGE->navbar->add(get_string($pname, 'block_learnerscript'));
 
 $PAGE->set_title($title);

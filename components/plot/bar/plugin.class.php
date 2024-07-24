@@ -24,13 +24,18 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 
-/** Bar graph */
+/**
+ * Bar graph
+ */
 class plugin_bar extends pluginbase {
 
     /** @var bool $ordering */
     public $ordering;
 
-    /** Graph init */
+    /**
+     * Graph init
+     *
+     */
     public function init() {
         $this->fullname = get_string('bar', 'block_learnerscript');
         $this->form = true;
@@ -39,7 +44,8 @@ class plugin_bar extends pluginbase {
                                 'useractivities', 'usercourses', 'users', ];
     }
 
-    /** Graph summary
+    /**
+     * Graph summary
      * @param  object $data Bar graph data
      * @return string
      */
@@ -47,7 +53,8 @@ class plugin_bar extends pluginbase {
         return get_string('barsummary', 'block_learnerscript');
     }
 
-    /** Plugin configuration data.
+    /**
+     * Plugin configuration data.
      * @param  int $id          Report graph id
      * @param  object $data        Report graph data
      * @param  object $finalreport Final report data
@@ -80,8 +87,7 @@ class plugin_bar extends pluginbase {
             $i++;
         }
 
-        return $CFG->wwwroot . '/blocks/learnerscript/components/plot/line/graph.php?reportid=' .
-        $this->report->id . '&id=' . $id . $params .
-        '&amp;min=' . $minvalue . '&amp;max=' . $maxvalue;
+        return new \moodle_url('/blocks/learnerscript/components/plot/line/graph.php', ['reportid' =>
+                        $this->report->id, 'id' => $id.$params, 'min' => $minvalue, 'max' => $maxvalue]);
     }
 }

@@ -14,11 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 require_once($CFG->libdir.'/adminlib.php');
 use html_writer;
@@ -28,6 +30,7 @@ $import = optional_param('import', 0, PARAM_INT);
 require_login();
 
 $context = context_system::instance();
+require_capability('block/learnerscript:managereports', $context);
 
 $PAGE->requires->jquery_plugin('ui');
 $PAGE->requires->jquery_plugin('ui-css');
@@ -35,7 +38,7 @@ $PAGE->requires->css('/blocks/learnerscript/css/slideshow.css');
 
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
-$PAGE->set_url($CFG->wwwroot . '/blocks/learnerscript/import.php');
+$PAGE->set_url(new moodle_url('/blocks/learnerscript/import.php'));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('maintenance');
 $PAGE->set_title(get_string('importreports', 'block_learnerscript'));
@@ -101,18 +104,17 @@ if (!empty($slideshowimages)) {
         if (exif_imagetype($CFG->wwwroot . $slideshowimagespath . $slideshowimage)) {
             $slideshowcount++;
             echo html_writer::div(html_writer::div(html_writer::empty_tag('img',
-            ['src' => $CFG->wwwroot . $slideshowimagespath . $slideshowimage, 'class' => "lsoverviewimages",
-            'style' => "width:100%;height:100%", ]), "",
-            ['styles' => "width:500px; height:350px;"]), "mySlides");
+            ['src' => $CFG->wwwroot . $slideshowimagespath . $slideshowimage, 'class' => "lsoverviewimages"]), "",
+            []), "mySlides");
         }
     }
 }
 
 $reportdashboardblockexists = $PAGE->blocks->is_known_block_type('reportdashboard', false);
 if ($reportdashboardblockexists) {
-    $redirecturl = $CFG->wwwroot . '/blocks/reportdashboard/dashboard.php';
+    $redirecturl = new moodle_url('/blocks/reportdashboard/dashboard.php');
 } else {
-    $redirecturl = $CFG->wwwroot . '/blocks/learnerscript/managereport.php';
+    $redirecturl = new moodle_url('/blocks/learnerscript/managereport.php');
 }
 
 if ($importstatus && !$lsreportconfigstatus) {

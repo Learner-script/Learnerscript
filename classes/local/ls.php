@@ -29,6 +29,7 @@ use context_course;
 use core_course_category;
 
 use block_learnerscript\local\schedule;
+use moodle_url;
 
 define('DAILY', 1);
 define('WEEKLY', 2);
@@ -118,7 +119,7 @@ class ls {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
         $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-        $reportproperties = new stdclass();
+        $reportproperties = new stdClass();
         $reportclass = new $reportclassname($report->id, $reportproperties);
         $components = self::cr_unserialize($reportclass->config->components);
         $components->customsql->config = $report;
@@ -508,10 +509,7 @@ class ls {
         if (empty($parents)) {
             $parents = [];
         }
-        $all = $DB->get_records_sql('SELECT id, parent
-        FROM {course_categories}
-        WHERE visible = :visible
-        ORDER BY sortorder', ['visible' => 1]);
+        $all = $DB->get_records('course_categories', ['visible' => 1], '', 'id, parent');
         foreach ($all as $record) {
             if ($record->parent) {
                 $parents[$record->id] = array_merge($parents[$record->parent], [$record->parent]);
@@ -706,9 +704,9 @@ class ls {
      * @param array $reports Reports list
      */
     public function add_customreports_sql($reports) {
-        global $DB, $CFG;
+        global $DB;
         foreach ($reports as $report) {
-            $importurl = urldecode($CFG->wwwroot . '/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml');
+            $importurl = urldecode(new moodle_url('/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml'));
             $fcontents = file_get_contents($importurl);
             $course = $DB->get_record("course", ["id" => SITEID]);
             if ($this->cr_import_xml($fcontents, $course, false)) {
@@ -724,7 +722,7 @@ class ls {
      * @return array List of scheduled reports
      */
     public function schedulereportsquery($frequency = false) {
-        global $DB, $CFG;
+        global $DB;
         core_date::set_default_server_timezone();
         $now = new DateTime("now", core_date::get_server_timezone_object());
         $date = $now->format('Y-m-d');
@@ -740,8 +738,9 @@ class ls {
                   JOIN {user} as u ON crs.userid = u.id
                  WHERE u.confirmed = :confirmed AND u.suspended = :suspended AND u.deleted = :deleted $frequencyquery";
         $schereports = $DB->get_records_sql($sql, ['confirmed' => 1, 'suspended' => 0, 'deleted' => 0]);
+
         foreach ($schereports as $sch => $repo) {
-            $scheduledate = userdate($repo->nextschedule, '%Y-%m-%d');
+            $scheduledate = userdate($repo->nextschedule, '%Y-%m-%d', '', false);
             $scheduletime = userdate($repo->nextschedule, '%H');
             if (($scheduledate == $date) && ($scheduletime == $hour)) {
                 $scheduledreports[] = $repo;
@@ -759,8 +758,7 @@ class ls {
         $schedule = new schedule;
         $scheduledreports = (new self)->schedulereportsquery($frequency);
         $totalschedulereports = count($scheduledreports);
-        mtrace(get_string('processing', 'block_learnerscript') . ' ' . $totalschedulereports .
-                    ' ' . get_string('scheduledreport', 'block_learnerscript'));
+        mtrace(get_string('processingschedulereport', 'block_learnerscript', $totalschedulereports));
         if ($totalschedulereports > 0) {
             foreach ($scheduledreports as $scheduled) {
                 switch ($scheduled->exporttofilesystem) {
@@ -905,10 +903,13 @@ class ls {
      * @param  boolean $statistics
      * @param  boolean $parentcheck
      * @param  boolean $reportslist
+     * @param  boolean $reportdashboard
      * @return array Report roles
      */
-    public function listofreportsbyrole($coursels = false, $statistics = false, $parentcheck = false, $reportslist = false) {
+    public function listofreportsbyrole($coursels = false, $statistics = false, $parentcheck = false, $reportslist = false,
+                    $reportdashboard = false) {
         global $DB, $PAGE, $SESSION;
+
         // Course context reports.
         if ($PAGE->context->contextlevel == 50 || $PAGE->context->contextlevel == 70) {
             $coursels = true;
@@ -916,7 +917,7 @@ class ls {
 
         if ($statistics) {
             $statisticsreports = [];
-            $roles = $DB->get_records_sql("SELECT id, shortname FROM {role}");
+            $roles = $DB->get_records('role', [], '', 'id, shortname');
             foreach ($roles as $role) {
                 $rolereports = (new ls)->rolewise_statisticsreports($role->shortname);
                 foreach ($rolereports as $key => $value) {
@@ -973,6 +974,11 @@ class ls {
                 }
                 if ($coursels) {
                     if (!$report->courselevel) {
+                        continue;
+                    }
+                }
+                if ($reportdashboard) {
+                    if (!$report->parent) {
                         continue;
                     }
                 }
@@ -1345,27 +1351,24 @@ class ls {
         $values -= $minutes * 60;
         $dateimage = $OUTPUT->pix_icon('courseprofile/date', '', 'block_reportdashboard', ['class' => 'dateicon']);
         if (!empty($hours)) {
-            $hrs = ($hours == 1) ? $hours. get_string('hr', 'block_learnerscript').' ' :
-                            $hours. get_string('hrs', 'block_learnerscript').' ';
+            $hrs = $hours;
         } else {
-            $hrs = '';
+            $hrs = 0;
         }
         if (!empty($minutes)) {
-            $min = $minutes. get_string('mins', 'block_learnerscript').' ';
+            $min = $minutes;
         } else {
-            $min = '';
+            $min = 0;
         }
         if (!empty($values)) {
-            $sec = $values. get_string('sec', 'block_learnerscript');
+            $sec = $values;
         } else {
-            $sec = '';
+            $sec = 0;
         }
-        if ($day == 1) {
-            $days = $dateimage . $day. get_string('day', 'block_learnerscript').' ';
-        } else if ($day > 1) {
-            $days = $dateimage . $day. get_string('days', 'block_learnerscript').' ';
+        if (!empty($day)) {
+            $days = $day;
         } else {
-            $days = '';
+            $days = 0;
         }
         $timeimage = '';
         if (empty($totalval)) {
@@ -1373,7 +1376,14 @@ class ls {
         } else {
             $timeimage = $OUTPUT->pix_icon('courseprofile/time1', '', 'block_reportdashboard', ['class' => 'timeicon']);
         }
-        $result = $days . $timeimage . $hrs . $min . $sec;
+        $accesstimedata = new stdclass;
+        $accesstimedata->dateimage = $dateimage;
+        $accesstimedata->days = $days;
+        $accesstimedata->timeimage = $timeimage;
+        $accesstimedata->hours = $hrs;
+        $accesstimedata->minutes = $min;
+        $accesstimedata->seconds = $sec;
+        $result = get_string('time', 'block_learnerscript', $accesstimedata);
         return $result;
     }
 
@@ -1528,7 +1538,14 @@ class ls {
             $weekdayslist[] = $weekdays;
             strtotime($weekdaysql . ' 09:00:00');
         }
-        $timingslist = ['09-10Am', '10-11Am', '11-12Pm', '02-03Pm', '03-04Pm', '04-05Pm', '05-06Pm', '06-07Pm'];
+        $timingslist = [get_string('firsthr', 'block_learnerscript'),
+                        get_string('secondhr', 'block_learnerscript'),
+                        get_string('thirdhr', 'block_learnerscript'),
+                        get_string('fourthhr', 'block_learnerscript'),
+                        get_string('fifthhr', 'block_learnerscript'),
+                        get_string('sixthhr', 'block_learnerscript'),
+                        get_string('seventhhr', 'block_learnerscript'),
+                        get_string('eighthr', 'block_learnerscript')];
         $timings = ['09-10', '10:00:01-11', '11:00:01-12', '14:00:01-15', '15:00:01-16',
                         '16:00:01-17', '17:00:01-18', '18:00:01-19', ];
         $users = $DB->get_records_sql("SELECT DISTINCT ue.userid AS id
@@ -1626,5 +1643,21 @@ class ls {
         $data->exportparams = $exportparams;
         $arraydata = (array)$data + $reportdata->tableproperties;
         return $arraydata;
+    }
+
+    /**
+     * Get sub directories
+     *
+     * @param string $dir
+     * @return array
+     */
+    public function getsubdirectories($dir = null) {
+        $subdir = [];
+        $directories = array_filter(glob($dir), 'is_dir');
+        $subdir = array_merge($subdir, $directories);
+        foreach ($directories as $directory) {
+            $subdir = array_merge($subdir, $this->getsubdirectories($directory.'/*'));
+        }
+         return $subdir;
     }
 }

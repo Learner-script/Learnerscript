@@ -24,13 +24,18 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 
-/** Modules filter */
+/**
+ * Modules filter
+ */
 class plugin_modules extends pluginbase {
 
     /** @var mixed $singleselection  */
     public $singleselection;
 
-    /** Modules filter init function */
+    /**
+     * Modules filter init function
+     *
+     */
     public function init() {
         $this->form = false;
         $this->unique = true;
@@ -48,7 +53,8 @@ class plugin_modules extends pluginbase {
         return get_string('filtermodules_summary', 'block_learnerscript');
     }
 
-    /** Execute
+    /**
+     * Execute
      * @param  string $finalelements Final elements
      * @param  object $data          Filter data
      * @return string
@@ -79,9 +85,8 @@ class plugin_modules extends pluginbase {
             get_string('filter_module', 'block_learnerscript') :
             get_string('select') .' '. get_string('modules', 'block_learnerscript');
         }
-        $modules = $DB->get_records_sql('SELECT id, name
-            FROM {modules}
-            WHERE visible = :visible', ['visible' => 1]);
+
+        $modules = $DB->get_records('modules', ['visible' => 1], '', 'id, name');
         if (!empty($modules)) {
             foreach ($modules as $module) {
                 $modulesoptions[$module->id] = get_string('pluginname', $module->name);

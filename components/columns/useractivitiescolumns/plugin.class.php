@@ -158,10 +158,10 @@ class plugin_useractivitiescolumns extends pluginbase {
             case 'completionstatus':
                 switch($row->completionstatus) {
                     case 0 :
-                        $completiontype = 'n';
+                        $completiontype = get_string('completion-n', 'completion');
                         break;
                     case 1 :
-                        $completiontype = 'y';
+                        $completiontype = get_string('completion-y', 'completion');
                         break;
                     case 2 :
                         $completiontype = get_string('pass', 'block_learnerscript');
@@ -170,8 +170,8 @@ class plugin_useractivitiescolumns extends pluginbase {
                         $completiontype = get_string('fail', 'block_learnerscript');
                         break;
                 }
-                $row->completionstatus = $completiontype ? get_string('completion-' . $completiontype, 'completion') :
-                                            get_string('na', 'block_learnerscript');
+                $row->completionstatus = $completiontype ? $completiontype :
+                get_string('na', 'block_learnerscript');
             break;
         }
         return (isset($row->{$data->column})) ? $row->{$data->column} : '--';

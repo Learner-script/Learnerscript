@@ -54,17 +54,13 @@ class report_edit_form extends moodleform {
         if (isset($this->_customdata['report']->id) && $this->_customdata['report']->id) {
             $eloptions = ['disabled' => 'disabled'];
         }
-
         $select = $mform->addElement('select', 'type', get_string("typeofreport", 'block_learnerscript'), $typeoptions, $eloptions);
         $mform->addHelpButton('type', 'typeofreport', 'block_learnerscript');
         $select->setSelected('sql');
 
-        $mform->addElement('textarea', 'querysql', get_string('querysql', 'block_learnerscript'), 'rows="15" cols="80"');
-        $selectedoptions = ['sql', 'statistics'];
-        $querysqloptions = array_diff(array_keys($typeoptions), $selectedoptions);
-        $querysqloptions1 = implode('|', $querysqloptions);
+        $mform->addElement('textarea', 'querysql', get_string('querysql', 'block_learnerscript'),
+        'rows="15" cols="80" disabled=disabled');
 
-        $mform->disabledIf('querysql', 'type', 'in', $querysqloptions1);
         $mform->addElement('header', 'advancedoptions', get_string('advanced'));
         $mform->addElement('editor', 'description', get_string('summary'));
         $mform->setType('description', PARAM_TEXT);

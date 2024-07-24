@@ -229,7 +229,7 @@ class report_useractivities extends reportbase implements report {
                         AND c.visible = 1 AND
                         e.status = 0 AND u.deleted = 0 AND m.name IN ($activitieslist) AND main.visible = 1
                         AND main.deletioninprogress = 0";
-        if ($status == 'notcompleted') {
+        if ($status == 'Inprogress') {
             $this->params['userid'] = $userid;
             $this->sql .= " AND main.id NOT IN (SELECT coursemoduleid FROM {course_modules_completion}
                                                   WHERE completionstate <> 0 AND userid= :subuserid ) ";
@@ -241,11 +241,6 @@ class report_useractivities extends reportbase implements report {
 
         $this->sql .= " AND m.visible = 1";
 
-        if ((!is_siteadmin() || $this->scheduling) && !(new ls)->is_manager()) {
-            if ($this->rolewisecourses != '') {
-                $this->sql .= " AND c.id IN ($this->rolewisecourses) ";
-            }
-        }
         parent::where();
     }
 
@@ -359,7 +354,7 @@ class report_useractivities extends reportbase implements report {
                 $query = "SELECT COUNT(lsl.id) AS numviews
                               FROM {logstore_standard_log} lsl
                          WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND
-                           lsl.userid = $filteruserid $where";
+                           lsl.userid = $filteruserid AND lsl.target = 'course_module' $where";
             break;
         }
         $query = str_replace('%placeholder%', $identity, $query);

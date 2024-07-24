@@ -24,7 +24,9 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 
-/** Users filter */
+/**
+ * Users filter
+ */
 class plugin_users extends pluginbase {
 
     /** @var mixed $singleselection  */
@@ -39,7 +41,10 @@ class plugin_users extends pluginbase {
     /** @var mixed $maxlength  */
     public $maxlength;
 
-    /** Filter init funtion */
+    /**
+     * Filter init funtion
+     *
+     */
     public function init() {
         $this->form = false;
         $this->unique = true;
@@ -67,7 +72,8 @@ class plugin_users extends pluginbase {
         return get_string('filterusers_summary', 'block_learnerscript');
     }
 
-    /** Execute
+    /**
+     * Execute
      * @param  string $finalelements User filter final elements
      * @param  object $data          Filter data
      * @return string

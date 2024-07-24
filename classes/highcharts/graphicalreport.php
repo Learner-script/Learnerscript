@@ -30,7 +30,8 @@ class graphicalreport {
     public function __construct() {
     }
 
-    /** Generates linechart/barchart with given data
+    /**
+     * Generates linechart/barchart with given data
      * @param object $data graph data
      * @param object $series series of values(X axis and Y axis etc...)
      * @param object $name
@@ -73,7 +74,8 @@ class graphicalreport {
         }
     }
 
-    /** Generates combination chart with given data
+    /**
+     * Generates combination chart with given data
      * @param object $data graph data
      * @param object $series series of values(X axis and Y axis etc...)
      * @param object $name
@@ -202,7 +204,8 @@ class graphicalreport {
         return $options;
 
     }
-    /** Get chart data
+    /**
+     * Get chart data
      * @param object $data graph data
      * @param object $series series of values(X axis and Y axis etc...)
      * @param string  $type

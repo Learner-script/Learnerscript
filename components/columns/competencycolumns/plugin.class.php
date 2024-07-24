@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** A Moodle block for creating customizable reports
+/**
+ * A Moodle block for creating customizable reports
  * @package   block_learnerscript
  * @copyright 2023 Moodle India Information Solutions Private Limited
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,7 +25,9 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\reportbase;
 use context_system;
 use html_writer;
-/** Competency Columns */
+/**
+ * Competency Columns
+ */
 class plugin_competencycolumns extends pluginbase {
     /**
      * Copetency columns init function
@@ -76,14 +79,13 @@ class plugin_competencycolumns extends pluginbase {
                 foreach ($courseslist as $course) {
                     if ($this->report->type == 'courseprofile' || empty($coursereportid) || empty($checkpermissions)) {
                         $row->{$data->column} .= html_writer::tag('li',
-                        html_writer::link(new \moodle_url($CFG->wwwroot . '/course/view.php',
+                        html_writer::link(new \moodle_url('/course/view.php',
                         ['id' => $course->id]), $course->fullname) . ', ');
                     } else if ($coursereportid) {
                         $row->{$data->column} .= html_writer::tag(
                             'li',
                             html_writer::link(
-                                new \moodle_url(
-                                    $CFG->wwwroot . '/blocks/learnerscript/viewreport.php',
+                                new \moodle_url('/blocks/learnerscript/viewreport.php',
                                     ['id' => $coursereportid, 'filter_courses' => $course->id]
                                 ),
                                 $course->fullname

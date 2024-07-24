@@ -310,13 +310,14 @@ class report_courseactivities extends reportbase implements report {
                                                 JOIN {user} u ON u.id = lsl.userid
                                                WHERE lsl.crud = 'r' AND lsl.contextlevel = 70
                                                  AND lsl.courseid = $courseid AND lsl.anonymous = 0
-                                                 AND u.confirmed = 1 AND u.deleted = 0 AND lsl.userid IN ($learnersql) $where ";
+                                                 AND u.confirmed = 1 AND u.deleted = 0 AND lsl.target = 'course_module'
+                                                 AND lsl.userid IN ($learnersql) $where ";
                 } else {
                     $query = "SELECT COUNT('X') AS numviews
                                 FROM {logstore_standard_log} lsl JOIN {user} u ON u.id = lsl.userid
                                WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND lsl.courseid = $courseid
                                  AND lsl.anonymous = 0 AND lsl.userid IN ($learnersql) AND u.confirmed = 1
-                                 AND u.deleted = 0 $where";
+                                 AND u.deleted = 0 lsl.target = 'course_module' AND $where";
                 }
             break;
         }

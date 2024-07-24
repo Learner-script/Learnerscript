@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<report version="2024050701"><visible><![CDATA[1]]></visible>
+<report version="2024050702"><visible><![CDATA[1]]></visible>
 <name><![CDATA[User profile]]></name>
 <summary><![CDATA[]]></summary>
 <type><![CDATA[userprofile]]></type>
@@ -8,4 +8,23 @@
 <global><![CDATA[1]]></global>
 <lastexecutiontime><![CDATA[0]]></lastexecutiontime>
 <disabletable><![CDATA[0]]></disabletable>
-</report>
+<instance version="2024050702"><blockname><![CDATA[reportdashboard]]></blockname>
+<parentcontextid><![CDATA[1]]></parentcontextid>
+<showinsubcontexts><![CDATA[0]]></showinsubcontexts>
+<requiredbytheme><![CDATA[0]]></requiredbytheme>
+<pagetypepattern><![CDATA[blocks-reportdashboard-dashboard-student_50]]></pagetypepattern>
+<subpagepattern><![CDATA[Dashboard]]></subpagepattern>
+<defaultregion><![CDATA[center-second]]></defaultregion>
+<defaultweight><![CDATA[0]]></defaultweight>
+<timecreated><![CDATA[1719393126]]></timecreated>
+<timemodified><![CDATA[1719393126]]></timemodified>
+<title><![CDATA[User profile]]></title>
+<reportcontenttype><![CDATA[table]]></reportcontenttype>
+<reporttype><![CDATA[]]></reporttype>
+<logo><![CDATA[]]></logo>
+<tilescolourpicker><![CDATA[12445f]]></tilescolourpicker>
+<disableheader><![CDATA[0]]></disableheader>
+<reportduration><![CDATA[all]]></reportduration>
+<tilescolour><![CDATA[]]></tilescolour>
+<url><![CDATA[]]></url>
+</instance><position version="2024050702"></position></report>
