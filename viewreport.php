@@ -42,7 +42,6 @@ $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus'
 
 if (!$lsreportconfigstatus) {
     redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
-    exit;
 }
 
 if (!is_siteadmin() && empty($SESSION->role)) {
@@ -63,10 +62,10 @@ if (!is_siteadmin()) {
         WHERE 1 = 1
         ORDER BY rcl.contextlevel ASC");
         foreach ($rolecontexts as $rc) {
-            if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+            if (has_capability('block/learnerscript:managereports', $context)) {
                 continue;
             }
-            $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+            $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
         $querysql = "SELECT DISTINCT ctx.contextlevel, r.shortname
                            FROM {role} r
@@ -158,7 +157,6 @@ if ($delete && confirm_sesskey()) {
     $report->components = (new block_learnerscript\local\ls)->cr_serialize($components);
     $DB->update_record('block_learnerscript', $report);
     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $id, 'courseid' => $courseid]));
-    exit;
 }
 
 require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
@@ -315,5 +313,4 @@ if (!$download) {
         $reportclass->finalreport->name = $reportclass->config->name;
         (new $exportclass)->export_report($reportclass, $id);
     }
-    die;
 }

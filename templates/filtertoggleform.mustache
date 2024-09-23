@@ -52,11 +52,11 @@
 		</div>
 		<span class="pull-right filter_buttons">
         {{{ plottabscontent }}}
-			<span class="pull-right dateicon reportfilters"  onclick='(function(e){ require("block_learnerscript/helper").ViewReportFilters({activefilter: "datefilter", inactivefilter: "reportcustomfilters" }); })(event)' >
+			<span class="pull-right dateicon reportfilters calenderdatefilter" data-activefilter = "datefilter" data-inactivefilter = "reportcustomfilters">
 				<i class="fa fa-calendar" title={{# str }} calendar, block_learnerscript {{/ str }} aria-hidden="true"></i>
 			</span>
 			{{# filterform }}
-				<span class="pull-right filtericon reportfilters" title={{# str }} filter, block_learnerscript {{/ str }} onclick='(function(e){ require("block_learnerscript/helper").ViewReportFilters({activefilter: "reportcustomfilters", inactivefilter: "datefilter" }); })(event)' ></span>
+				<span class="pull-right filtericon reportfilters customfiltericon" title={{# str }} filter, block_learnerscript {{/ str }} data-activefilter = "reportcustomfilters" data-inactivefilter = "datefilter" ></span>
 			{{/ filterform }}
 			{{# enableschedule}}
 				<span class="pull-right dateicon reportfilters mr-1"><a class="schedulecutom" title={{# str }} schedule, block_learnerscript {{/ str }}

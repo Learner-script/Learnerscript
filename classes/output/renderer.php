@@ -305,10 +305,6 @@ class renderer extends plugin_renderer_base {
                     'courseid' => $COURSE->id, ]),
                 get_string($comptab, 'block_learnerscript'));
         }
-        $top[] = new tabobject('report', new moodle_url('/blocks/learnerscript/editreport.php',
-            ['id' => $reportclass->config->id,
-                'courseid' => $COURSE->id, ]),
-            get_string('report', 'block_learnerscript'));
         $top[] = new tabobject('schedulereport', new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
             ['id' => $reportclass->config->id,
                 'courseid' => $COURSE->id, ]),

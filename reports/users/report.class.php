@@ -23,7 +23,7 @@
  */
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\reportbase;
-use block_learnerscript\local\ls as ls;
+use context_system;
 /**
  * report_users
  */
@@ -86,12 +86,9 @@ class report_users extends reportbase {
      */
     public function joins() {
         $this->sql .= " JOIN {role_assignments} ra ON ra.userid = u.id
-                      JOIN {context} ctx ON ctx.id = ra.contextid
+                      JOIN {context} ctx ON ctx.id = ra.contextid AND ctx.contextlevel = 50
                       JOIN {course} c ON c.id = ctx.instanceid
-                      JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                      JOIN {user_enrolments} ue on ue.enrolid = e.id AND ue.userid = ra.userid AND ue.status = 0
-                      JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
-                 LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = u.id AND cc.timecompleted > 0";
+                      JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student' ";
 
         parent::joins();
     }
@@ -100,17 +97,9 @@ class report_users extends reportbase {
      * Adding conditions to the query
      */
     public function where() {
-        $this->sql .= " WHERE u.confirmed = 1 AND u.deleted = 0 AND u.id > 2";
-        if ($this->conditionsenabled) {
-            $conditions = implode(',', $this->conditionfinalelements);
-            if (empty($conditions)) {
-                return [[], 0];
-            }
-            $this->params['lsconditions'] = $conditions;
-            $this->sql .= " AND u.id IN ( :lsconditions )";
-        }
-
-        if (!is_siteadmin($this->userid)  && !(new ls)->is_manager($this->userid)) {
+        $context = context_system::instance();
+        $this->sql .= " WHERE u.confirmed = 1 AND u.deleted = 0 AND u.id > 2 AND u.suspended = 0";
+        if (!is_siteadmin($this->userid)  && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND c.id IN ($this->rolewisecourses) ";
             } else {
@@ -179,7 +168,8 @@ class report_users extends reportbase {
      */
     public function column_queries($column, $userid) {
         $where = " AND %placeholder% = $userid";
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        $context = context_system::instance();
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $coursefilter = " AND c.id IN ($this->rolewisecourses) ";
             }
@@ -190,64 +180,57 @@ class report_users extends reportbase {
         $identity = " ";
         switch ($column) {
             case 'enrolled':
-                $identity = "ue.userid";
+                $identity = "ra.userid";
                 $query = "SELECT COUNT(DISTINCT c.id) AS enrolled
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                          WHERE ue.status = 0 $where $coursefilter ";
+                          WHERE 1 = 1 $where $coursefilter ";
                 break;
             case 'inprogress':
-                $identity = "ue.userid";
+                $identity = "ra.userid";
                 $query = "SELECT (COUNT(DISTINCT c.id) - COUNT(DISTINCT cc.id)) AS inprogress
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
                      LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid
-                     AND cc.userid = ue.userid AND cc.timecompleted > 0
+                     AND cc.userid = ra.userid AND cc.timecompleted > 0
                          WHERE 1 = 1 $where $coursefilter ";
                 break;
             case 'completed':
                 $identity = "cc.userid";
                 $query = "SELECT COUNT(DISTINCT cc.course) AS completed
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
                           JOIN {course_completions} cc ON cc.course = ctx.instanceid
-                          AND cc.userid = ue.userid AND cc.timecompleted > 0
-                          WHERE ue.status = 0 $where $coursefilter ";
+                          AND cc.userid = ra.userid AND cc.timecompleted > 0
+                          WHERE 1 = 1 $where $coursefilter ";
                 break;
             case 'progress':
                 $identity = "ra.userid";
                 $query = "SELECT
                 ROUND((CAST(COUNT(DISTINCT cc.course) AS DECIMAL) / CAST(COUNT(DISTINCT c.id) AS DECIMAL)) * 100, 2)
                 as progress
-                            FROM {user_enrolments} ue
-                            JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                            JOIN {role_assignments} ra ON ra.userid = ue.userid
+                            FROM {role_assignments} ra
                             JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                             JOIN {context} ctx ON ctx.id = ra.contextid
                             JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                       LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ue.userid
-                             AND cc.timecompleted > 0 WHERE ue.status = 0 $where $coursefilter";
+                       LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ra.userid
+                             AND cc.timecompleted > 0 WHERE 1 = 1 $where $coursefilter";
                 break;
             case 'badges':
                 $identity = "bi.userid";
-                $query = "SELECT COUNT(bi.id) AS badges FROM {badge_issued} bi
-                          JOIN {badge} b ON b.id = bi.badgeid
-                          JOIN {course} c ON c.id = b.courseid AND c.visible = 1
-                         WHERE  bi.visible = 1 AND b.status != 0
-                          AND b.status != 2 AND b.status != 4
-                           $where $coursefilter";
+                $query = "SELECT COUNT(bi.id) AS badges
+                FROM {badge_issued} bi
+                JOIN {badge} b ON b.id = bi.badgeid
+                JOIN {course} c ON c.id = b.courseid AND c.visible = 1
+                WHERE  bi.visible = 1 AND b.status != 0
+                AND b.status != 2 AND b.status != 4
+                $where $coursefilter";
                 break;
             case 'grade':
                  $identity = "gg.userid";

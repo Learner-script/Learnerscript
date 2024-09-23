@@ -89,7 +89,7 @@ class block_learnerscript extends block_list {
      * @return object An object with the contents
      * */
     public function get_content() {
-        global $DB, $USER, $CFG, $COURSE;
+        global $DB, $USER, $COURSE;
         if ($this->content !== null) {
             return $this->content;
         }
@@ -108,44 +108,29 @@ class block_learnerscript extends block_list {
             throw new moodle_exception(get_string('nocourseexist', 'block_learnerscript'));
         }
 
-        if ($course->id == SITEID) {
+        $reportdashboardblockexists = $this->page->blocks->is_known_block_type('reportdashboard', false);
+
+        $enrolledcourses = enrol_get_users_courses($USER->id, true, ['id', 'shortname']);
+        if ($course->id == SITEID && (array_key_last($enrolledcourses) == SITEID || empty($enrolledcourses))) {
             $context = context_system::instance();
         } else {
-            $context = context_course::instance($course->id);
+            $context = context_course::instance(array_key_last($enrolledcourses));
         }
-        $reportdashboardblockexists = $this->page->blocks->is_known_block_type('reportdashboard', false);
-        if (!is_siteadmin()) {
-            $userrolesql = "SELECT CONCAT(ra.roleid, '_',c.contextlevel) AS rolecontext, r.shortname, c.contextlevel
-                FROM {role_assignments} ra
-                JOIN {context} c ON c.id = ra.contextid
-                JOIN {role} r ON r.id = ra.roleid
-                WHERE 1 = 1 AND ra.userid = :userid AND (";
-            $userroleparams['userid'] = $USER->id;
-            $i = 0;
-            foreach ($USER->access['ra'] as $key => $value) {
-                $i++;
-                $statsql[] = $DB->sql_like('c.path', ":queryparam$i");
-                $userroleparams["queryparam$i"] = $key;
-            }
-            $userrolesql .= implode(" OR ", $statsql);
 
-            $userrolesql .= ") GROUP BY ra.roleid, c.contextlevel, r.shortname";
-            $userroles = $DB->get_record_sql($userrolesql, $userroleparams, IGNORE_MISSING);
-            if (!empty($userroles)) {
-                $roleshortname = $userroles->shortname;
-                if ($roleshortname == 'editingteacher' && $userroles->contextlevel == 10) {
-                    $rolecontextlevel = 50;
-                } else {
-                    $rolecontextlevel = $userroles->contextlevel;
-                }
-            } else {
-                $roleshortname = 0;
+        if (!is_siteadmin()) {
+            $currentuserroleid = array_key_first($USER->access['ra'][$context->path]);
+            $getcontextlevels = get_role_contextlevels($currentuserroleid);
+            $currentcontextlevel = reset($getcontextlevels);
+            if ($currentcontextlevel == CONTEXT_SYSTEM || $currentcontextlevel == CONTEXT_MODULE) {
                 $rolecontextlevel = 0;
+            } else {
+                $rolecontextlevel = $currentcontextlevel;
             }
+            $roleshortname = $DB->get_field('role', 'shortname', ['id' => $currentuserroleid]);
         }
         if ($reportdashboardblockexists) {
             if (!is_siteadmin()) {
-                if ($roleshortname == 'student') {
+                if (has_capability('block/learnerscript:learnerreportaccess', $context)) {
                     $this->content->items[] = html_writer::link(new moodle_url(
                     '/blocks/reportdashboard/profilepage.php',
                     ['filter_users' => $USER->id, 'role' => $roleshortname, 'contextlevel' => $rolecontextlevel]),
@@ -178,9 +163,6 @@ class block_learnerscript extends block_list {
                         ['id' => $report->id, 'courseid' => $course->id, "alt" => $rname]), $rname,
                         ['class' => 'ls-block_reportlist_reportname']);
                     }
-                }
-                if (!empty($this->content->items)) {
-                    $this->content->items[] = '========';
                 }
             }
         }

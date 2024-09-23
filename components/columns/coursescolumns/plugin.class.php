@@ -27,6 +27,7 @@ use block_learnerscript\local\reportbase;
 use block_learnerscript\local\ls;
 use context_system;
 use html_writer;
+use moodle_url;
 /**
  * Courses Columns
  */
@@ -83,38 +84,6 @@ class plugin_coursescolumns extends pluginbase {
         ['type' => 'coursecompetency'], IGNORE_MULTIPLE);
         $searchicon = $OUTPUT->pix_icon('search', '', 'block_learnerscript', ['class' => 'searchicon']);
         switch ($data->column) {
-            case 'progress':
-                if (!isset($row->progress) && isset($data->subquery)) {
-                    $progress = $DB->get_field_sql($data->subquery);
-                } else {
-                    $progress = $row->{$data->column};
-                }
-                if ($progress == "") {
-                        $progress = '0';
-                }
-                $progress = round($progress, 2);
-                $progresscheckpermissions = empty($usercoursesreportid) ? false :
-                (new reportbase($usercoursesreportid))->check_permissions($context, $this->reportclass->userid);
-                if (empty($usercoursesreportid) || empty($progresscheckpermissions)) {
-                    $avgcompletedlink = $progress;
-                } else {
-                    $avgcompletedlink = $progress;
-                }
-                $avgcompletedlink = empty($avgcompletedlink) ? 0 : round($avgcompletedlink);
-                $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
-                html_writer::start_div('mr-2 flex-grow-1 progress').
-                 html_writer::div('', "progress-bar",
-                     [
-                         'role' => "progressbar",
-                         'aria-valuenow' => $avgcompletedlink,
-                         'aria-valuemin' => "0",
-                         'aria-valuemax' => "100",
-                         'style' => (($avgcompletedlink == 0) ? '' : ("width:" . $avgcompletedlink . "%")),
-                     ]) .
-                 html_writer::end_div().
-                 html_writer::span($avgcompletedlink.'%', 'progressvalue').
-                 html_writer::end_div();
-                break;
             case 'activities':
                 if (!isset($row->activities) && isset($data->subquery)) {
                     $activities = $DB->get_field_sql($data->subquery);
@@ -128,7 +97,7 @@ class plugin_coursescolumns extends pluginbase {
                 if (empty($listofactivitiesreportid) || empty($checkpermissions)) {
                     $row->{$data->column} = $activities;
                 } else {
-                    $row->{$data->column} = html_writer::link(new \moodle_url(
+                    $row->{$data->column} = html_writer::link(new moodle_url(
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $listofactivitiesreportid, 'filter_courses' => $row->id]),
                     $activities.$searchicon, ["target" => "_blank"]);
@@ -146,7 +115,7 @@ class plugin_coursescolumns extends pluginbase {
                 if (empty($competencyreportid) || empty($enrolcheckpermissions)) {
                     $row->{$data->column} = $competencies;
                 } else {
-                    $row->{$data->column} = html_writer::link(new \moodle_url(
+                    $row->{$data->column} = html_writer::link(new moodle_url(
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $competencyreportid, 'filter_courses' => $row->id,
                     'filter_status' => get_string('all', 'block_learnerscript'), ]),
@@ -157,15 +126,17 @@ class plugin_coursescolumns extends pluginbase {
             case 'enrolments':
                 if (!isset($row->enrolments) && isset($data->subquery)) {
                     $enrolments = $DB->get_field_sql($data->subquery);
+                    $row->enrol = $enrolments;
                 } else {
                     $enrolments = $row->{$data->column};
+                    $row->enrol = $enrolments;
                 }
                 $enrolcheckpermissions = empty($usercoursesreportid) ? false :
                 (new reportbase($usercoursesreportid))->check_permissions($context, $USER->id);
                 if (empty($usercoursesreportid) || empty($enrolcheckpermissions)) {
                     $row->{$data->column} = $enrolments;
                 } else {
-                    $row->{$data->column} = html_writer::link(new \moodle_url(
+                    $row->{$data->column} = html_writer::link(new moodle_url(
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
                     'filter_status' => get_string('all', 'block_learnerscript'), ]),
@@ -176,8 +147,10 @@ class plugin_coursescolumns extends pluginbase {
             case 'completed':
                 if (!isset($row->completed) && isset($data->subquery)) {
                     $completed = $DB->get_field_sql($data->subquery);
+                    $row->complete = $completed;
                 } else {
                     $completed = $row->{$data->column};
+                    $row->complete = $completed;
                 }
 
                 $comcheckpermissions = empty($usercoursesreportid) ? false :
@@ -185,13 +158,68 @@ class plugin_coursescolumns extends pluginbase {
                 if (empty($usercoursesreportid) || empty($comcheckpermissions)) {
                     $row->{$data->column} = $completed;
                 } else {
-                    $row->{$data->column} = html_writer::link(new \moodle_url(
+                    $row->{$data->column} = html_writer::link(new moodle_url(
                     '/blocks/learnerscript/viewreport.php',
                     ['id' => $usercoursesreportid, 'filter_courses' => $row->id,
                     'filter_status' => get_string('completed', 'block_learnerscript'), ]),
                     $completed.$searchicon, ["target" => "_blank"]);
                 }
             break;
+            case 'progress':
+                if (isset($row->enrol) && $row->enrol == 0) {
+                    $progress = 0;
+                } else if (isset($row->enrol) && $row->enrol != 0 && isset($row->complete)) {
+                    $progress = (($row->complete) / ($row->enrol));
+                } else {
+                    if (!isset($row->progress) && isset($data->subquery)) {
+                        $progress = $DB->get_field_sql($data->subquery);
+                    } else {
+                        $progress = $DB->get_field_sql(" SELECT CASE WHEN (SELECT COUNT(DISTINCT ra.userid)
+                             FROM {role_assignments} ra
+                             JOIN {context} ct ON ct.id = ra.contextid AND ct.contextlevel = 50
+                             JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
+                             JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0
+                            WHERE 1 = 1 AND ct.instanceid = :encourseid) = 0 THEN 0 ELSE
+                            (SELECT
+                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ue.userid) AS DECIMAL)) * 100, 2)
+                            AS progress
+                             FROM {role_assignments} ra
+                             JOIN {context} ct ON ct.id = ra.contextid AND ct.contextlevel = 50
+                             JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
+                             JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0
+                        LEFT JOIN {course_completions} cc ON cc.course = ct.instanceid AND cc.timecompleted > 0
+                        AND cc.userid = ra.userid
+                            WHERE 1 = 1 AND ct.instanceid = :courseid) END ",
+                        ['encourseid' => $row->course, 'courseid' => $row->course]);
+                    }
+                }
+                if ($progress == "") {
+                        $progress = '0';
+                }
+                $progress = round($progress * 100, 2);
+                $progresscheckpermissions = empty($usercoursesreportid) ? false :
+                (new reportbase($usercoursesreportid))->check_permissions($context, $this->reportclass->userid);
+                if (empty($usercoursesreportid) || empty($progresscheckpermissions)) {
+                    $avgcompletedlink = $progress;
+                } else {
+                    $avgcompletedlink = $progress;
+                }
+                $avgcompletedlink = empty($avgcompletedlink) ? 0 : round($avgcompletedlink);
+                $row->{$data->column} = html_writer::start_div('d-flex progresscontainer align-items-center').
+                html_writer::start_div('mr-2 flex-grow-1 progress').
+                 html_writer::div('', "progress-bar",
+                     [
+                         'role' => "progressbar",
+                         'aria-valuenow' => $avgcompletedlink,
+                         'aria-valuemin' => "0",
+                         'aria-valuemax' => "100",
+                         'style' => (($avgcompletedlink == 0) ?
+                         ("width: 100%; background-color: transparent; color: #000;") : ("width:" . $avgcompletedlink . "%")),
+                     ]) .
+                 html_writer::end_div().
+                 html_writer::span($avgcompletedlink.'%', 'progressvalue').
+                 html_writer::end_div();
+                break;
             case 'badges':
                 if (!isset($row->badges) && isset($data->subquery)) {
                     $badges = $DB->get_field_sql($data->subquery);
@@ -256,7 +284,7 @@ class plugin_coursescolumns extends pluginbase {
                     $row->{$data->column} = '--';
                 } else {
                     if (!$this->downloading) {
-                        return html_writer::link(new \moodle_url('/blocks/learnerscript/viewreport.php',
+                        return html_writer::link(new moodle_url('/blocks/learnerscript/viewreport.php',
                         ['id' => $reportid, 'filter_courses' => $row->id]),
                         $searchicon, ["target" => "_blank"]);
                     } else {
@@ -266,13 +294,11 @@ class plugin_coursescolumns extends pluginbase {
                             JOIN {user} u ON u.id = lsl.userid
                             WHERE u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0 AND lsl.crud = 'r'
                             AND lsl.userid > 2 AND lsl.courseid AND lsl.userid IN (
-                                  SELECT DISTINCT ue.userid
+                                  SELECT DISTINCT ra.userid
                                   FROM {course} c
-                                  JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                                  JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
-                                  JOIN {role_assignments} ra ON ra.userid = ue.userid
-                                  JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                                   JOIN {context} ctx ON ctx.instanceid = c.id
+                                  JOIN {role_assignments} ra ON ra.contextid = ctx.id
+                                  JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                                   JOIN {user} u2 ON u2.id = ra.userid
                                       AND u2.confirmed = 1
                                       AND u2.deleted = 0

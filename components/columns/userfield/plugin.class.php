@@ -92,7 +92,7 @@ class plugin_userfield extends pluginbase {
         (new reportbase($userprofilereport))->check_permissions($context, $USER->id);
         if (is_siteadmin()) {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
-            ['href' => new \moodle_url('/blocks/reportdashboard/profilepage.php', ['filter_users' => $row->id])]);
+            ['href' => new moodle_url('/blocks/reportdashboard/profilepage.php', ['filter_users' => $row->id])]);
         } else {
             $userrecord->fullname .= html_writer::tag('a', fullname($userrecord),
             ['href' => new moodle_url('/blocks/reportdashboard/profilepage.php', ['filter_users' => $row->id,

@@ -97,7 +97,7 @@ class plugin_coursesoverview extends pluginbase {
         $this->reportfilterparams['filter_modules'] = isset($this->reportfilterparams['filter_modules']) ?
         $this->reportfilterparams['filter_modules'] : 0;
         $this->reportfilterparams['filter_users'] = isset($this->reportfilterparams['filter_users']) ?
-        $this->reportfilterparams['filter_users'] : 0;
+        $this->reportfilterparams['filter_users'] : $row->userid;
         $allactivityurl = new moodle_url('/blocks/learnerscript/viewreport.php',
                 ['id' => $activityinfoid, 'filter_courses' => $row->id,
                 'filter_modules' => $this->reportfilterparams['filter_modules'],

@@ -26,6 +26,7 @@ use block_learnerscript\local\ls as ls;
 use block_learnerscript\local\reportbase;
 use stdClass;
 use html_table;
+use context_system;
 /**
  * Statistics reports class
  */
@@ -81,8 +82,8 @@ class report_statistics extends reportbase {
             $replace = ' AND ' . $output[1] . ' = ' . $this->courseid;
             $sql = str_replace('%%LS_COURSEID:' . $output[1] . '%%', $replace, $sql);
         }
-
-        if (!is_siteadmin() && $SESSION->role != 'manager') {
+        $context = context_system::instance();
+        if (!is_siteadmin() && !has_capability('block/learnerscript:managereports', $context)) {
             if (preg_match("/%%DASHBOARDROLE:([^%]+)%%/i", $sql, $output)) {
                 $currentrole = "'".$SESSION->role."'";
                 $replace = ' AND ' . $output[1] . ' =  ' . $currentrole . ' ';

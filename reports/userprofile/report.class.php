@@ -26,6 +26,7 @@ use block_learnerscript\local\reportbase;
 use block_learnerscript\local\ls;
 use html_table;
 use stdClass;
+use context_system;
 
 /**
  * report_userprofile
@@ -54,7 +55,8 @@ class report_userprofile extends reportbase {
         parent::__construct($report, $reportproperties);
         $this->components = ['columns', 'filters', 'permissions'];
         $this->parent = false;
-        if ($this->role != 'student') {
+
+        if ($this->role != $this->currentrole) {
             $this->basicparams = [['name' => 'users', 'singleselection' => false, 'placeholder' => false, 'maxlength' => 5]];
         }
         $this->columns = ['userfield' => ['userfield'], 'userprofile' => ['enrolled', 'inprogress',
@@ -69,7 +71,7 @@ class report_userprofile extends reportbase {
      */
     public function init() {
         if (!$this->scheduling) {
-            if ($this->role != 'student' && !isset($this->params['filter_users'])) {
+            if ($this->role != $this->currentrole && !isset($this->params['filter_users'])) {
                 $this->initial_basicparams('users');
                 $fusers = array_keys($this->filterdata);
                 $this->params['filter_users'] = array_shift($fusers);
@@ -172,8 +174,9 @@ class report_userprofile extends reportbase {
      * @return string
      */
     public function column_queries($column, $userid) {
+        $context = context_system::instance();
         $where = " AND %placeholder% = $userid";
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid)) {
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $coursefilter = " AND c.id IN ($this->rolewisecourses) ";
             }
@@ -184,55 +187,47 @@ class report_userprofile extends reportbase {
         $identity = " ";
         switch ($column) {
             case 'enrolled':
-                $identity = "ue.userid";
+                $identity = "ra.userid";
                 $query = "SELECT COUNT(DISTINCT c.id) AS enrolled
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                          WHERE ue.status = 0 $where $coursefilter";
+                          WHERE 1 =1 $where $coursefilter";
                 break;
             case 'inprogress':
-                $identity = "ue.userid";
+                $identity = "ra.userid";
                 $query = "SELECT (COUNT(DISTINCT c.id) - COUNT(DISTINCT cc.id)) AS inprogress
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                     LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ue.userid
+                     LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ra.userid
                      AND cc.timecompleted > 0
                          WHERE 1=1 $where $coursefilter ";
                 break;
             case 'completed':
                 $identity = "cc.userid";
                 $query = "SELECT COUNT(DISTINCT cc.course) AS completed
-                          FROM {user_enrolments} ue
-                          JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                          JOIN {role_assignments} ra ON ra.userid = ue.userid
+                          FROM {role_assignments} ra
                           JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                           JOIN {context} ctx ON ctx.id = ra.contextid
                           JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                          JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ue.userid
+                          JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ra.userid
                           AND cc.timecompleted > 0
-                          WHERE ue.status = 0 $where $coursefilter ";
+                          WHERE 1 =1 $where $coursefilter ";
                 break;
             case 'progress':
                 $identity = "ra.userid";
                 $query = "SELECT
                 ROUND((CAST(COUNT(DISTINCT cc.course) AS DECIMAL) / CAST(COUNT(DISTINCT c.id) AS DECIMAL)) * 100, 2)
                             as progress
-                            FROM {user_enrolments} ue
-                            JOIN {enrol} e ON ue.enrolid = e.id AND e.status = 0
-                            JOIN {role_assignments} ra ON ra.userid = ue.userid
+                            FROM {role_assignments} ra
                             JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                             JOIN {context} ctx ON ctx.id = ra.contextid
                             JOIN {course} c ON c.id = ctx.instanceid AND  c.visible = 1
-                       LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ue.userid
-                             AND cc.timecompleted > 0 WHERE ue.status = 0 $where $coursefilter";
+                       LEFT JOIN {course_completions} cc ON cc.course = ctx.instanceid AND cc.userid = ra.userid
+                             AND cc.timecompleted > 0 WHERE 1 =1 $where $coursefilter";
                 break;
             case 'completedcoursesgrade':
                 $identity = "gg.userid";

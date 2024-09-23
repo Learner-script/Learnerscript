@@ -22,8 +22,8 @@
  */
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\reportbase;
-use block_learnerscript\local\ls as ls;
 use block_learnerscript\report;
+use context_system;
 
 /**
  * Course competency report class
@@ -120,10 +120,10 @@ class report_coursecompetency extends reportbase implements report {
      * Adding conditions to the query
      */
     public function where() {
-        $userid = isset($this->params['filter_users']) ? $this->params['filter_users'] : [];
         $this->sql .= " WHERE 1 = 1 ";
 
-        if ((!is_siteadmin() || $this->scheduling) && !(new ls)->is_manager()) {
+        $context = context_system::instance();
+        if ((!is_siteadmin() || $this->scheduling) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND ccom.courseid IN ($this->rolewisecourses) ";
             }

@@ -24,7 +24,7 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\reportbase;
 use block_learnerscript\report;
-use block_learnerscript\local\ls as ls;
+use context_system;
 
 /**
  * Course overview report data class
@@ -50,16 +50,15 @@ class report_coursesoverview extends reportbase implements report {
      * @param object $reportproperties Report properties object
      */
     public function __construct($report, $reportproperties) {
-        global $USER;
         parent::__construct($report, $reportproperties);
         $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $columns = ['coursename', 'totalactivities', 'completedactivities', 'inprogressactivities', 'grades', 'totaltimespent'];
         $this->columns = ['coursesoverview' => $columns];
 
-        if ($this->role != 'student') {
+        if ($this->role != $this->currentrole) {
             $this->basicparams = [['name' => 'users']];
         }
-        if ($this->role == 'student') {
+        if ($this->role == $this->currentrole) {
             $this->parent = true;
         } else {
             $this->parent = false;
@@ -73,7 +72,7 @@ class report_coursesoverview extends reportbase implements report {
      * Report initialization
      */
     public function init() {
-        if ($this->role != 'student' && !isset($this->params['filter_users'])) {
+        if ($this->role != $this->currentrole && !isset($this->params['filter_users'])) {
             $this->initial_basicparams('users');
             $fusers = array_keys($this->filterdata);
             $this->params['filter_users'] = array_shift($fusers);
@@ -128,6 +127,7 @@ class report_coursesoverview extends reportbase implements report {
      * Adding conditions to the query
      */
     public function where() {
+        $context = context_system::instance();
         $this->params['userid'] = isset($this->params['filter_users']) && $this->params['filter_users'] > 0
                     ? $this->params['filter_users'] : $this->userid;
         $this->sql .= " WHERE ra.userid = :userid AND c.visible = 1";
@@ -141,7 +141,7 @@ class report_coursesoverview extends reportbase implements report {
             $this->params['lsfenddate'] = round($this->lsenddate);
             $this->sql .= " AND ra.timemodified BETWEEN :lsfstartdate AND :lsfenddate ";
         }
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND c.id IN ($this->rolewisecourses) ";
             }

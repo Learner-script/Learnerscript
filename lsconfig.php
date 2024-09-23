@@ -78,7 +78,6 @@ if ($import) {
 
 $renderer = $PAGE->get_renderer('block_learnerscript');
 echo $OUTPUT->header();
-$error = false;
 if ($error) {
     foreach ($errordata as $errormsg) {
         \core\notification::add(

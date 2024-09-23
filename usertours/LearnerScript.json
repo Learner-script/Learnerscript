@@ -16,51 +16,11 @@
       "configdata": "{}"
     },
     {
-      "title": "user_tour_switchdashboard_title,block_learnerscript",
-      "content": "user_tour_switchdashboard_content,block_learnerscript",
-      "targettype": "0",
-      "targetvalue": "#switchdashboard",
-      "sortorder": "1",
-      "configdata": "{}"
-    },
-    {
-      "title": "user_tour_tiles_title,block_learnerscript",
-      "content": "user_tour_tiles_desc,block_learnerscript",
-      "targettype": "0",
-      "targetvalue": "#addwidgets",
-      "sortorder": "2",
-      "configdata": "{}"
-    },
-    {
-      "title": "user_tour_newreport_title,block_learnerscript",
-      "content": "user_tour_newreport_content,block_learnerscript",
-      "targettype": "0",
-      "targetvalue": "#addreport",
-      "sortorder": "3",
-      "configdata": "{}"
-    },
-    {
-      "title": "user_tour_newdashboard_title,block_learnerscript",
-      "content": "user_tour_newdashboard_content,block_learnerscript",
-      "targettype": "0",
-      "targetvalue": "#adddashboard",
-      "sortorder": "4",
-      "configdata": "{}"
-    },
-    {
       "title": "user_tour_switchrole_title,block_learnerscript",
       "content": "user_tour_switchrole_content,block_learnerscript",
       "targettype": "0",
       "targetvalue": "#switchrole",
-      "sortorder": "5",
-      "configdata": "{}"
-    },
-    {
-      "title": "user_tour_datefilter_title,block_learnerscript",
-      "content": "user_tour_datefilter_content,block_learnerscript",
-      "targettype": "0",
-      "targetvalue": "#reportbox_shadow",
-      "sortorder": "6",
+      "sortorder": "1",
       "configdata": "{}"
     },
     {
@@ -68,7 +28,7 @@
       "content": "user_tour_exportreport_content,block_learnerscript",
       "targettype": "0",
       "targetvalue": "#exportoptions",
-      "sortorder": "7",
+      "sortorder": "2",
       "configdata": "{}"
     }
   ]

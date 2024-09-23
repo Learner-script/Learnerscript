@@ -242,45 +242,6 @@ switch ($action) {
         $reportclass->create_report();
         $return = $ls->cr_unserialize($reportclass->config->components);
         break;
-    case 'updatereport':
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
-        }
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-        $properties = new stdClass();
-        $reportclass = new $reportclassname($report, $properties);
-        $comp = (object) $ls->cr_unserialize($reportclass->config->components);
-        $components = json_decode($components, true);
-        $comp->columns->elements = $components->columns->elements;
-        $comp->filters->elements = $components->filters->elements;
-        $comparray = ['columns', 'filters'];
-        foreach ($comparray as $c) {
-            foreach ($comp[$c]['elements'] as $k => $d) {
-                if ($c == 'filters') {
-                    if (empty($d['formdata']['value'])) {
-                        unset($comp[$c]['elements'][$k]);
-                        continue;
-                    }
-                }
-            }
-        }
-        $listofexports = $components['exports'];
-        $exportlist = [];
-        foreach ($listofexports as $key => $exportoptions) {
-            if (!empty($exportoptions['value'])) {
-                $exportlist[] = $exportoptions['name'];
-            }
-        }
-        $exports = implode(',', $exportlist);
-        $components = $ls->cr_serialize($comp);
-        if (empty($listofexports)) {
-            $DB->update_record('block_learnerscript', (object) ['id' => $reportid, 'components' => $components]);
-        } else {
-            $DB->update_record('block_learnerscript', (object) ['id' => $reportid,
-            'components' => $components, 'export' => $exports, ]);
-        }
-        break;
     case 'courseactivities':
         if ($courseid > 0) {
             $modinfo = get_fast_modinfo($courseid);

@@ -38,7 +38,7 @@ class pluginbase {
     public $type = '';
 
     /**
-     * @var $report
+     * @var object $report
      */
     public $report = null;
 
@@ -73,7 +73,7 @@ class pluginbase {
     public $colformat = false;
 
     /**
-     * @var $reportclass
+     * @var object $reportclass
      */
     public $reportclass;
 

@@ -17,7 +17,7 @@
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
-use block_learnerscript\local\ls;
+require_once($CFG->libdir . '/pdflib.php');
 use html_writer;
 
 /**
@@ -34,14 +34,13 @@ class export_pdf {
      * @param int $id Report id
      */
     public function export_report($reportclass, $id) {
-        global $DB, $CFG;
+        global $DB;
         $reportdata = $reportclass->finalreport;
         if (!empty($reportclass->basicparams)) {
             $requestdata = array_merge($reportclass->params, $reportclass->basicparams);
         } else {
             $requestdata = $reportclass->params;
         }
-        require_once($CFG->libdir . '/pdflib.php');
         $reportname = $DB->get_record('block_learnerscript', ['id' => $id]);
         $table = $reportdata->table;
         $matrix = [];
@@ -163,15 +162,18 @@ class export_pdf {
      * PDF Report Export Header
      * @return string Report Header
      */
-    public function pdf_reportheader() {
+    private function pdf_reportheader() {
         $headerimagepath = block_learnerscript_get_reportheader_imagepath();
         $headerimgpath = "";
-        if (isset($headerimagepath) && @getimagesize($headerimagepath)) {
+        if (isset($headerimagepath) && !empty($headerimagepath) && @getimagesize($headerimagepath)) {
             $headerimgpath = $headerimagepath;
         }
         if ($headerimgpath) {
-            $reportlogoimage =
-            '<img src="' . $headerimgpath . '" alt=' . get_string("altreportimage", "block_learnerscript") . ' height="80px">';
+            $reportlogoimage = html_writer::empty_tag('img', [
+                'src' => $headerimgpath,
+                'alt' => get_string("altreportimage", "block_learnerscript"),
+                'height' => '80px'
+            ]);
         } else {
             $reportlogoimage = "";
         }

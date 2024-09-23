@@ -86,7 +86,7 @@ class plugin_roleincourse extends pluginbase {
                 && $p->formdata->roleid == $currentroleid) {
                     $permissionslib = new permissionslib($p->formdata->contextlevel,
                     $p->formdata->roleid, $userid);
-                    if ($permissionslib->has_permission()) {
+                    if (has_capability('block/learnerscript:reportsaccess', $context)) {
                             $return[] = true;
                     }
                 }

@@ -82,6 +82,9 @@ define(['jquery',
                                     args.instanceid).html("<div class='alert alert-warning'>" + s + "</div>");
                                 });
                             }
+                            $(document).ajaxStop(function() {
+                                $("#reportloadingimage").remove();
+                            });
                         }
                     }
                 });

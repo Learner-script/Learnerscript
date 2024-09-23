@@ -112,7 +112,6 @@ if ($delete) {
     $message = get_string('delconfirm', 'block_learnerscript');
     echo $OUTPUT->confirm($message, $yesurl, $returnurl);
     echo $OUTPUT->footer();
-    die;
 }
 $scheduling = new schedule();
 // Form data.

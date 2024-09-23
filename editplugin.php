@@ -34,15 +34,9 @@ $moveup = optional_param('moveup', 0, PARAM_INT);
 $movedown = optional_param('movedown', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
 
-if (!$pname) {
-    redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $com]));
-    exit;
-}
-
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 if (!$lsreportconfigstatus) {
     redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
-    exit;
 }
 
 if (!$report = $DB->get_record('block_learnerscript', ['id' => $id])) {
@@ -132,7 +126,6 @@ if (!$cid) {
         $report->components = (new ls)->cr_serialize($components);
         $DB->update_record('block_learnerscript', $report);
         redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
-        exit;
     }
 }
 
@@ -166,8 +159,6 @@ if (isset($pluginclass->form) && $pluginclass->form) {
     if ($editform->is_cancelled()) {
         if (!empty($report)) {
             redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $report->id, 'comp' => $comp]));
-        } else {
-            redirect(new moodle_url('/blocks/learnerscript/editreport.php'));
         }
     } else if ($data = $editform->get_data()) {
         $allelements = (new ls)->cr_unserialize($report->components);
@@ -195,7 +186,6 @@ if (isset($pluginclass->form) && $pluginclass->form) {
                 throw new moodle_exception(get_string('errorsaving', 'block_learnerscript'));
             } else {
                 redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
-                exit;
             }
         } else {
             $uniqueid = random_string(15);
@@ -206,7 +196,6 @@ if (isset($pluginclass->form) && $pluginclass->form) {
                 foreach ($allelements->permissions->elements as $existpermission) {
                     if (!array_diff_assoc((array)$existpermission->formdata, (array)$data)) {
                         redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
-                        exit;
                     }
                 }
             }
@@ -219,7 +208,6 @@ if (isset($pluginclass->form) && $pluginclass->form) {
                 throw new moodle_exception(get_string('errorsaving', 'block_learnerscript'));
             } else {
                 redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
-                exit;
             }
         }
     }
@@ -241,7 +229,6 @@ if (isset($pluginclass->form) && $pluginclass->form) {
         throw new moodle_exception(get_string('errorsaving', 'block_learnerscript'));
     } else {
         redirect(new moodle_url('/blocks/learnerscript/editcomp.php', ['id' => $id, 'comp' => $comp]));
-        exit;
     }
 }
 

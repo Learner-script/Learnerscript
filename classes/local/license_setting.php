@@ -56,7 +56,6 @@ class license_setting extends \admin_setting_configtext {
                 redirect(new moodle_url('/blocks/learnerscript/managereport.php'));
             }
         }
-        exit;
     }
 
     /**

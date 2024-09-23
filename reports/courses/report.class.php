@@ -25,7 +25,7 @@ namespace block_learnerscript\lsreports;
 use block_learnerscript\local\reportbase;
 use block_learnerscript\report;
 use block_learnerscript\local\querylib;
-use block_learnerscript\local\ls as ls;
+use context_system;
 
 /**
  * Courses report class
@@ -114,9 +114,10 @@ class report_courses extends reportbase implements report {
      * Adding conditions to the query
      */
     public function where() {
+        $context = context_system::instance();
         $this->sql .= " WHERE main.visible = :visible AND main.id <> :siteid ";
         $this->params['visible'] = 1;
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND main.id IN ($this->rolewisecourses) ";
             }
@@ -190,29 +191,6 @@ class report_courses extends reportbase implements report {
         $query = " ";
         $identity = " ";
         switch ($columnname) {
-            case 'progress':
-                $identity = 'ct.instanceid';
-                $query = " SELECT CASE WHEN (SELECT COUNT(DISTINCT ue.userid)
-                             FROM {user_enrolments} ue
-                             JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                             JOIN {role_assignments} ra ON ra.userid = ue.userid
-                             JOIN {context} ct ON ct.id = ra.contextid
-                             JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                             JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0
-                            WHERE 1 = 1 $where) = 0 THEN 0 ELSE
-                            (SELECT
-                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ue.userid) AS DECIMAL)) * 100, 2)
-                            AS progress
-                             FROM {user_enrolments} ue
-                             JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                             JOIN {role_assignments} ra ON ra.userid = ue.userid
-                             JOIN {context} ct ON ct.id = ra.contextid
-                             JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                             JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0 AND u.suspended = 0
-                        LEFT JOIN {course_completions} cc ON cc.course = ct.instanceid AND cc.timecompleted > 0
-                        AND cc.userid = ue.userid
-                            WHERE 1 = 1 $where) END ";
-                break;
             case 'activities':
                 $identity = 'course';
                 $query  = "SELECT COUNT(id) AS activities FROM {course_modules} WHERE 1 = 1 AND visible = 1
@@ -220,29 +198,25 @@ class report_courses extends reportbase implements report {
             break;
             case 'enrolments':
                 $identity = 'ct.instanceid';
-                $query  = "SELECT COUNT(DISTINCT ue.userid) AS enrolled
-                                     FROM {user_enrolments} ue
-                                     JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                                     JOIN {role_assignments} ra ON ra.userid = ue.userid
+                $query  = "SELECT COUNT(DISTINCT ra.id) AS enrolled
+                                     FROM {role_assignments} ra
                                      JOIN {context} ct ON ct.id = ra.contextid
                                      JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                                     JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                                     JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                                      AND u.suspended = 0
                                     WHERE 1 = 1 $where ";
             break;
             case 'completed':
                 $identity = 'ct.instanceid';
                 $query = "SELECT COUNT(DISTINCT cc.userid) AS completed
-                                     FROM {user_enrolments} ue
-                                     JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                                     JOIN {role_assignments} ra ON ra.userid = ue.userid
+                                     FROM {role_assignments} ra
                                      JOIN {context} ct ON ct.id = ra.contextid
                                      JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                                     JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                                     JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                                      AND u.suspended = 0
                                      JOIN {course_completions} cc ON cc.course = ct.instanceid AND cc.timecompleted > 0
-                                     AND cc.userid = ue.userid
-                                    WHERE 1 = 1 AND cc.course = e.courseid $where ";
+                                     AND cc.userid = ra.userid
+                                    WHERE 1 = 1 $where ";
             break;
             case 'highgrade':
                 $identity = 'gi.courseid';

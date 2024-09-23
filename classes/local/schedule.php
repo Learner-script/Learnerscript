@@ -415,18 +415,18 @@ class schedule {
          WHERE 1 = 1
          ORDER BY rcl.contextlevel ASC");
         foreach ($rolecontexts as $rc) {
-            if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+            if (has_capability('block/learnerscript:managereports', $context)) {
                 continue;
             }
-            $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+            $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
 
         $role = !empty($role) ? $role : 'editingteacher';
         $contextlevel = !empty($contextlevel) ? $contextlevel : 50;
-
+        $contextroles = ['shortname' => $role, 'contextlevel' => $contextlevel];
         $properties->role = $role;
         $properties->contextlevel = $contextlevel;
-        $properties->contextrole = $role .'_'. $contextlevel;
+        $properties->contextrole = get_string('rolecontexts', 'block_learnerscript', $contextroles);
         $properties->moodleroles = $rcontext;
         $reportclass = new $reportclassname($report, $properties);
         $reportclass->courseid = $report->courseid;
@@ -463,7 +463,7 @@ class schedule {
         }
         $reportclass->scheduling = true;
         if (!$reportclass->check_permissions($context, $user->id)
-        && ($reportclass->role != 'manager' && $reportclass->contextlevel != CONTEXT_SYSTEM)) {
+        && (!has_capability('block/learnerscript:managereports', $context))) {
             return [[], false];
         }
         $reportclass->reporttype = 'table';
@@ -663,7 +663,8 @@ class schedule {
                     break;
             }
             if (isset($rolecontext[1])) {
-                $rolecontextname = $original .' - '. $rolecontext[1];
+                $contextroles = ['shortname' => $original, 'contextlevel' => $rolecontext[1]];
+                $rolecontextname = get_string('rolecontexts', 'block_learnerscript', $contextroles);
             } else {
                 $rolecontextname = $original;
             }

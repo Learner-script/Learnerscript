@@ -44,6 +44,9 @@ class report_sql extends reportbase {
     /** @var array $basicparamdata  */
     public $basicparamdata;
 
+    /** @var array $orderable  */
+    public $orderable;
+
     /**
      * SQL report construct
      * @param object $report           Report data
@@ -53,6 +56,7 @@ class report_sql extends reportbase {
         parent::__construct($report, $reportproperties);
         $this->parent = true;
         $this->components = ['customsql', 'filters', 'permissions', 'plot'];
+        $this->orderable = [''];
     }
 
     /**

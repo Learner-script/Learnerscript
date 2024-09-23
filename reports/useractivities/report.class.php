@@ -63,7 +63,8 @@ class report_useractivities extends reportbase implements report {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report);
-        if ($this->role != 'student') {
+
+        if ($this->role != $this->currentrole) {
             $this->basicparams = [['name' => 'users'], ['name' => 'courses']];
         } else {
             $this->basicparams = [['name' => 'courses']];
@@ -198,10 +199,10 @@ class report_useractivities extends reportbase implements report {
      */
     public function joins() {
         $this->sql .= " JOIN {modules} m ON main.module = m.id
-                       JOIN {course} c ON c.id = main.course
-                       JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                       JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
-                       JOIN {user} u ON u.id = ue.userid ";
+                        JOIN {course} c ON c.id = main.course
+                        JOIN {context} con ON c.id = con.instanceid
+                        JOIN {role_assignments} ra ON ra.contextid = con.id
+                        JOIN {user} u ON u.id = ra.userid ";
         foreach ($this->aliases as $alias) {
             $this->sql .= " LEFT JOIN {".$alias."} AS $alias ON $alias.id = main.instance AND m.name = '$alias'";
         }
@@ -226,8 +227,7 @@ class report_useractivities extends reportbase implements report {
         $this->params['subuserid'] = $this->params['filter_users'];
         $activitieslist = implode(',', $this->activities);
         $this->sql .= " WHERE u.deleted = 0 AND u.confirmed = 1 AND u.suspended = 0
-                        AND c.visible = 1 AND
-                        e.status = 0 AND u.deleted = 0 AND m.name IN ($activitieslist) AND main.visible = 1
+                        AND c.visible = 1 AND u.deleted = 0 AND m.name IN ($activitieslist) AND main.visible = 1
                         AND main.deletioninprogress = 0";
         if ($status == 'Inprogress') {
             $this->params['userid'] = $userid;

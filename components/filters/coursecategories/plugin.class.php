@@ -24,6 +24,7 @@
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\ls;
+use context_system;
 
 /**
  * Course categories
@@ -110,8 +111,8 @@ class plugin_coursecategories extends pluginbase {
         if ($selectoption) {
             $displaylist[0] = get_string('filter_category', 'block_learnerscript');
         }
-        if (!is_siteadmin($this->reportclass->userid) && !(new ls)->is_manager($this->reportclass->userid,
-        $this->reportclass->contextlevel, $this->reportclass->role)) {
+        $context = context_system::instance();
+        if (!is_siteadmin($this->reportclass->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if (!empty($this->reportclass->rolewisecourses)) {
                 $courses = $this->reportclass->rolewisecourses;
                 list($sql, $params) = $DB->get_in_or_equal($courses, SQL_PARAMS_NAMED);

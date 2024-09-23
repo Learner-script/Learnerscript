@@ -25,6 +25,7 @@ namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
 use html_writer;
 use context_system;
+use moodle_url;
 
 /**
  * Course Field Columns
@@ -114,11 +115,11 @@ class plugin_coursefield extends pluginbase {
                 case 'fullname':
                     if (is_siteadmin()) {
                         $courserecord->{$data->column} =
-                                html_writer::link(new \moodle_url('/blocks/reportdashboard/courseprofile.php',
+                                html_writer::link(new moodle_url('/blocks/reportdashboard/courseprofile.php',
                                 ['filter_courses' => $courserecord->id]), $courserecord->{$data->column});
                     } else {
                         $courserecord->{$data->column} =
-                                html_writer::link(new \moodle_url('/blocks/reportdashboard/courseprofile.php',
+                                html_writer::link(new moodle_url('/blocks/reportdashboard/courseprofile.php',
                                 ['filter_courses' => $courserecord->id,
                                 'role' => $SESSION->role,
                                 'contextlevel' => $SESSION->ls_contextlevel, ]), $courserecord->{$data->column});

@@ -65,7 +65,7 @@ define(['jquery',
                 $('#plotreportcontainer' + reportid).html('');
 
             });
-            /** 
+            /**
              * Send message to user from username otion in report
              */
             $(document).on('click', ".sendusermsg", function(e) {
@@ -74,19 +74,37 @@ define(['jquery',
                 var userfullname = $(this).data('userfullname');
 
                 helper.sendmessage({userid: userid, reportinstance: reportinstance}, userfullname);
-                e.stopImmediatePropagation();  
+                e.stopImmediatePropagation();
             });
 
-            /** 
+            /**
              * Report graphs display
              */
-            $(document).on('click', ".ls-plotgraph_link", function(e) {
+            $(document).on('click', ".ls-plotgraph_link", function() {
                 var reportid = $(this).data('reportid');
                 var reporttype = $(this).data('reporttype');
                 reportwidget.CreateDashboardwidget({reportid: reportid, reporttype: reporttype});
             });
 
-            /** 
+            /**
+             * Report calender filter display
+             */
+            $(document).on('click', ".calenderdatefilter", function() {
+                var activefilter = $(this).data('activefilter');
+                var inactivefilter = $(this).data('inactivefilter');
+                helper.ViewReportFilters({activefilter: activefilter, inactivefilter: inactivefilter});
+            });
+
+            /**
+             * Report custom filters display
+             */
+            $(document).on('click', ".customfiltericon", function() {
+                var activefilter = $(this).data('activefilter');
+                var inactivefilter = $(this).data('inactivefilter');
+                helper.ViewReportFilters({activefilter: activefilter, inactivefilter: inactivefilter});
+            });
+
+            /**
              * Statistics report help text
              */
             $(document).on('click', ".statisticshelptext", function() {
@@ -353,20 +371,22 @@ define(['jquery',
          * @return Creates highchart widget with given response based on type of chart
          */
         generate_plotgraph: function(response) {
-            var reportinstance = response.reportinstance || response.reportid;
-            response.containerid = 'plotreportcontainer' + reportinstance;
-            switch (response.type) {
-                case 'spline':
-                case 'bar':
-                case 'column':
-                    chart.lbchart(response);
-                    break;
-                case 'radar':
-                    chart.radarchart(response);
-                    break;
-                case 'combination':
-                    chart.combinationchart(response);
-                    break;
+            if (response) {
+                var reportinstance = response.reportinstance || response.reportid;
+                response.containerid = 'plotreportcontainer' + reportinstance;
+                switch (response.type) {
+                    case 'spline':
+                    case 'bar':
+                    case 'column':
+                        chart.lbchart(response);
+                        break;
+                    case 'radar':
+                        chart.radarchart(response);
+                        break;
+                    case 'combination':
+                        chart.combinationchart(response);
+                        break;
+                }
             }
         },
 
@@ -560,29 +580,29 @@ define(['jquery',
             });
         },
         block_statistics_help: function(reportid) {
-                var promise = ajax.call({
-                    args: {
-                        action: 'learnerscriptdata',
-                        reportid: reportid
-                    },
-                    url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
-                });
-                promise.done(function(response) {
-                   require(['core/modal_factory'], function(ModalFactory) {
-                        ModalFactory.create({
-                            title: response.name,
-                            body: response.summary,
-                            footer: '',
-                        }).done(function(modal) {
-                            var dialogue = modal;
-                            var ModalEvents = require('core/modal_events');
-                            dialogue.getRoot().on(ModalEvents.hidden, function() {
-                            });
-
-                            dialogue.show();
+            var promise = ajax.call({
+                args: {
+                    action: 'learnerscriptdata',
+                    reportid: reportid
+                },
+                url: M.cfg.wwwroot + "/blocks/learnerscript/ajax.php",
+            });
+            promise.done(function(response) {
+                require(['core/modal_factory'], function(ModalFactory) {
+                    ModalFactory.create({
+                        title: response.name,
+                        body: response.summary,
+                        footer: '',
+                    }).done(function(modal) {
+                        var dialogue = modal;
+                        var ModalEvents = require('core/modal_events');
+                        dialogue.getRoot().on(ModalEvents.hidden, function() {
                         });
+
+                        dialogue.show();
                     });
                 });
+            });
         },
         CourseprofileReportsdata: function(args) {
             if (args.reporttype == 'table') {

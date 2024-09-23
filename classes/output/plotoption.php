@@ -20,6 +20,7 @@ use renderable;
 use renderer_base;
 use templatable;
 use stdClass;
+use context_system;
 use block_learnerscript\local\ls as ls;
 
 /**
@@ -65,7 +66,8 @@ class plotoption implements renderable, templatable {
         $this->reportid = $reportid;
         $this->calcbutton = $calcbutton;
         $this->active = $active;
-        if (!empty($SESSION->role) && ($SESSION->role != 'manager')) {
+        $context = context_system::instance();
+        if (!empty($SESSION->role) && !has_capability('block/learnerscript:managereports', $context)) {
             $reports = (new ls)->listofreportsbyrole();
         } else {
             $reportlist = $DB->get_records('block_learnerscript', ['global' => 1,
@@ -132,7 +134,7 @@ class plotoption implements renderable, templatable {
         $querystringparams = 'id=' . $this->reportid . $filterparams;
         $data->params = $querystringparams;
         unset($data->{$activetab});
-        $data->{$activetab} = $activetab.'-active';
+        $data->{$activetab} = get_string('activetab', 'block_learnerscript', $activetab);
             $properties = new stdClass();
             $properties->courseid = SITEID;
             $properties->cmid = 0;

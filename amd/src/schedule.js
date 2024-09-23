@@ -130,7 +130,7 @@ define(['jquery',
             /**
              * Add schedule form role for widget
              */
-            $(document).on('change', ".schuserroleslist", function(e) {
+            $(document).on('change', ".schuserroleslist", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.rolewiseusers({reportid: reportid, reportinstance: reportinstance});
@@ -140,14 +140,13 @@ define(['jquery',
              * Add schedule form users for widget
              */
 
-            $(document).on('change', ".schusers_data", function(e) {
+            $(document).on('change', ".schusers_data", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.addschusers({reportid: reportid, reportinstance: reportinstance});
             });
-            
 
-            $(document).on('change', "select[name='frequency']", function(e) {
+            $(document).on('change', "select[name='frequency']", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.frequency_schedule({reportid: reportid, reportinstance: reportinstance});
@@ -451,7 +450,7 @@ define(['jquery',
         },
         rolewiseusers: function(args) {
             $('#id_users_data' + args.reportinstance).val(null).trigger('change');
-        }
+        },
     };
     return schedule;
 });

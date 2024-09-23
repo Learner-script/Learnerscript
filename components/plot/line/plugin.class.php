@@ -23,6 +23,7 @@
  */
 namespace block_learnerscript\lsreports;
 use block_learnerscript\local\pluginbase;
+use moodle_url;
 
 /**
  * Line graph
@@ -88,7 +89,7 @@ class plugin_line extends pluginbase {
             $i++;
         }
 
-        return new \moodle_url('/blocks/learnerscript/components/plot/line/graph.php', [
+        return new moodle_url('/blocks/learnerscript/components/plot/line/graph.php', [
             'reportid' => $this->report->id,
             'id' => $id.$params,
             'min' => $minvalue,

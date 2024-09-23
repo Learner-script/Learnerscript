@@ -151,13 +151,12 @@ class report_grades extends reportbase implements report {
         }
         $this->sql .= " WHERE 1 = 1 AND u.id IN (SELECT u.id
                         FROM {course} c
-                        JOIN {enrol} e ON c.id = e.courseid AND e.status = 0
-                        JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
-                        JOIN {role_assignments} ra ON ra.userid = ue.userid
+                        JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+                        JOIN {role_assignments} ra ON ctx.id = ra.contextid
                         JOIN {context} con ON c.id = con.instanceid
                         JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
                         JOIN {course_modules} cm ON cm.course = c.id
-                        JOIN {user} u ON u.id = ue.userid
+                        JOIN {user} u ON u.id = ra.userid
                         WHERE c.visible = 1 AND ra.roleid = :roleid AND ra.contextid = con.id
                         AND u.confirmed = 1 AND u.deleted = 0  AND u.suspended = 0
                         AND cm.visible = 1 AND c.id = :ej1_courseid

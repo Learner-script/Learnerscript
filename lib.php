@@ -156,7 +156,6 @@ function block_learnerscript_schreportform_ajaxform($args) {
                     $fromform->sendinguserid = $ajaxformdata['schuserslist'];
 
                     $fromform->exportformat = $ajaxformdata['exportformat'];
-
                     $fromform->frequency = $ajaxformdata['frequency'];
                     $fromform->schedule = $ajaxformdata['schedule'];
                     $fromform->exporttofilesystem = $ajaxformdata['exporttofilesystem'];

@@ -25,6 +25,7 @@ use block_learnerscript\local\pluginbase;
 use block_learnerscript\local\reportbase;
 use context_system;
 use html_writer;
+use moodle_url;
 /**
  * Competency Columns
  */
@@ -85,7 +86,7 @@ class plugin_competencycolumns extends pluginbase {
                         $row->{$data->column} .= html_writer::tag(
                             'li',
                             html_writer::link(
-                                new \moodle_url('/blocks/learnerscript/viewreport.php',
+                                new moodle_url('/blocks/learnerscript/viewreport.php',
                                     ['id' => $coursereportid, 'filter_courses' => $course->id]
                                 ),
                                 $course->fullname

@@ -16,12 +16,10 @@
 
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
-
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Writer\Common\Creator\WriterFactory;
-
+require_once($CFG->dirroot . '/lib/excellib.class.php');
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 require_once($CFG->libdir . '/adminlib.php');
+use MoodleExcelWorkbook;
 
 /**
  * Class export_xls
@@ -38,44 +36,61 @@ class export_xls {
      * @param int $id report id
      */
     public function export_report($reportclass, $id) {
-        global $DB, $CFG;
+        global $DB;
+
+        // Prepare data for export
         $reportdata = $reportclass->finalreport;
-        require_once($CFG->dirroot . '/lib/excellib.class.php');
         $table = $reportdata->table;
-        $filename = $reportdata->name . "_" . date('d M Y H:i:s', time()) . '.xlsx';
-        $writer = WriterFactory::createFromFile($filename);
-        $writer->openToBrowser($filename); // Stream data directly to the browser.
-        $filter = ['Filters'];
-        $filterrow = Row::fromValues($filter);
-        $writer->addRow($filterrow);
+        $filename = $reportdata->name . "_" . date('d_M_Y_H_i_s', time()) . '.xls';
+
+        // Create a new Excel workbook
+        $workbook = new MoodleExcelWorkbook("-");
+        $worksheet = $workbook->add_worksheet('Report');
+
+        // Add filters to the worksheet
+        $row = 0;
+        $col = 0;
+
+        // Write 'Filters' title
+        $worksheet->write($row, $col, 'Filters');
+        $row++;
         if (!empty($reportclass->selectedfilters)) {
             foreach ($reportclass->selectedfilters as $k => $filter) {
-                $filterrow = Row::fromValues([$k, $filter]);
-                $writer->addRow($filterrow);
+                $worksheet->write($row, $col, $k);
+                $worksheet->write($row, $col + 1, $filter);
+                $row++;
             }
         }
-        $head = [];
-        $reporttype = $DB->get_field('block_learnerscript',  'type',  ['id' => $id]);
+
+        // Add column headers if applicable
+        $reporttype = $DB->get_field('block_learnerscript', 'type', ['id' => $id]);
         if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
             if (!empty($table->head)) {
-                foreach ($table->head as $key => $heading) {
-                    $head[] = $heading;
+                $col = 0;
+                foreach ($table->head as $heading) {
+                    // Ensure $key is an integer index for the column
+                    $worksheet->write($row, $col, $heading);
+                    $col++;
                 }
-                $headrow = Row::fromValues($head);
-                $writer->addRow($headrow);
+                $row++;
             }
         }
-        $datarow = [];
+
+        // Add data rows
         if (!empty($table->data)) {
-            foreach ($table->data as $key => $value) {
-                $data = array_map(function ($v) {
-                    return trim(strip_tags($v));
-                }, $value);
-                $datarow[] = Row::fromValues($data);
+            foreach ($table->data as $data) {
+                $col = 0;
+                foreach ($data as $value) {
+                    $worksheet->write($row, $col, trim(strip_tags($value)));
+                    $col++;
+                }
+                $row++;
             }
         }
-        $writer->addRows($datarow);
-        $writer->close();
+
+        // Send the Excel file to the browser
+        $workbook->send($filename);
+        $workbook->close();
     }
 
     /**

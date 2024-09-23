@@ -54,14 +54,15 @@ class report_userbadges extends reportbase implements report {
      */
     public function __construct($report, $reportproperties) {
         parent::__construct($report, $reportproperties);
-        if ($this->role != 'student') {
+
+        if ($this->role != $this->currentrole) {
             $this->basicparams = [['name' => 'users']];
         }
         $this->columns = ['userbadges' => ['name', 'issuername', 'coursename', 'timecreated',
                         'dateissued', 'description', 'criteria', 'expiredate', ], ];
         $this->components = ['columns', 'filters', 'permissions', 'plot'];
         $this->filters = ['courses'];
-        if (isset($this->role) && $this->role == 'student') {
+        if (isset($this->role) && $this->role == $this->currentrole) {
             $this->parent = true;
         } else {
             $this->parent = false;
@@ -75,7 +76,7 @@ class report_userbadges extends reportbase implements report {
      * Report initialization
      */
     public function init() {
-        if ($this->role != 'student' && !isset($this->params['filter_users'])) {
+        if ($this->role != $this->currentrole && !isset($this->params['filter_users'])) {
             $this->initial_basicparams('users');
             $fusers = array_keys($this->filterdata);
             $this->params['filter_users'] = array_shift($fusers);
@@ -140,7 +141,7 @@ class report_userbadges extends reportbase implements report {
         $this->sql .= " JOIN {badge} b ON b.id = bi.badgeid
                         LEFT JOIN {course} c ON b.courseid = c.id AND c.visible = 1";
 
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND b.courseid IN ($this->rolewisecourses) ";
             }
@@ -168,6 +169,7 @@ class report_userbadges extends reportbase implements report {
      */
     public function search() {
         global $DB;
+        $context = context_system::instance();
         if (isset($this->search) && $this->search) {
             $this->searchable = ['b.name', 'c.fullname'];
             $statsql = [];
@@ -178,7 +180,7 @@ class report_userbadges extends reportbase implements report {
             $fields = implode(" OR ", $statsql);
             $this->sql .= " AND ($fields) ";
         }
-        if ((!is_siteadmin() || $this->scheduling) && !(new ls)->is_manager()) {
+        if ((!is_siteadmin() || $this->scheduling) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND b.courseid IN ($this->rolewisecourses) ";
             }

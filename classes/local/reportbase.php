@@ -228,7 +228,7 @@ class reportbase {
     public $componentdata;
 
     /**
-     * @var array $graphcolumns
+     * @var object $graphcolumns
      */
     private $graphcolumns;
 
@@ -321,6 +321,10 @@ class reportbase {
      * @var bool $downloading downloadfile
      */
     public $downloading = false;
+    /**
+     * @var string $currentrole Current loggedin user role
+     */
+    public $currentrole = '';
 
     /**
      * Construct
@@ -363,16 +367,21 @@ class reportbase {
         JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN (70)
         WHERE 1 = 1
         ORDER BY rcl.contextlevel ASC");
+        $rcontext = [];
         foreach ($rolecontexts as $rc) {
-            if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+            if (has_capability('block/learnerscript:managereports', context_system::instance())) {
                 continue;
             }
-            $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+            $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
         $this->moodleroles = isset($SESSION->rolecontextlist) ? $SESSION->rolecontextlist : $rcontext;
         $this->contextrole = isset($SESSION->role) && isset($SESSION->ls_contextlevel)
         ? $SESSION->role . '_' . $SESSION->ls_contextlevel
         : $this->role .'_'.$this->contextlevel;
+        $capabilityrole = get_roles_with_capability('block/learnerscript:learnerreportaccess');
+        if (!empty($capabilityrole)) {
+            $this->currentrole = current($capabilityrole)->shortname;
+        }
     }
 
     /**
@@ -395,11 +404,7 @@ class reportbase {
             $userid = $USER->id;
         }
 
-        if (is_siteadmin($userid) || (new ls)->is_manager($userid, $this->contextlevel, $this->role)) {
-            return true;
-        }
-
-        if (has_capability('block/learnerscript:managereports', $context, $userid)) {
+        if (is_siteadmin($userid) || has_capability('block/learnerscript:managereports', $context, $userid)) {
             return true;
         }
 
@@ -583,7 +588,6 @@ class reportbase {
                     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' =>
                         $this->config->id, 'courseid' => $this->config->courseid]));
                 }
-                die;
             }
             $this->filterform = $filterform;
         }
@@ -705,8 +709,6 @@ class reportbase {
         $this->check_permissions($context, $this->userid);
         $columns = (isset($this->componentdata->columns->elements))
         ? $this->componentdata->columns->elements : [];
-        $ordering = (isset($this->componentdata->ordering->elements))
-        ? $this->componentdata->ordering->elements : [];
         $plot = (isset($this->componentdata->plot->elements))
         ? $this->componentdata->plot->elements : [];
 
@@ -748,7 +750,6 @@ class reportbase {
         }
         $finalelements = [];
         $sqlorder = '';
-        $orderingdata = [];
         if (!empty($this->ordercolumn)) {
             $this->sqlorder['column'] = $this->selectedcolumns[$this->ordercolumn['column']];
             $this->sqlorder['dir'] = $this->ordercolumn['dir'];
@@ -757,7 +758,7 @@ class reportbase {
         $this->build_query(true);
 
         if ($this->reporttype == 'table') {
-            if (is_siteadmin($this->userid) || (new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+            if (is_siteadmin($this->userid) || has_capability('block/learnerscript:managereports', $context)) {
                 try {
                     $this->totalrecords = $DB->count_records_sql($this->sql, $this->params);
                 } catch (\dml_exception $e) {
@@ -786,8 +787,7 @@ class reportbase {
             }
         }
         if (is_siteadmin($this->userid)
-        || (new ls)->is_manager($this->userid, $this->contextlevel, $this->role)
-        || $this->role == 'manager') {
+        || has_capability('block/learnerscript:managereports', $context)) {
             $finalelements = $this->get_all_elements();
             $rows = $this->get_rows($finalelements);
         } else {
@@ -982,7 +982,10 @@ class reportbase {
      */
     public function rolewisecourses() {
         global $DB;
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+
+        $context = context_system::instance();
+
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if (!empty($this->componentdata->permissions->elements)) {
                 $roleincourse = array_filter($this->componentdata->permissions->elements, function($permission) {
                     // Role in course permission.
@@ -1009,14 +1012,14 @@ class reportbase {
                     WHERE 1 = 1
                     ORDER BY rcl.contextlevel ASC");
                     foreach ($rolecontexts as $rc) {
-                        if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+                        if (has_capability('block/learnerscript:managereports', $context)) {
                             continue;
                         }
-                        $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+                        $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
                     }
                     $permissionslib->moodleroles = $rcontext;
-                    if ($permissionslib->has_permission()) {
-                          return implode(',', $permissionslib->get_rolewise_courses());
+                    if (has_capability('block/learnerscript:reportsaccess', $context)) {
+                        return implode(',', $permissionslib->get_rolewise_courses());
                     }
                 }
             }

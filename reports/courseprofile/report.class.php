@@ -28,6 +28,7 @@ use block_learnerscript\local\querylib;
 use block_learnerscript\local\ls as ls;
 use html_table;
 use stdClass;
+use context_system;
 
 /**
  * Course profile report class
@@ -120,7 +121,8 @@ class report_courseprofile extends reportbase implements report {
     public function where() {
         $this->sql .= " WHERE main.visible = :visible AND main.id <> :siteid ";
         $this->params['visible'] = 1;
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        $context = context_system::instance();
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if ($this->rolewisecourses != '') {
                 $this->sql .= " AND main.id IN ($this->rolewisecourses) ";
             }
@@ -202,26 +204,22 @@ class report_courseprofile extends reportbase implements report {
         switch ($columnname) {
             case 'progress':
                 $identity = 'ct.instanceid';
-                $query  = " SELECT CASE WHEN (SELECT COUNT(DISTINCT ue.userid)
-                             FROM {user_enrolments} ue
-                             JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                             JOIN {role_assignments} ra ON ra.userid = ue.userid
+                $query  = " SELECT CASE WHEN (SELECT COUNT(DISTINCT ra.userid)
+                             FROM {role_assignments} ra
                              JOIN {context} ct ON ct.id = ra.contextid
                              JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                             JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                             JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                              AND u.suspended = 0 WHERE 1 = 1 $where) = 0 THEN 0 ELSE
                             (SELECT
-                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ue.userid) AS DECIMAL)) * 100, 2)
+                        ROUND((CAST(COUNT(DISTINCT cc.userid) AS DECIMAL) / CAST(COUNT(DISTINCT ra.userid) AS DECIMAL)) * 100, 2)
                             AS progress
-                             FROM {user_enrolments} ue
-                             JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                             JOIN {role_assignments} ra ON ra.userid = ue.userid
+                             FROM {role_assignments} ra
                              JOIN {context} ct ON ct.id = ra.contextid
                              JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                             JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                             JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                              AND u.suspended = 0
                         LEFT JOIN {course_completions} as cc ON cc.course = ct.instanceid AND cc.timecompleted > 0
-                        AND cc.userid = ue.userid
+                        AND cc.userid = ra.userid
                             WHERE 1 = 1 $where) END ";
                 break;
             case 'activities':
@@ -231,29 +229,25 @@ class report_courseprofile extends reportbase implements report {
             break;
             case 'enrolments':
                 $identity = 'ct.instanceid';
-                $query  = "SELECT COUNT(DISTINCT ue.userid) AS enrolled
-                                     FROM {user_enrolments} ue
-                                     JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                                     JOIN {role_assignments} ra ON ra.userid = ue.userid
+                $query  = "SELECT COUNT(DISTINCT ra.userid) AS enrolled
+                                     FROM {role_assignments} ra
                                      JOIN {context} ct ON ct.id = ra.contextid
                                      JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                                     JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                                     JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                                      AND u.suspended = 0
                                     where 1=1 $where ";
             break;
             case 'completed':
                 $identity = 'ct.instanceid';
                 $query = "SELECT COUNT(DISTINCT cc.userid) AS completed
-                                     FROM {user_enrolments} ue
-                                     JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0 AND ue.status = 0
-                                     JOIN {role_assignments} ra ON ra.userid = ue.userid
+                                     FROM {role_assignments} ra
                                      JOIN {context} ct ON ct.id = ra.contextid
                                      JOIN {role} rl ON rl.id = ra.roleid AND rl.shortname = 'student'
-                                     JOIN {user} u ON u.id = ue.userid AND u.confirmed = 1 AND u.deleted = 0
+                                     JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                                      AND u.suspended = 0
                                      JOIN {course_completions} as cc ON cc.course = ct.instanceid AND cc.timecompleted > 0
-                                     AND cc.userid = ue.userid
-                                    where 1 = 1 AND cc.course = e.courseid $where ";
+                                     AND cc.userid = ra.userid
+                                    where 1 = 1 AND cc.course = ct.instanceid $where ";
             break;
             case 'enrolmethods':
                 $identity = 'courseid';
@@ -306,13 +300,12 @@ class report_courseprofile extends reportbase implements report {
      */
     public function create_report($blockinstanceid = null) {
         global $DB, $CFG;
+        $context = context_system::instance();
         $components = (new ls)->cr_unserialize($this->config->components);
         $courseids = isset($this->params['filter_courses']) &&
                         $this->params['filter_courses'] > 0 ? $this->params['filter_courses'] : SITEID;
 
-        $filters = (isset($components->filters->elements)) ? $components->filters->elements : [];
         $columns = (isset($components->columns->elements)) ? $components->columns->elements : [];
-        $ordering = (isset($components->ordering->elements)) ? $components->ordering->elements : [];
         $columnnames  = [];
 
         foreach ($columns as $key => $column) {
@@ -323,7 +316,6 @@ class report_courseprofile extends reportbase implements report {
         }
         $finalelements = [];
         $sqlorder = '';
-        $orderingdata = [];
 
         if ($this->ordercolumn) {
             $this->sqlorder = $this->selectedcolumns[$this->ordercolumn['column']] . " " . $this->ordercolumn['dir'];
@@ -347,7 +339,7 @@ class report_courseprofile extends reportbase implements report {
                 $this->sql .= " ORDER BY main.id DESC ";
             }
         }
-        if (is_siteadmin($this->userid) || (new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+        if (is_siteadmin($this->userid) || has_capability('block/learnerscript:managereports', $context)) {
             $finalelements = $this->get_all_elements();
             $rows = $this->get_rows($finalelements);
         } else {
@@ -428,7 +420,6 @@ class report_courseprofile extends reportbase implements report {
         }
         // EXPAND ROWS.
         $finaltable = [];
-        $newcols = [];
         $i = 0;
         foreach ($reporttable as $key => $row) {
             $r = array_values($row);
