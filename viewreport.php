@@ -159,9 +159,8 @@ if ($delete && confirm_sesskey()) {
     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $id, 'courseid' => $courseid]));
 }
 
-require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
 $properties = new stdClass();
-$reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+$reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
 $reportclass = new $reportclassname($report, $properties);
 $reportclass->courseid = $courseid;
 if (!$download) {
@@ -183,25 +182,14 @@ if (!is_siteadmin() && !$reportclass->check_permissions($context, $USER->id)) {
     throw new moodle_exception("badpermissions", 'block_learnerscript');
 }
 $basicparamdata = new stdclass;
-$ftcourses = optional_param('filter_courses', 0, PARAM_INT);
-$ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
-$ftusers = optional_param('filter_users', 0, PARAM_INT);
-$ftmodules = optional_param('filter_modules', 0, PARAM_INT);
-$ftactivities = optional_param('filter_activities', 0, PARAM_INT);
-$ftstatus = optional_param('filter_status', '', PARAM_TEXT);
-$urlparams = ['filter_courses' => $ftcourses, 'filter_coursecategories' => $ftcoursecategories,
-            'filter_users' => $ftusers, 'filter_modules' => $ftmodules,
-            'filter_activities' => $ftactivities, 'filter_status' => $ftstatus, ];
-$request = array_filter($urlparams);
+$request = $urlrequests;
 if ($request) {
     foreach ($request as $key => $val) {
         if (strpos($key, 'filter_') !== false) {
             $plugin = str_replace('filter_', '', $key);
             $basicparamdata->{$key} = $val;
-            if (file_exists($CFG->dirroot . '/blocks/learnerscript/components/filters/' . $plugin . '/plugin.class.php')
-            && !empty($val)) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' . $plugin . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_' . $plugin;
+            if (!empty($val)) {
+                $classname = 'block_learnerscript\components\filters\\' . $plugin;
                 $class = new $classname($reportclass->config);
                 $selected = get_string('selectedfilter', 'block_learnerscript', ucfirst($plugin));
                 $reportclass->selectedfilters[$selected] = $class->selected_filter($val, $request);

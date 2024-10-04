@@ -44,10 +44,8 @@ define(['jquery',
     var BasicparamActivity = $('.basicparamsform #id_filter_activities');
 
     var FilterCourse = $('.filterform #id_filter_courses');
-    var FilterUser = $('.filterform #id_filter_users');
     var FilterActivity = $('.filterform #id_filter_activities');
     var FilterModule = $('.filterform #id_filter_modules');
-    var FilterCohort = $('.filterform #id_filter_cohort');
 
     var NumberOfBasicParams = 0;
 
@@ -159,19 +157,6 @@ define(['jquery',
                     }
                 }
             });
-            /*
-             * Get users for selected course
-             */
-            $('#id_filter_cohort').change(function() {
-                var cohortid = $(this).find(":selected").val();
-                if (cohortid > 0 && (FilterUser.length > 0 || BasicparamUser.length > 0)) {
-                    if (BasicparamUser.length > 0) {
-                        FirstElementActive = true;
-                    }
-                    smartfilter.CohortUsers({cohortid: cohortid, reporttype: args.reporttype, reportid: args.reportid,
-                                              firstelementactive: FirstElementActive});
-                }
-            });
 
             /*
              * Get Activities and Enrolled users for selected course
@@ -182,18 +167,6 @@ define(['jquery',
                     smartfilter.CourseData(args);
                 });
             }
-
-            /*
-             * Get Enrolled courses for selected user
-             */
-            $('#id_filter_users').change(function() {
-                var userid = $(this).find(":selected").val();
-                if (userid > 0 && (FilterCourse.length > 0 || BasicparamCourse.length > 0)) {
-                    if (BasicparamCourse.length > 0) {
-                        FirstElementActive = true;
-                    }
-                }
-            });
 
             $('#id_filter_coursecategories').change(function() {
                 var categoryid = $(this).find(":selected").val();
@@ -209,11 +182,7 @@ define(['jquery',
                 }
             }
             if (args.basicparams !== null) {
-                var FirstElementActive = false;
                 if (args.basicparams[0].name == 'users') {
-                    if (BasicparamCourse.length > 0) {
-                        FirstElementActive = true;
-                    }
                     var userid = $("#id_filter_users").find(":selected").val();
                     if (userid > 0) {
                         args.courseid = $('#id_filter_courses').find(":selected").val();
@@ -234,40 +203,18 @@ define(['jquery',
              */
             $(".filterform #id_filter_clear").click(function() {
                 $(".filterform" + args.reportid).trigger("reset");
-                if (FilterUser.length > 0) {
-                    if (FilterCourse.length > 0 || BasicparamCourse.length > 0) {
-                        if (BasicparamCourse.length > 0) {
-                            FirstElementActive = true;
-                        }
-                    }
-                }
                 if (FilterCourse.length > 0) {
-                    if (FilterUser.length > 0 || BasicparamUser.length > 0) {
-                    }
-
                     if (FilterActivity.length > 0 || BasicparamActivity.length > 0) {
                         smartfilter.CourseActivities({courseid: 0});
                     }
                 }
                 if (FilterActivity.length > 0 || FilterModule.length > 0) {
-                    if ((FilterCourse.length > 0 || BasicparamCourse.length > 0) && BasicparamUser.length == 0) {
-                        if (BasicparamCourse.length > 0 && BasicparamUser.length == 0) {
-                            FirstElementActive = true;
-                        }
-                    }
                     if (BasicparamCourse.length > 0 && BasicparamUser.length > 0) {
-                            $(".basicparamsform #id_filter_apply").trigger('click', [true]);
-                    }
-                }
-                if (FilterCohort.length > 0) {
-                    if (FilterUser.length > 0) {
-                        smartfilter.CohortUsers({cohortid: 0});
+                        $(".basicparamsform #id_filter_apply").trigger('click', [true]);
                     }
                 }
 
                 if ($(".basicparamsform #id_filter_apply").length > 0) {
-                    $(document).ajaxComplete(function() {
-                    });
                     $(".basicparamsform #id_filter_apply").trigger('click', [true]);
                 } else {
                     args.reporttype = $('.ls-plotgraphs_listitem.ui-tabs-active').data('cid');
@@ -328,7 +275,7 @@ define(['jquery',
                                     }
                                 }
                                 if (args.basicparams.length == NumberOfBasicParams
-                                    && ajaxaction.action != 'plotforms' && ajaxaction.action != 'pluginlicence') {
+                                    && ajaxaction.action != 'pluginlicence') {
                                     $(".basicparamsform #id_filter_apply").trigger('click', [true]);
                                 }
                             }

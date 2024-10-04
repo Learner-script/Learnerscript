@@ -22,7 +22,6 @@ require_once($CFG->dirroot . "/course/lib.php");
 use block_learnerscript\highcharts\graphicalreport;
 use stdclass;
 use DateTime;
-use DateTimeZone;
 use core_date;
 use context_system;
 use context_course;
@@ -78,48 +77,6 @@ class ls {
             }
         }
         return true;
-    }
-    /**
-     * Get components data
-     * @param  int $reportid  Report Id
-     * @param  string $component Report component
-     * @return array
-     */
-    public function get_components_data($reportid, $component) {
-        global $CFG, $DB;
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new \moodle_exception(get_string('noreportexists', 'block_learnerscript'));
-        }
-        $elements = (new ls)->cr_unserialize($report->components);
-        $elements = isset($elements->$component->elements) ? $elements->$component->elements : [];
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/component.class.php');
-        $componentclassname = 'component_' . $component;
-        $compclass = new $componentclassname($report->id);
-        $optionsplugins = [];
-        if (!empty($compclass->plugins)) {
-            $currentplugins = [];
-            if ($elements) {
-                foreach ($elements as $e) {
-                    $currentplugins[] = $e->pluginname;
-                }
-            }
-            $plugins = get_list_of_plugins('blocks/learnerscript/components/' . $component);
-            foreach ($plugins as $p) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/' . $p . '/plugin.class.php');
-                $pluginclassname = 'block_learnerscript\lsreports\plugin_' . $p;
-                $pluginclass = new $pluginclassname($report);
-                if (in_array($report->type, $pluginclass->reporttypes)) {
-                    if ($pluginclass->unique && in_array($p, $currentplugins)) {
-                        continue;
-                    }
-                    $optionsplugins[] = ['shortname' => $p, 'fullname' => ucfirst($p)];
-                }
-            }
-            asort($optionsplugins);
-        }
-        return $optionsplugins;
     }
     /**
      * Report table data
@@ -305,9 +262,6 @@ class ls {
      * @return object
      */
     public function cr_check_report_permissions($report, $userid, $context) {
-        global $CFG;
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
         $properties = new stdClass();
         $properties->courseid = $report->id;
         $properties->start = 0;
@@ -316,7 +270,7 @@ class ls {
         $properties->lsstartdate = 0;
         $properties->lsenddate = time();
         $properties->filters = [];
-        $classn = 'block_learnerscript\lsreports\report_' . $report->type;
+        $classn = 'block_learnerscript\reports\\' . $report->type . '\report';
         $classi = new $classn($report->id, $properties);
         return $classi->check_permissions($context, $userid);
     }
@@ -484,7 +438,6 @@ class ls {
                     ]);
                     $event->trigger();
                 }
-                
                 if ($config && $reportid) {
                     $PAGE->set_context($context);
                     $regions = ['side-db-first', 'side-db-second', 'side-db-third',
@@ -572,10 +525,8 @@ class ls {
      * @return object
      */
     public function create_reportclass($reportid, $reportproperties = null) {
-        global $CFG;
         $report = (new self)->cr_get_reportinstance($reportid);
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+        $reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
         $reportclass = new $reportclassname($report, $reportproperties);
         if ($reportproperties) {
             isset($reportproperties->courseid) ? $reportclass->courseid = $reportproperties->courseid : null;
@@ -622,23 +573,6 @@ class ls {
             }
         }
         return $reportcontenttypes;
-    }
-    /**
-     * Add custom reports sql
-     * @param array $reports Reports list
-     */
-    public function add_customreports_sql($reports) {
-        global $DB;
-        foreach ($reports as $report) {
-            $importurl = urldecode(new moodle_url('/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml'));
-            $fcontents = file_get_contents($importurl);
-            $course = $DB->get_record("course", ["id" => SITEID]);
-            if ($this->cr_import_xml($fcontents, $course, false)) {
-                echo '';
-            } else {
-                throw new \moodle_exception(get_string('errorimporting', 'block_learnerscript'));
-            }
-        }
     }
     /**
      * List of scheduled reports data
@@ -708,47 +642,6 @@ class ls {
             }
         }
         return true;
-    }
-
-    /**
-     * Report components list
-     * @param  object $report Report data
-     * @param  string $comp   Components
-     * @return array Report components list
-     */
-    public function report_componentslist($report, $comp) {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/learnerscript/reports/'.$report->type.'/report.class.php');
-
-        $elements = (new self)->cr_unserialize($report->components);
-        $elements = isset($elements->$comp->elements) ? $elements->$comp->elements : [];
-
-        require_once($CFG->dirroot.'/blocks/learnerscript/components/'.$comp.'/component.class.php');
-        $componentclassname = 'component_'.$comp;
-        $compclass = new $componentclassname($report->id);
-        if ($compclass->plugins) {
-            $currentplugins = [];
-            if ($elements) {
-                foreach ($elements as $e) {
-                    $currentplugins[] = $e->pluginname;
-                }
-            }
-            $plugins = get_list_of_plugins('blocks/learnerscript/components/'.$comp);
-            $optionsplugins = [];
-            foreach ($plugins as $p) {
-                require_once($CFG->dirroot.'/blocks/learnerscript/components/'.$comp.'/'.$p.'/plugin.class.php');
-                $pluginclassname = 'block_learnerscript\lsreports\plugin_'.$p;
-                $pluginclass = new $pluginclassname($report);
-                if (in_array($report->type, $pluginclass->reporttypes)) {
-                    if ($pluginclass->unique && in_array($p, $currentplugins)) {
-                        continue;
-                    }
-                    $optionsplugins[$p] = get_string($p, 'block_learnerscript');
-                }
-            }
-            asort($optionsplugins);
-        }
-        return $optionsplugins;
     }
     /**
      * Column definations
@@ -1431,6 +1324,82 @@ class ls {
      */
     public function userlmsaccess() {
         global $DB;
+
+        $daystimedata = $this->get_daystimesslot();
+        $sessionsdata = [];
+        $accesscount = $DB->get_records_sql("SELECT DISTINCT lsl.id, lsl.userid, lsl.timecreated
+                            FROM {logstore_standard_log} lsl
+                            JOIN {user} u ON u.id = lsl.userid
+                            WHERE lsl.action = :action AND lsl.userid IN (17, 18)
+                            AND lsl.timecreated BETWEEN :starttime AND :endtime
+                            ORDER BY lsl.userid ASC",
+                                ['action' => 'loggedin', 'starttime' => $daystimedata['starttimestamp'],
+                                'endtime' => $daystimedata['endtimestamp'], ]);
+        $dateaccesscount = [];
+        $eachdaycount = new stdclass;
+        $weekarray = [];
+        $i = 1;
+        foreach ($accesscount as $access) {
+            if (!array_key_exists($access->userid, $sessionsdata)) {
+                $i = 1;
+            }
+            if (in_array(date('H', $access->timecreated), $daystimedata['timingslist'])) {
+                $starthr = date('H', $access->timecreated);
+                if (!array_key_exists($starthr, $dateaccesscount)) {
+                    $eachdaycount = new stdclass;
+                }
+                $endhr = date('H', strtotime('+1 hour', $access->timecreated));
+                $hourarray = $starthr - $daystimedata['stime']->format('H');
+                if (in_array(date('l', $access->timecreated), $daystimedata['weekdayslist'])) {
+                    $week = date('w', $access->timecreated);
+                    $concatval = $access->userid . $starthr . $week;
+                    $val = $week - 1;
+                    if (!array_key_exists($concatval, $weekarray)) {
+                        $weekarray = [];
+                        $weekarray[$concatval] = $i;
+                        $eachdaycount->$val = $i;
+                    } else {
+                        $i++;
+                        $test[$concatval] = $i;
+                        $eachdaycount->$val = $i;
+                    }
+                }
+                $dateaccesscount[$hourarray] = ['label' => $starthr . '-' . $endhr, 'data' => $eachdaycount];
+            }
+            $options = ["type" => "radar",
+                            "title" => get_string('lmsaccess', 'block_learnerscript'),
+                            "xAxis" => $daystimedata['weekdayslist'],
+                            "yAxis" => $daystimedata['timeslots'],
+                            "data" => $dateaccesscount,
+                            ];
+            $logindata = json_encode($options, JSON_NUMERIC_CHECK);
+            $sessionsdata[$access->userid] = $logindata;
+
+            $insertdata = new stdClass();
+            $record = $DB->get_field_sql("SELECT id FROM {block_ls_userlmsaccess} WHERE userid = :userid",
+                                        ['userid' => $access->userid]);
+            if (empty($record)) {
+                $insertdata->userid = $access->userid;
+                $insertdata->logindata = $sessionsdata[$access->userid];
+                $insertdata->timecreated = time();
+                $insertdata->timemodified = 0;
+                $DB->insert_record('block_ls_userlmsaccess', $insertdata);
+            } else {
+                $insertdata->id = $record;
+                $insertdata->userid = $access->userid;
+                $insertdata->logindata = $sessionsdata[$access->userid];
+                $insertdata->timemodified = time();
+                $DB->update_record('block_ls_userlmsaccess', $insertdata);
+            }
+        }
+        echo get_string('taskcomplete', 'block_learnerscript');
+    }
+
+    /**
+     * Funtion to display week days and time slots.
+     * @return array
+     */
+    public function get_daystimesslot() {
         $start    = new DateTime('monday last week');
         $end      = new DateTime('sunday last week');
         $interval = new \DateInterval('P1D');
@@ -1440,77 +1409,47 @@ class ls {
             $weekdaysql = $dt->format('m/d/Y');
             $weekdaysdate[] = $weekdaysql;
             $weekdayslist[] = $weekdays;
-            strtotime($weekdaysql . ' 09:00:00');
         }
-        $timingslist = [get_string('firsthr', 'block_learnerscript'),
-                        get_string('secondhr', 'block_learnerscript'),
-                        get_string('thirdhr', 'block_learnerscript'),
-                        get_string('fourthhr', 'block_learnerscript'),
-                        get_string('fifthhr', 'block_learnerscript'),
-                        get_string('sixthhr', 'block_learnerscript'),
-                        get_string('seventhhr', 'block_learnerscript'),
-                        get_string('eighthr', 'block_learnerscript')];
-        $timings = ['09-10', '10:00:01-11', '11:00:01-12', '14:00:01-15', '15:00:01-16',
-                        '16:00:01-17', '17:00:01-18', '18:00:01-19', ];
-        $users = $DB->get_records_sql("SELECT DISTINCT ue.userid AS id
-                        FROM {course} c
-                        JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                        JOIN {user_enrolments} ue on ue.enrolid = e.id AND ue.status = 0
-                        JOIN {role_assignments}  ra ON ra.userid = ue.userid
-                        JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
-                        JOIN {context} ctx ON ctx.instanceid = c.id
-                        JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
-                        WHERE ra.contextid = ctx.id AND ctx.contextlevel = 50 AND c.visible = 1");
+        $time = new DateTime("now", core_date::get_user_timezone_object());
+        $time->add(new DateInterval("P1D"));
+        $time->setTime(9, 0, 0);
 
-        foreach ($users as $user) {
-            $j = 0;
-            $sessionsdata = [];
-            foreach ($timings as $sessiontime) {
-                $timestampdiff = [];
-                for ($i = 0; $i <= count($weekdaysdate) - 1; $i++) {
-                    $currenttime = explode('-', $sessiontime);
-                    if (is_numeric($currenttime[0])) {
-                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0] . ':00:00');
-                    } else {
-                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0]);
-                    }
-                    $endtime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[1] . ':00:00');
-                    $accesscount = $DB->get_records_sql("SELECT id FROM {logstore_standard_log} WHERE action = :action
-                                AND userid = :userid AND timecreated BETWEEN :starttime AND :endtime",
-                                    ['action' => 'loggedin', 'userid' => $user->id, 'starttime' => $starttime,
-                                    'endtime' => $endtime, ]);
-                    $timestampdiff[] = count($accesscount);
-                }
-                $sessionsdata[] = ['label' => $timingslist[$j], 'data' => $timestampdiff];
-                $j++;
-            }
-            $options = ["type" => "radar",
-                            "title" => get_string('lmsaccess', 'block_learnerscript'),
-                            "xAxis" => $weekdayslist,
-                            "yAxis" => $timingslist,
-                            "data" => $sessionsdata,
-                            ];
-            $logindata = json_encode($options, JSON_NUMERIC_CHECK);
-            $insertdata = new stdClass();
-            $record = $DB->get_field_sql("SELECT id FROM {block_ls_userlmsaccess} WHERE userid = :userid",
-                                        ['userid' => $user->id]);
-            if (empty($record)) {
-                $insertdata->userid = $user->id;
-                $insertdata->logindata = $logindata;
-                $insertdata->timecreated = time();
-                $insertdata->timemodified = 0;
-                $DB->insert_record('block_ls_userlmsaccess', $insertdata);
+        $stime = new DateTime();
+        $stime->setTime(9, 0, 0);
+        $starttimestamp = strtotime($start->format('m/d/Y') . ' ' . $stime->format('H:i:s'));
+
+        $etime = new DateTime();
+        $etime->setTime(19, 0, 0);
+        $endtimestamp = strtotime($end->format('m/d/Y') . ' ' . $etime->format('H:i:s'));
+
+        // Calculate the difference between the two times.
+        $interval = $stime->diff($etime);
+
+        // Get the difference in hours.
+        $hours = $interval->h;
+        $starttime = $time->getTimestamp();
+        $timeslots = [];
+        for ($i = 0; $i < $hours; $i++) {
+            $starthour = date('H', $starttime);
+            $endhour = date('H', strtotime('+1 hour', $starttime));
+            $endhr = date('Ha', strtotime('+1 hour', $starttime));
+            $endtime = strtotime('+1 hour', $starttime);
+            if ($starthour < $starthour) {
+                $timeslots[] = date('H', $starttime) . '-' . $endhour;
+                $endtimesec = strtotime('+1 second', $endtime);
             } else {
-                $insertdata->id = $record;
-                $insertdata->userid = $user->id;
-                $insertdata->logindata = $logindata;
-                $insertdata->timemodified = time();
-                $DB->update_record('block_ls_userlmsaccess', $insertdata);
+                $timeslots[] = date('H', $starttime) . '-' . $endhour;
+                $endtimesec = $endtime;
             }
+            $timingslist[] = $starthour;
+            $timings[] = $starthour . '-' . $endhr;
+            $starttime = $endtimesec;
         }
-        echo get_string('taskcomplete', 'block_learnerscript');
-    }
 
+        return ['starttimestamp' => $starttimestamp, 'endtimestamp' => $endtimestamp,
+                'timingslist' => $timingslist, 'stime' => $stime, 'weekdayslist' => $weekdayslist,
+                'timeslots' => $timeslots, 'timings' => $timings, ];
+    }
 
     /**
      * Learnerscript report view data
@@ -1547,21 +1486,5 @@ class ls {
         $data->exportparams = $exportparams;
         $arraydata = (array)$data + $reportdata->tableproperties;
         return $arraydata;
-    }
-
-    /**
-     * Get sub directories
-     *
-     * @param string $dir
-     * @return array
-     */
-    public function getsubdirectories($dir = null) {
-        $subdir = [];
-        $directories = array_filter(glob($dir), 'is_dir');
-        $subdir = array_merge($subdir, $directories);
-        foreach ($directories as $directory) {
-            $subdir = array_merge($subdir, $this->getsubdirectories($directory.'/*'));
-        }
-         return $subdir;
     }
 }

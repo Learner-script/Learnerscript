@@ -185,7 +185,7 @@ define(['jquery',
         schformvalidation: function(args) {
             document.getElementById(args.form).addEventListener('submit', function(ev) {
                 try {
-                    var myValidator = report.validate_scheduled_reports_form(args);
+                    var myValidator = report.validate_schedule_form(args);
                 } catch (e) {
                     return true;
                 }
@@ -203,7 +203,7 @@ define(['jquery',
          * @param  {object} args Formname and required classname
          * @return Returns list of error messages from validation
          */
-        validate_scheduled_reports_form: function(args) {
+        validate_schedule_form: function(args) {
             var self = this;
             var skipClientValidation = false;
             if (skipClientValidation) {
@@ -213,7 +213,7 @@ define(['jquery',
             var first_focus = false;
             $("[data-class='" + args.reqclass + "']").each(function(index, value) {
                 var element = $(value).data('element');
-                ret = self.validate_scheduled_reports_form_element(value, element, args) && ret;
+                ret = self.validate_schedule_form_element(value, element, args) && ret;
                 if (!ret && !first_focus) {
                     first_focus = true;
                     Y.use('moodle-core-event', function() {
@@ -234,7 +234,7 @@ define(['jquery',
          * @param  {object} args Element object
          * @return Formatted error messages for each element
          */
-        validate_scheduled_reports_form_element: function(element, escapedName, args) {
+        validate_schedule_form_element: function(element, escapedName, args) {
             if (undefined == element) {
                 //required element was not found, then let form be submitted without client side validation
                 return true;

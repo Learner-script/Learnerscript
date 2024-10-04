@@ -29,7 +29,7 @@ class observer {
      *
      */
     public static function ls_timestats() {
-        global $COURSE, $USER, $DB, $PAGE;
+        global $COURSE, $USER, $DB, $PAGE, $SESSION;
         $reluser = \core\session\manager::is_loggedinas() ? $USER->id : null;
         if ($USER && is_siteadmin($reluser) || $reluser) {
             return true;
@@ -47,16 +47,16 @@ class observer {
                 return false;
             }
         }
-        // Used $_SESSION to get loggedin user information to calculate the timespent.
+        // Used $_SESSION, $_COOKIE to get timespent of loggedin user.
         $insertdata = new \stdClass();
-        $insertdata->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
-        $insertdata->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
-        $insertdata->instanceid = isset($_SESSION['instanceid']) ? $_SESSION['instanceid'] : 0;
-        $insertdata->activityid = isset($_SESSION['activityid']) ? $_SESSION['activityid'] : 0;
+        $insertdata->userid = isset($USER->id) ? $USER->id : 0;
+        $insertdata->courseid = isset($COURSE->id) ? $COURSE->id : SITEID;
+        $insertdata->instanceid = isset($SESSION->instanceid) ? $SESSION->instanceid : 0;
+        $insertdata->activityid = isset($SESSION->activityid) ? $SESSION->activityid : 0;
         $insertdata->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';
         $insertdata1 = new \stdClass();
-        $insertdata1->userid = isset($_SESSION['USER']->id) ? $_SESSION['USER']->id : 0;
-        $insertdata1->courseid = isset($_SESSION['courseid']) ? $_SESSION['courseid'] : SITEID;
+        $insertdata1->userid = isset($USER->id) ? $USER->id : 0;
+        $insertdata1->courseid = isset($COURSE->id) ? $COURSE->id : SITEID;
         $insertdata1->timespent = isset($_COOKIE['time_timeme']) ? round($_COOKIE['time_timeme']) : '';
 
         if (isset($_COOKIE['time_timeme']) && isset($_SESSION['pageurl_timeme']) &&
@@ -91,8 +91,8 @@ class observer {
                     $DB->insert_record('block_ls_modtimestats', $insertdata);
                 }
             }
-             $_COOKIE['time_timeme'] = 0;
-             unset($_COOKIE['time_timeme']);
+            $_COOKIE['time_timeme'] = 0;
+            unset($_COOKIE['time_timeme']);
         } else {
             $_COOKIE['time_timeme'] = 0;
             $_SESSION['pageurl_timeme'] = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'])['path'] : '';
@@ -104,10 +104,9 @@ class observer {
             $cm = get_coursemodule_from_id('', $PAGE->context->instanceid);
             $instance = $cm->instance;
         }
-        $_SESSION['courseid'] = $COURSE->id;
         $_SESSION['pageurl_timeme'] = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'])['path'] : '';
-        $_SESSION['instanceid'] = $instance;
-        $_SESSION['activityid'] = $PAGE->context->instanceid;
+        $SESSION->instanceid = $instance;
+        $SESSION->activityid = $PAGE->context->instanceid;
         $PAGE->requires->js_call_amd('block_learnerscript/track', 'timeme');
         $_COOKIE['time_timeme'] = 0;
         unset($_COOKIE['time_timeme']);

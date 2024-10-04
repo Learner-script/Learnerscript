@@ -34,38 +34,38 @@ class export_csv {
      * @return mixed
      */
     public function export_report($reportclass) {
-        // Retrieve report data
+        // Retrieve report data.
         $reportdata = $reportclass->finalreport;
         $table = $reportdata->table;
         $filename = $reportdata->name . "_" . date('d_M_Y_H_i_s', time()) . '.csv';
 
-        // Set headers for CSV download
+        // Set headers for CSV download.
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
 
-        // Open output stream for writing
+        // Open output stream for writing.
         $output = fopen('php://output', 'w');
 
-        // Add filter row
+        // Add filter row.
         $filter = ['Filters'];
-        fputcsv($output, $filter);
 
         if (isset($reportclass->selectedfilters) && !empty($reportclass->selectedfilters)) {
+            fputcsv($output, $filter);
             foreach ($reportclass->selectedfilters as $k => $filter) {
                 $k = substr($k, 0, -1);
                 fputcsv($output, [$k, $filter]);
             }
         }
 
-        // Add header row
+        // Add header row.
         if (!empty($table->head)) {
             fputcsv($output, $table->head);
         }
 
-        // Add data rows
+        // Add data rows.
         if (!empty($table->data)) {
             foreach ($table->data as $value) {
-                // Clean up data
+                // Clean up data.
                 $data = array_map(function ($v) {
                     return trim(strip_tags($v));
                 }, $value);
@@ -73,7 +73,7 @@ class export_csv {
             }
         }
 
-        // Close output stream
+        // Close output stream.
         fclose($output);
     }
     /**

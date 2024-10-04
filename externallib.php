@@ -72,7 +72,6 @@ class block_learnerscript_external extends external_api {
      */
     public static function rolewiseusers($roleid, $term, $contextlevel, $page,
     $type, $reportid, $action, $maximumselectionlength, $courses) {
-        global $DB, $CFG;
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:managereports', $context);
@@ -145,7 +144,7 @@ class block_learnerscript_external extends external_api {
      * @param string $schuserslist Scheduled users list
      */
     public static function schreportform($reportid, $instance, $schuserslist) {
-        global $CFG, $DB;
+        global $DB;
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:managereports', $context);
@@ -157,7 +156,6 @@ class block_learnerscript_external extends external_api {
         if ((has_capability('block/learnerscript:managereports', $context) ||
             has_capability('block/learnerscript:manageownreports', $context) ||
             is_siteadmin()) && !empty($reportid)) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
             $roleslist = (new schedule)->reportroles('', $reportid);
             list($schusers, $schusersids) = (new schedule)->userslist($reportid, $scheduleid);
             $exportoptions = (new ls)->cr_get_export_plugins();
@@ -168,7 +166,8 @@ class block_learnerscript_external extends external_api {
             } else {
                 $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
             }
-            $scheduleform = new scheduled_reports_form(new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
+            $scheduleform = new block_learnerscript\form\schedule_form(
+                new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
             ['id' => $reportid, 'scheduleid' => $scheduleid, 'AjaxForm' => true, 'roles_list' => $roleslist,
                 'schusers' => $schusers, 'schusersids' => $schusersids, 'exportoptions' => $exportoptions,
                 'schedule_list' => $schedulelist, 'frequencyselect' => $frequencyselect, 'instance' => $instance, ]));
@@ -476,48 +475,6 @@ class block_learnerscript_external extends external_api {
      * @return external_description
      */
     public static function frequency_schedule_returns() {
-        return new external_value(PARAM_TEXT, 'data');
-    }
-    /**
-     * Report Object paramerters description
-     * @return external_function_parameters
-     */
-    public static function reportobject_parameters() {
-        return new external_function_parameters(
-            [
-                'reportid' => new external_value(PARAM_INT, 'The context id for the course', VALUE_DEFAULT),
-            ]
-        );
-    }
-    /**
-     * Report Object
-     * @param int $reportid Report ID
-     */
-    public static function reportobject($reportid) {
-        global $DB, $CFG;
-
-        self::validate_parameters(self::reportobject_parameters(), ['reportid' => $reportid]);
-
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:reportsaccess', $context);
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
-        }
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-        $reportclass = new $reportclassname($report);
-        $reportclass->create_report();
-        $return = (new ls)->cr_unserialize($reportclass->config->components);
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * Report Object description
-     * @return external_description
-     */
-    public static function reportobject_returns() {
         return new external_value(PARAM_TEXT, 'data');
     }
     /**
@@ -851,8 +808,7 @@ class block_learnerscript_external extends external_api {
         $report = $DB->get_record('block_learnerscript', ['id' => $reportinstanceid]);
         $reportclass = new stdClass();
         if (!empty($report) && $report->type) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-            $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+            $reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
             $properties = new stdClass;
             $reportclass = new $reportclassname($report, $properties);
         }
@@ -908,7 +864,7 @@ class block_learnerscript_external extends external_api {
      */
     public static function filterusers($action, $maximumselectionlength, $term, $type,
     $fiterdata, $basicparamdata, $reportinstanceid, $courses) {
-        global $DB, $CFG;
+        global $DB;
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('block/learnerscript:reportsaccess', $context);
@@ -929,8 +885,7 @@ class block_learnerscript_external extends external_api {
         $report = $DB->get_record('block_learnerscript', ['id' => $reportinstanceid]);
         $reportclass = new stdClass();
         if (!empty($report) && $report->type) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-            $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+            $reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
             $properties = new stdClass;
             $reportclass = new $reportclassname($report, $properties);
         }

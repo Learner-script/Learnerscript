@@ -88,9 +88,5 @@ switch ($action) {
             $return = $termsdata;
         }
         break;
-    case 'plotform':
-        $componentdata = $learnerscript->render_component_form($reportid, $component, $pname);
-        echo $componentdata['html'].'<script>'.$componentdata['script'].'</script>';
-    break;
 }
 echo json_encode($return, JSON_NUMERIC_CHECK);

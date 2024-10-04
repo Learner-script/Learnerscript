@@ -38,23 +38,23 @@ class export_xls {
     public function export_report($reportclass, $id) {
         global $DB;
 
-        // Prepare data for export
+        // Prepare data for export.
         $reportdata = $reportclass->finalreport;
         $table = $reportdata->table;
         $filename = $reportdata->name . "_" . date('d_M_Y_H_i_s', time()) . '.xls';
 
-        // Create a new Excel workbook
+        // Create a new Excel workbook.
         $workbook = new MoodleExcelWorkbook("-");
         $worksheet = $workbook->add_worksheet('Report');
 
-        // Add filters to the worksheet
+        // Add filters to the worksheet.
         $row = 0;
         $col = 0;
 
-        // Write 'Filters' title
-        $worksheet->write($row, $col, 'Filters');
-        $row++;
         if (!empty($reportclass->selectedfilters)) {
+            // Write 'Filters' title.
+            $worksheet->write($row, $col, 'Filters');
+            $row++;
             foreach ($reportclass->selectedfilters as $k => $filter) {
                 $worksheet->write($row, $col, $k);
                 $worksheet->write($row, $col + 1, $filter);
@@ -62,13 +62,13 @@ class export_xls {
             }
         }
 
-        // Add column headers if applicable
+        // Add column headers if applicable.
         $reporttype = $DB->get_field('block_learnerscript', 'type', ['id' => $id]);
         if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
             if (!empty($table->head)) {
                 $col = 0;
                 foreach ($table->head as $heading) {
-                    // Ensure $key is an integer index for the column
+                    // Ensure $key is an integer index for the column.
                     $worksheet->write($row, $col, $heading);
                     $col++;
                 }
@@ -76,7 +76,7 @@ class export_xls {
             }
         }
 
-        // Add data rows
+        // Add data rows.
         if (!empty($table->data)) {
             foreach ($table->data as $data) {
                 $col = 0;
@@ -88,7 +88,7 @@ class export_xls {
             }
         }
 
-        // Send the Excel file to the browser
+        // Send the Excel file to the browser.
         $workbook->send($filename);
         $workbook->close();
     }

@@ -25,7 +25,6 @@
 require_once('../../../../config.php');
 global $CFG, $DB, $USER, $OUTPUT;
 
-require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
 use block_learnerscript\local\ls;
 use block_learnerscript\local\schedule;
 $PAGE->requires->jquery_plugin('ui-css');
@@ -78,13 +77,11 @@ if (!has_capability('block/learnerscript:managereports', $context)
 }
 
 $renderer = $PAGE->get_renderer('block_learnerscript');
-if ($report->type) {
-    require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-} else {
+if (!$report->type) {
     throw new moodle_exception('reporttypeerror', 'block_learnerscript');
 }
 
-$reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+$reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
 $properties = new stdClass();
 $reportclass = new $reportclassname($report, $properties);
 
@@ -132,7 +129,7 @@ if (empty($schrecords)) {
     $collapse = true;
 }
 
-$mform = new scheduled_reports_form($returnurl, ['id' => $reportid,
+$mform = new block_learnerscript\form\schedule_form($returnurl, ['id' => $reportid,
                                                 'schusers' => $schusers,
                                                 'scheduleid' => $scheduledreportid,
                                                 'roles_list' => $roleslist,
@@ -214,15 +211,6 @@ if (isset($SESSION->ls_ele_update) && $SESSION->ls_ele_update) {
     echo $OUTPUT->notification(get_string('updateschedulereport', 'block_learnerscript'),
     'notifysuccess');
     unset($SESSION->ls_ele_update);
-}
-
-if (has_capability('block/learnerscript:managereports', $context) ||
-    (has_capability('block/learnerscript:manageownreports', $context)) && $report->ownerid == $USER->id) {
-    $plots = (new block_learnerscript\local\ls)->get_components_data($report->id, 'plot');
-       $calcbutton = false;
-    $plotoptions = new \block_learnerscript\output\plotoption(false, $report->id, $calcbutton,
-    'schreportform');
-    echo $renderer->render($plotoptions);
 }
 
 if ($scheduledreportid > 0) {

@@ -391,12 +391,10 @@ class schedule {
      * @return object|array Report data
      */
     public function reportdata($reportid, $user, $role, $contextlevel) {
-        global $CFG, $DB;
+        global $DB;
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
         }
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
 
         if ($report->courseid == SITEID) {
             $context = context_system::instance();
@@ -405,7 +403,7 @@ class schedule {
         }
 
         $report->userid = $user->id;
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+        $reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
         $properties = new stdClass();
         $properties->userid = $user->id;
         $rolecontexts = $DB->get_records_sql("SELECT DISTINCT CONCAT(r.id, '@', rcl.id),
@@ -414,6 +412,7 @@ class schedule {
          JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN (70)
          WHERE 1 = 1
          ORDER BY rcl.contextlevel ASC");
+        $rcontext = [];
         foreach ($rolecontexts as $rc) {
             if (has_capability('block/learnerscript:managereports', $context)) {
                 continue;
@@ -736,16 +735,9 @@ class schedule {
             $schusers = [];
             $schusersids = '';
             if (!empty($ajaxusers)) {
-                $schuserscount = $DB->count_records_sql("SELECT COUNT(u.id)
-                FROM {user} as u
-                WHERE u.id IN ($ajaxusers) ");
-                $schusersids = $ajaxusers;
                 $schusers = $DB->get_records_sql_menu("SELECT u.id, CONCAT(u.firstname, ' ',
                     u.lastname) as fullname
-                                    FROM {user} as u WHERE u.id IN ($ajaxusers) ", [], 0, 10);
-                if ($schuserscount > 10) {
-                    $schusers = $schusers + [-1 => get_string('viewmore', 'block_learnerscript')];
-                }
+                                    FROM {user} u WHERE u.id = :ajaxusers ", ['ajaxusers' => $ajaxusers], 0, 10);
             }
         }
 

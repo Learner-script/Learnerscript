@@ -152,38 +152,6 @@ define(['jquery',
                     return self.submitFormAjax(this);
                 });
 
-                if (args.action == 'plotforms' && (args.pname == 'bar' || args.pname == 'column'
-                || args.pname == 'line' || args.pname == 'combination')) {
-
-                    $("." + self.nodeContent + " select[data-select2='1']").select2({
-                        theme: "classic"
-                    });
-                    $(document).on('click', '.fa-eye', function(e) {
-                        e.stopImmediatePropagation();
-                        $(e.target).parents('.form-group').find('*').attr('disabled', true);
-                        $(e.target).switchClass("fa-eye", "fa-eye-slash");
-                        $(e.target).attr('title', 'Enable');
-                    });
-                    $(document).on('click', '.fa-eye-slash', function(e) {
-                        e.stopImmediatePropagation();
-                        $(e.target).parents('.form-group').find('*').removeAttr('disabled');
-                        $(e.target).switchClass("fa-eye-slash", "fa-eye");
-                        $(e.target).attr('title', 'Disable');
-                    });
-                    $(document).on('change', '#id_calcs', function() {
-                        var calcval = $(this).val();
-                        if (calcval) {
-                            $('#id_columnsort').prop("disabled", true);
-                            $('#id_sorting').prop("disabled", true);
-                            $('#id_limit').prop("disabled", true);
-                        } else {
-                            $('#id_columnsort').prop("disabled", false);
-                            $('#id_sorting').prop("disabled", false);
-                            $('#id_limit').prop("disabled", false);
-                        }
-                    });
-                }
-
                 dlg.dialog("open");
             }).fail(function() {
 

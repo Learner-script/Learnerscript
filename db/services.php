@@ -52,13 +52,6 @@ $functions = [
         'description' => 'case frequency_schedule',
         'ajax' => true,
     ],
-'block_learnerscript_reportobject' => [
-        'classname' => 'block_learnerscript_external',
-        'methodname' => 'reportobject',
-        'classpath' => 'blocks/learnerscript/externallib.php',
-        'description' => 'case reportobject'    ,
-        'ajax' => true,
-    ],
 'block_learnerscript_deletecomponenet' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'deletecomponenet',

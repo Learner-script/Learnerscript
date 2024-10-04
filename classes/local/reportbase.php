@@ -418,9 +418,7 @@ class reportbase {
             $i = 1;
             $cond = [];
             foreach ($permissions->elements as $p) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/permissions/' .
-                    $p->pluginname . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_' . $p->pluginname;
+                $classname = 'block_learnerscript\components\permissions\\' . $p->pluginname . '\plugin';
                 $class = new $classname($this->config);
                 $class->role = $this->role;
                 $class->userroles = isset($this->userroles) ? $this->userroles : '';
@@ -466,14 +464,11 @@ class reportbase {
      * @param  object $mform Filter form
      */
     public function add_filter_elements(&$mform) {
-        global $CFG;
         $filters = (isset($this->componentdata->filters)) ? $this->componentdata->filters : [];
         if (!empty($filters->elements)) {
             foreach ($filters->elements as $f) {
                 if ($f->formdata->value) {
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                        $f->pluginname . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $f->pluginname;
+                    $classname = 'block_learnerscript\components\filters\\' . $f->pluginname;
                     $class = new $classname($this->config);
                     $class->singleselection = true;
                     $this->finalelements = $class->print_filter($mform);
@@ -488,10 +483,7 @@ class reportbase {
      * @param  string $pluginname Mandatory filter plugin name
      */
     public function initial_basicparams($pluginname) {
-        global $CFG;
-         require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-            $pluginname . '/plugin.class.php');
-        $classname = 'block_learnerscript\lsreports\plugin_' . $pluginname;
+        $classname = 'block_learnerscript\components\filters\\' . $pluginname;
         $class = new $classname($this->config);
         $class->singleselection = false;
         $selectoption = false;
@@ -527,9 +519,7 @@ class reportbase {
                     $this->finalelements = $mform->addElement('select', 'filter_status', '',
                     $statuslist, ['data-select2' => true]);
                 } else {
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                        $f['name'] . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $f['name'];
+                    $classname = 'block_learnerscript\components\filters\\' . $f['name'];
                     $class = new $classname($this->config);
                     $class->singleselection = isset($f['singleselection']) ? $f['singleselection'] : true;
                     $class->placeholder = isset($f['placeholder']) ? $f['placeholder'] : true;
@@ -704,7 +694,7 @@ class reportbase {
      * @param  int $blockinstanceid Report block instance id
      */
     public function create_report($blockinstanceid = null) {
-        global $DB, $CFG;
+        global $DB;
         $context = context_system::instance();
         $this->check_permissions($context, $this->userid);
         $columns = (isset($this->componentdata->columns->elements))
@@ -813,10 +803,7 @@ class reportbase {
                     if (empty($c)) {
                         continue;
                     }
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/columns/' .
-                    $c->pluginname . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $c->pluginname;
-
+                    $classname = 'block_learnerscript\components\columns\\' . $c->pluginname . '\plugin';
                     if (!isset($pluginscache[$classname])) {
                         $class = new $classname($this->config, $c);
                         $pluginscache[$classname] = $class;
@@ -830,8 +817,7 @@ class reportbase {
                     $class->downloading = $this->downloading;
                     $rid = isset($r->id) ? $r->id : 0;
                     if (isset($c->formdata->column) &&
-                        (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')
-                        || (!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
+                        ((!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
                         if (!empty($this->params['filter_users'])) {
                             $this->currentuser = $this->params['filter_users'];
                         }

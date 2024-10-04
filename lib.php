@@ -24,6 +24,7 @@
 
 use block_learnerscript\local\ls;
 use block_learnerscript\local\schedule;
+use moodleform;
 /**
  * Learnerscript block plugin file
  * @param  object $course        Course data
@@ -118,7 +119,6 @@ function block_learnerscript_schreportform_ajaxform($args) {
     if ((has_capability('block/learnerscript:managereports', $context) ||
         has_capability('block/learnerscript:manageownreports', $context) ||
         is_siteadmin()) && !empty($reportid)) {
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/scheduler/schedule_form.php');
         $roleslist = (new schedule)->reportroles('', $reportid);
         $schuserslist = !empty($ajaxformdata['schuserslist']) ? $ajaxformdata['schuserslist'] : [];
         list($schusers, $schusersids) = (new schedule)->userslist($reportid, $scheduleid, $schuserslist);
@@ -130,7 +130,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
             $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
         }
         $scheduleurl = new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php');
-        $scheduleform = new scheduled_reports_form($scheduleurl, ['id' => $reportid,
+        $scheduleform = new block_learnerscript\form\schedule_form($scheduleurl, ['id' => $reportid,
                                 'scheduleid' => $scheduleid, 'roles_list' => $roleslist,
                                 'schusers' => $schusers, 'schusersids' => $schusersids,
                                 'exportoptions' => $exportoptions,
@@ -210,14 +210,13 @@ function block_learnerscript_schreportform_ajaxform($args) {
  * @param array $args Send emails arguments
  */
 function block_learnerscript_sendreportemail_ajaxform($args) {
-    global $CFG, $DB, $OUTPUT, $PAGE, $USER, $SESSION;
+    global $DB, $OUTPUT, $PAGE, $USER, $SESSION;
 
     $args = (object) $args;
     $o = '';
     $context = context_system::instance();
     $reportid = $args->reportid;
     $instance = $args->instance;
-    $scheduleid = 0;
     $ajaxformdata = [];
     if (!empty($args->jsonformdata)) {
         parse_str($args->jsonformdata, $ajaxformdata);
@@ -232,8 +231,7 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
     if ((has_capability('block/learnerscript:managereports', $context) ||
         has_capability('block/learnerscript:manageownreports', $context) ||
         is_siteadmin()) && !empty($reportid)) {
-        require_once($CFG->dirroot . '/blocks/reportdashboard/email_form.php');
-        $emailform = new block_reportdashboard_emailform(new moodle_url('/blocks/reportdashboard/dashboard.php'),
+        $emailform = new block_reportdashboard\form\email_form(new moodle_url('/blocks/reportdashboard/dashboard.php'),
         ['reportid' => $reportid,
         'AjaxForm' => true, 'instance' => $instance, 'ajaxformdata' => $ajaxformdata, ], 'post', '',
         null, true, $ajaxformdata, );
@@ -265,7 +263,7 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
                     $data->roleid = $roleid;
                     $data->nextschedule = time();
                     $data->contextlevel = $rolecontext;
-                    $insert = $DB->insert_record('block_ls_schedule', $data);
+                    $DB->insert_record('block_ls_schedule', $data);
                     return ['error' => false, 'data' => $validateddata];
                 } catch (dml_exception $ex) {
                     throw new moodle_exception($ex);

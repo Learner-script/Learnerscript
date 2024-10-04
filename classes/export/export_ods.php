@@ -21,6 +21,7 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/lib/excellib.class.php');
 require_once("$CFG->libdir/odslib.class.php");
 use MoodleODSWorkbook;
+use MoodleODSWriter;
 
 /**
  * Class export_ods
@@ -31,17 +32,16 @@ use MoodleODSWorkbook;
  */
 class export_ods {
     /**
-     * Export data in ODS format.
-     * @package block_learnerscript
-     * @param object $reportclass
-     * @return mixed
+     * This function export report in ODS format
+     * @param object $reportclass Report class
+     * @param int $id Report id
      */
     public function export_report($reportclass, $id) {
         global $DB;
         $reportdata = $reportclass->finalreport;
         $table = $reportdata->table;
         $filename = $reportdata->name . "_" . date('d M Y H:i:s', time()) . '.ods';
-        // Create a new Excel workbook
+        // Create a new Excel workbook.
         $workbook = new MoodleODSWorkbook("-");
         // Sending HTTP headers.
         $workbook->send($filename);
@@ -49,14 +49,14 @@ class export_ods {
         $sheettitle = get_string('report', 'scorm');
         $worksheet = $workbook->add_worksheet($filename);
 
-        // Add filters to the worksheet
+        // Add filters to the worksheet.
         $row = 0;
         $col = 0;
 
-        // Write 'Filters' title
-        $worksheet->write($row, $col, 'Filters');
-        $row++;
         if (!empty($reportclass->selectedfilters)) {
+            // Write 'Filters' title.
+            $worksheet->write($row, $col, 'Filters');
+            $row++;
             foreach ($reportclass->selectedfilters as $k => $filter) {
                 $worksheet->write($row, $col, $k);
                 $worksheet->write($row, $col + 1, $filter);
@@ -64,13 +64,13 @@ class export_ods {
             }
         }
 
-        // Add column headers if applicable
+        // Add column headers if applicable.
         $reporttype = $DB->get_field('block_learnerscript', 'type', ['id' => $id]);
         if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
             if (!empty($table->head)) {
                 $col = 0;
                 foreach ($table->head as $heading) {
-                    // Ensure $key is an integer index for the column
+                    // Ensure $key is an integer index for the column.
                     $worksheet->write($row, $col, $heading);
                     $col++;
                 }
@@ -78,7 +78,7 @@ class export_ods {
             }
         }
 
-        // Add data rows
+        // Add data rows.
         if (!empty($table->data)) {
             foreach ($table->data as $data) {
                 $col = 0;
@@ -90,7 +90,7 @@ class export_ods {
             }
         }
 
-        // Send the Excel file to the browser
+        // Send the Excel file to the browser.
         $workbook->send($filename);
         $workbook->close();
     }
@@ -123,7 +123,7 @@ class export_ods {
                 }
             }
         }
-        $workbook = new \MoodleODSWorkbook($filename);
+        $workbook = new MoodleODSWorkbook($filename);
 
         $myxls = [];
 
@@ -133,7 +133,7 @@ class export_ods {
                 $myxls[0]->write($ri, $ci, $cv);
             }
         }
-        $writer = new \MoodleODSWriter($myxls);
+        $writer = new MoodleODSWriter($myxls);
         $contents = $writer->get_file_content();
         $handle = fopen($filename, 'w');
         fwrite($handle, $contents);

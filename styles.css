@@ -5455,3 +5455,13 @@ body.path-blocks-learnerscript .ls.icon.sendsms {
   max-height: 16px;
   overflow: hidden;
 }
+
+body.path-blocks-learnerscript #page-content .statisticshelptext {
+    width: 15px;
+    height: 15px;
+}
+
+body#page-my-index .page-content .reportshelptext {
+    width: 15px;
+    height: 15px;
+}

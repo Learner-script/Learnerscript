@@ -167,12 +167,12 @@ class permissionslib {
         $sql = " SELECT c.id
         FROM {course} c";
         if ($this->contextlevel == CONTEXT_SYSTEM) {
-            $sql .= " LEFT JOIN {context} AS ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
+            $sql .= " LEFT JOIN {context} ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
         } else if ($this->contextlevel == CONTEXT_COURSECAT) {
             $sql .= " JOIN {course_categories} cc ON cc.id = c.category
-            LEFT JOIN {context} AS ctx ON ctx.instanceid = cc.id AND ctx.contextlevel = :contextlevel";
+            LEFT JOIN {context} ctx ON ctx.instanceid = cc.id AND ctx.contextlevel = :contextlevel";
         } else {
-            $sql .= " LEFT JOIN {context} AS ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+            $sql .= " LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
         }
         $sql .= " JOIN {role_assignments} ra ON ra.contextid = ctx.id
                  JOIN {role} r ON r.id = ra.roleid

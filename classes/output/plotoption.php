@@ -108,24 +108,19 @@ class plotoption implements renderable, templatable {
         $data->searchreport = 'searchreport';
         $data->reports = $this->reports;
 
-        $dir = $CFG->dirroot . '/blocks/learnerscript/components/filters/';
-        $folders = (new \block_learnerscript\local\ls)->getsubdirectories($dir);
-        $customfilters = array_map('basename', $folders);
-        array_push($customfilters, 'status');
-        array_shift($customfilters);
-        array_push($customfilters, 'lsfstartdate', 'lsfenddate');
-
-        foreach ($customfilters as $k => $v) {
-            if ($v == 'status') {
-                $urlfilterparams['filter_'.$v] = optional_param('filter_'.$v, '', PARAM_TEXT);
-            } else {
-                if (strpos($v, 'date') !== false) {
-                    $datefilterrequests[$v] = optional_param($v, 0, PARAM_INT);
-                } else {
-                    $urlfilterparams['filter_'.$v] = optional_param('filter_'.$v, 0, PARAM_INT);
-                }
-            }
-        }
+        $paramcourses = optional_param('filter_courses', 0, PARAM_INT);
+        $paramcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+        $paramusers = optional_param('filter_users', 0, PARAM_INT);
+        $parammodules = optional_param('filter_modules', 0, PARAM_INT);
+        $paramactivities = optional_param('filter_activities', 0, PARAM_INT);
+        $paramstatus = optional_param('filter_status', '', PARAM_TEXT);
+        $paramstartdate = optional_param('lsfstartdate', 0, PARAM_INT);
+        $paramenddate = optional_param('lsfenddate', 0, PARAM_INT);
+        $urlfilterparams = ['filter_courses' => $paramcourses,
+                    'filter_coursecategories' => $paramcoursecategories,
+                    'filter_users' => $paramusers, 'filter_modules' => $parammodules,
+                    'filter_activities' => $paramactivities, 'filter_status' => $paramstatus,
+                    'lsfstartdate' => $paramstartdate, 'lsfenddate' => $paramenddate, ];
         $urlrequests = array_filter($urlfilterparams);
         $filterparams = '';
         foreach ($urlrequests as $key => $querystring) {
@@ -135,9 +130,9 @@ class plotoption implements renderable, templatable {
         $data->params = $querystringparams;
         unset($data->{$activetab});
         $data->{$activetab} = get_string('activetab', 'block_learnerscript', $activetab);
-            $properties = new stdClass();
-            $properties->courseid = SITEID;
-            $properties->cmid = 0;
+        $properties = new stdClass();
+        $properties->courseid = SITEID;
+        $properties->cmid = 0;
         $reportclass = $ls->create_reportclass($this->reportid, $properties);
         $data->permissionsavailable = false;
         if (in_array('permissions', $reportclass->components)) {
