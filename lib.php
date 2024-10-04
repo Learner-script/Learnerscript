@@ -24,7 +24,7 @@
 
 use block_learnerscript\local\ls;
 use block_learnerscript\local\schedule;
-use moodleform;
+
 /**
  * Learnerscript block plugin file
  * @param  object $course        Course data
