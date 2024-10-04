@@ -31,13 +31,6 @@ $functions = [
         'description' => 'case rolewiseusers',
         'ajax' => true,
     ],
-'block_learnerscript_schreportform' => [
-        'classname' => 'block_learnerscript_external',
-        'methodname' => 'schreportform',
-        'classpath' => 'blocks/learnerscript/externallib.php',
-        'description' => 'case schreportform',
-        'ajax' => true,
-    ],
 'block_learnerscript_generate_plotgraph' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'generate_plotgraph',

@@ -124,77 +124,7 @@ class block_learnerscript_external extends external_api {
     public static function rolewiseusers_returns() {
         return new external_value(PARAM_TEXT, 'data');
     }
-    /**
-     * Schedule Report Form parameters description
-     * @return external_function_parameters
-     */
-    public static function schreportform_parameters() {
-        return new external_function_parameters(
-            [
-                'reportid' => new external_value(PARAM_INT, 'report id of report', VALUE_DEFAULT),
-                'instance' => new external_value(PARAM_INT, 'Instance', VALUE_DEFAULT),
-                'schuserslist' => new external_value(PARAM_TEXT, 'List of scheduled users', VALUE_DEFAULT),
-            ]
-        );
-    }
-    /**
-     * Schedule Report Form
-     * @param int $reportid Report ID
-     * @param int $instance Report instance
-     * @param string $schuserslist Scheduled users list
-     */
-    public static function schreportform($reportid, $instance, $schuserslist) {
-        global $DB;
-        $context = context_system::instance();
-        self::validate_context($context);
-        require_capability('block/learnerscript:managereports', $context);
 
-        // We always must pass webservice params through validate_parameters.
-        self::validate_parameters(self::schreportform_parameters(), ['reportid' => $reportid,
-        'instance' => $instance, 'schuserslist' => $schuserslist, ]);
-
-        if ((has_capability('block/learnerscript:managereports', $context) ||
-            has_capability('block/learnerscript:manageownreports', $context) ||
-            is_siteadmin()) && !empty($reportid)) {
-            $roleslist = (new schedule)->reportroles('', $reportid);
-            list($schusers, $schusersids) = (new schedule)->userslist($reportid, $scheduleid);
-            $exportoptions = (new ls)->cr_get_export_plugins();
-            $frequencyselect = (new schedule)->get_options();
-            $scheduledreport = $DB->get_record('block_ls_schedule', ['id' => $scheduleid]);
-            if (!empty($scheduledreport)) {
-                $schedulelist = (new schedule)->getschedule($scheduledreport->frequency);
-            } else {
-                $schedulelist = [null => get_string('selectall', 'block_reportdashboard')];
-            }
-            $scheduleform = new block_learnerscript\form\schedule_form(
-                new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
-            ['id' => $reportid, 'scheduleid' => $scheduleid, 'AjaxForm' => true, 'roles_list' => $roleslist,
-                'schusers' => $schusers, 'schusersids' => $schusersids, 'exportoptions' => $exportoptions,
-                'schedule_list' => $schedulelist, 'frequencyselect' => $frequencyselect, 'instance' => $instance, ]));
-            $return = $scheduleform->render();
-        } else {
-            $termsdata = [];
-            $termsdata['error'] = true;
-            $termsdata['type'] = 'Warning';
-            if (empty($reportid)) {
-                $termsdata['cap'] = false;
-                $termsdata['msg'] = get_string('missingparam', 'block_learnerscript', 'ReportID');
-            } else {
-                $termsdata['cap'] = true;
-                $termsdata['msg'] = get_string('badpermissions', 'block_learnerscript');
-            }
-            $return = $termsdata;
-        }
-        $data = json_encode($return);
-        return $data;
-    }
-    /**
-     * Schedule Report Form description returns
-     * @return external_description
-     */
-    public static function schreportform_returns() {
-        return new external_value(PARAM_TEXT, 'data');
-    }
     /**
      * Generate Plotgraph parameters description
      * @return external_function_parameters
