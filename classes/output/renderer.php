@@ -168,42 +168,7 @@ class renderer extends plugin_renderer_base {
             $data = [];
             foreach ($scheduledreports['schreports'] as $sreport) {
                 $line = [];
-
-                switch ($sreport->role) {
-                    case 'admin':
-                        $originalrole = get_string('admin');
-                        break;
-                    case 'manager':
-                        $originalrole = get_string('manager', 'role');
-                        break;
-                    case 'coursecreator':
-                        $originalrole = get_string('coursecreators');
-                        break;
-                    case 'editingteacher':
-                        $originalrole = get_string('defaultcourseteacher');
-                        break;
-                    case 'teacher':
-                        $originalrole = get_string('noneditingteacher');
-                        break;
-                    case 'student':
-                        $originalrole = get_string('defaultcoursestudent');
-                        break;
-                    case 'guest':
-                        $originalrole = get_string('guest');
-                        break;
-                    case 'user':
-                        $originalrole = get_string('authenticateduser');
-                        break;
-                    case 'frontpage':
-                        $originalrole = get_string('frontpageuser', 'role');
-                        break;
-                    // We should not get here, the role UI should require the name for custom roles!
-                    default:
-                        $originalrole = $sreport->role;
-                        break;
-                }
-
-                $line[] = $originalrole;
+                $line[] = $sreport->role;
                 $line[] = strtoupper($sreport->exportformat);
                 $line[] = (new schedule)->get_formatted($sreport->frequency, $sreport->schedule);
                 $buttons = [];

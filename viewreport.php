@@ -66,6 +66,34 @@ if (!$course = $DB->get_record('course', ['id' => $courseid])) {
     throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
 }
 
+$filterrequests = [];
+$datefilterrequests = [];
+$datefilterrequests['lsfstartdate'] = 0;
+$datefilterrequests['lsfenddate'] = time();
+
+$urlfilterparams = ['filter_courses' => $paramcourses,
+                        'filter_coursecategories' => $paramcoursecategories,
+                        'filter_users' => $paramusers,
+                        'filter_modules' => $parammodules,
+                        'filter_activities' => $paramactivities,
+                        'filter_status' => $paramstatus,
+                        'lsfstartdate' => $paramstartdate,
+                        'lsfenddate' => $paramenddate
+                    ];
+$urlrequests = array_filter($urlfilterparams);
+foreach ($urlrequests as $key => $val) {
+    if (strpos($key, 'filter_') !== false) {
+        if ($key == 'filter_status') {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
+        } else {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
+        }
+    }
+    if (strpos($key, 'date') !== false) {
+        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
+    }
+}
+
 if (!is_siteadmin() && empty($SESSION->role)) {
     $rolelist = (new ls)->get_currentuser_roles();
     if (empty($SESSION->role) && !empty($rolelist)) {
@@ -98,29 +126,6 @@ if (!is_siteadmin()) {
         $SESSION->rolecontextlist = $rcontext;
         $SESSION->ls_contextlevel = $contextlevels->contextlevel;
         $SESSION->rolecontext = $SESSION->role . '_' . $SESSION->ls_contextlevel;
-    }
-}
-$filterrequests = [];
-$datefilterrequests = [];
-$datefilterrequests['lsfstartdate'] = 0;
-$datefilterrequests['lsfenddate'] = time();
-
-$urlfilterparams = ['filter_courses' => $paramcourses,
-            'filter_coursecategories' => $paramcoursecategories,
-            'filter_users' => $paramusers, 'filter_modules' => $parammodules,
-            'filter_activities' => $paramactivities, 'filter_status' => $paramstatus,
-            'lsfstartdate' => $paramstartdate, 'lsfenddate' => $paramenddate, ];
-$urlrequests = array_filter($urlfilterparams);
-foreach ($urlrequests as $key => $val) {
-    if (strpos($key, 'filter_') !== false) {
-        if ($key == 'filter_status') {
-            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
-        } else {
-            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
-        }
-    }
-    if (strpos($key, 'date') !== false) {
-        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
     }
 }
 

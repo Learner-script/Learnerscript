@@ -28,12 +28,11 @@
         {{# searchenable}}
         <span id='custom_jumpto' class='editreport {{searchreport}}'>
 
-            {{# str}} jumpto, block_learnerscript {{/ str}} <select name="reportsearch" value="" id="reportsearch" placeholder="{{#str}} searchreport, block_learnerscript {{/str}}" data-select2=1>
-            {{# reports }}
-                <option value={{id}}>{{name}}</option>
-            {{/ reports}}
-            }
-            }
+            {{# str}} jumpto, block_learnerscript {{/ str}}
+            <select name="reportsearch" value="" id="reportsearch" placeholder="{{#str}} searchreport, block_learnerscript {{/str}}" data-select2=1>
+                {{# reports }}
+                    <option value={{id}}>{{name}}</option>
+                {{/ reports}}
             </select>
 
         </span>

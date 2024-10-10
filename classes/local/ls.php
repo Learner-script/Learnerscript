@@ -29,7 +29,6 @@ use core_course_category;
 use DateInterval;
 
 use block_learnerscript\local\schedule;
-use moodle_url;
 
 define('DAILY', 1);
 define('WEEKLY', 2);
@@ -369,11 +368,9 @@ class ls {
      * @param  array  $parents  Report parent
      * @param  string  $requiredcapability Required capability to access report
      * @param  integer $excludeid         Excluded ID
-     * @param  object  $category     Category
-     * @param  string  $path         Report path
      */
     public function cr_make_categories_list(&$list, &$parents, $requiredcapability = '',
-    $excludeid = 0, $category = null, $path = "") {
+    $excludeid = 0) {
         global $DB;
         // For categories list use just this one public function.
         if (empty($list)) {
@@ -883,7 +880,7 @@ class ls {
                 $tourconfig = json_decode($data);
                 $tourexists = $DB->record_exists('tool_usertours_tours', ['name' => $tourconfig->name]);
                 if (!$tourexists) {
-                    $tour = $pluginmanager->import_tour_from_json($data);
+                    $pluginmanager->import_tour_from_json($data);
                 }
             }
         }

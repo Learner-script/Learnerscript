@@ -27,15 +27,34 @@ use block_learnerscript\local\schedule;
 
 /**
  * Learnerscript block plugin file
- * @param  object $course        Course data
- * @param  object $cm            Course module data
- * @param  object $context       Context data
- * @param  string $filearea      File filter area
- * @param  array $args          Plugin file arguments
- * @param  boolean $forcedownload Force download
- * @param  array  $options       File options
+ * @param stdClass $course course object
+ * @param stdClass $cm block instance record
+ * @param context $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
  */
 function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    global $CFG, $USER;
+    if ($context->get_course_context(false)) {
+        require_course_login($course);
+    } else if ($CFG->forcelogin) {
+        require_login();
+    } else {
+        // Get parent context and see if user have proper permission.
+        $parentcontext = $context->get_parent_context();
+        if ($parentcontext->contextlevel === CONTEXT_COURSECAT) {
+            // Check if category is visible and user can view this category.
+            if (!core_course_category::get($parentcontext->instanceid, IGNORE_MISSING)) {
+                send_file_not_found();
+            }
+        } else if ($parentcontext->contextlevel === CONTEXT_USER && $parentcontext->instanceid != $USER->id) {
+            // The block is in the context of a user, it is only visible to the user who it belongs to.
+            send_file_not_found();
+        }
+        // At this point there is no way to check SYSTEM context, so ignoring it.
+    }
     if ($filearea == 'logo') {
         $itemid = (int) array_shift($args);
 
@@ -55,9 +74,17 @@ function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args
         if (!$file) {
             return false;
         }
-        $filedata = $file->resize_image(200, 200);
+
+        if ($parentcontext = context::instance_by_id($cm->parentcontextid, IGNORE_MISSING)) {
+            if ($parentcontext->contextlevel == CONTEXT_USER) {
+                $forcedownload = true;
+            }
+        } else {
+            $forcedownload = true;
+        }
+        $file->resize_image(200, 200);
         \core\session\manager::write_close();
-        send_stored_file($file, null, 0, 1);
+        send_stored_file($file, null, 0, $forcedownload, $options);
     }
 
     send_file_not_found();
@@ -68,7 +95,6 @@ function block_learnerscript_pluginfile($course, $cm, $context, $filearea, $args
  * @return string
  */
 function block_learnerscript_get_reportheader_imagepath($excel = false) {
-    global $CFG;
     $fs = get_file_storage();
     $syscontext = context_system::instance();
     $reportheaderimagepath = '';
@@ -88,7 +114,7 @@ function block_learnerscript_get_reportheader_imagepath($excel = false) {
             }
         }
     } else {
-         $reportheaderimagepath = new moodle_url('/blocks/learnerscript/pix/logo.jpg');
+        $reportheaderimagepath = new moodle_url('/blocks/learnerscript/pix/logo.jpg');
     }
     return $reportheaderimagepath;
 }
@@ -98,7 +124,7 @@ function block_learnerscript_get_reportheader_imagepath($excel = false) {
  * @param array $args Schedule form arguments
  */
 function block_learnerscript_schreportform_ajaxform($args) {
-    global $CFG, $DB, $OUTPUT, $PAGE, $USER;
+    global $DB, $OUTPUT, $PAGE, $USER;
     $args = (object) $args;
     $o = '';
     $context = context_system::instance();
@@ -144,7 +170,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
         $scheduleform->set_data($setdata);
         if (!empty($ajaxformdata) && $scheduleform->is_validated()) {
             // If we were passed non-empty form data we want the mform to call validation functions and show errors.
-            $validated = $scheduleform->is_validated();
+            $scheduleform->is_validated();
 
             $validateddata = $scheduleform->get_data();
             if ($validateddata) {
@@ -168,7 +194,7 @@ function block_learnerscript_schreportform_ajaxform($args) {
                     } else {
                         $fromform->contextlevel = 10;
                     }
-                    $schedule = $DB->insert_record('block_ls_schedule', $fromform);
+                    $DB->insert_record('block_ls_schedule', $fromform);
                     $event = \block_learnerscript\event\schedule_report::create([
                                     'objectid' => $fromform->reportid,
                                     'context' => $context,
@@ -238,7 +264,7 @@ function block_learnerscript_sendreportemail_ajaxform($args) {
 
         if (!empty($ajaxformdata) && $emailform->is_validated()) {
             // If we were passed non-empty form data we want the mform to call validation functions and show errors.
-            $validated = $emailform->is_validated();
+            $emailform->is_validated();
 
             $validateddata = $emailform->get_data();
             if ($validateddata) {

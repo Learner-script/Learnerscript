@@ -116,11 +116,11 @@ if ($import) {
 
 $PAGE->requires->js_call_amd('block_learnerscript/lsreportconfig', 'init',
                                 [['total' => $total,
-                                            'current' => $current,
-                                            'errorreportspositiondata' =>
-                                            $errorreportspositiondata,
-                                            'lastreportposition' => $lastreportposition,
-                                        ], $status,
+                                        'current' => $current,
+                                        'errorreportspositiondata' =>
+                                        $errorreportspositiondata,
+                                        'lastreportposition' => $lastreportposition,
+                                    ], $status,
                                 ]);
 
 echo $OUTPUT->footer();

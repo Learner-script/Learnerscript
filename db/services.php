@@ -24,63 +24,63 @@
  */
 defined('MOODLE_INTERNAL') || die();
 $functions = [
-'block_learnerscript_rolewiseusers' => [
+    'block_learnerscript_rolewiseusers' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'rolewiseusers',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'case rolewiseusers',
         'ajax' => true,
     ],
-'block_learnerscript_generate_plotgraph' => [
+    'block_learnerscript_generate_plotgraph' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'generate_plotgraph',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'case generate_plotgraph',
         'ajax' => true,
     ],
-'block_learnerscript_frequency_schedule' => [
+    'block_learnerscript_frequency_schedule' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'frequency_schedule',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'case frequency_schedule',
         'ajax' => true,
     ],
-'block_learnerscript_deletecomponenet' => [
+    'block_learnerscript_deletecomponenet' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'deletecomponenet',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Delete a perticular component for the report',
         'ajax' => true,
     ],
-'block_learnerscript_reportfilter' => [
+    'block_learnerscript_reportfilter' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'reportfilterform',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'case dashboard name edit',
         'ajax' => true,
     ],
-'block_learnerscript_importreports' => [
+    'block_learnerscript_importreports' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'importreports',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Import Reports',
         'ajax' => true,
     ],
-'block_learnerscript_lsreportconfigimport' => [
+    'block_learnerscript_lsreportconfigimport' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'lsreportconfigimport',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Import Reports Status',
         'ajax' => true,
     ],
-'block_learnerscript_filter_courses' => [
+    'block_learnerscript_filter_courses' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'filter_courses',
         'classpath' => 'blocks/learnerscript/externallib.php',
         'description' => 'Filter Courses',
         'ajax' => true,
     ],
-'block_learnerscript_filterusers' => [
+    'block_learnerscript_filterusers' => [
         'classname' => 'block_learnerscript_external',
         'methodname' => 'filterusers',
         'classpath' => 'blocks/learnerscript/externallib.php',

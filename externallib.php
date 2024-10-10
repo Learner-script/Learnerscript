@@ -283,7 +283,7 @@ class block_learnerscript_external extends external_api {
                                             "recordsTotal" => $reportclass->totalrecords,
                                             "recordsFiltered" => $reportclass->totalrecords,
                                             "data" => $data,
-                        ];
+                                        ];
                     $reporttitle = get_string('report_' . $report->type, 'block_learnerscript');
                     $return['reportname'] = (new ls)->get_reporttitle($reporttitle, $basicparams);
                     $return['columnDefs'] = $columndefs;

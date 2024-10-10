@@ -22,7 +22,6 @@
  */
 
 require_once("../../config.php");
-use block_learnerscript\form\import_form;
 use block_learnerscript\local\ls as ls;
 global $SESSION;
 
