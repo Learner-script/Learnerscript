@@ -334,19 +334,19 @@ class querylib {
     /**
      * Get students list
      *
-     * @param  string  $useroperatorsql   User SQL
-     * @param  string  $courseoperatorsql Course SQL
+     * @param  string  $userid  User ID
+     * @param  string  $courseid Course ID
      * @return string SQL query
      */
-    public function get_learners($useroperatorsql = '', $courseoperatorsql = '') {
+    public function get_learners($userid = '', $courseid = '') {
 
-        if (empty($courseoperatorsql) && empty($useroperatorsql)) {
+        if (empty($courseid) && empty($userid)) {
             return false;
         }
-        if (!empty($useroperatorsql)) {
+        if (!empty($userid)) {
             $sql = " SELECT DISTINCT c.id ";
         }
-        if (!empty($courseoperatorsql)) {
+        if (!empty($courseid)) {
             $sql = " SELECT DISTINCT u.id ";
         }
         $sql .= " FROM {course} c
@@ -355,11 +355,11 @@ class querylib {
                   JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                   JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
                   AND u.suspended = 0 AND c.visible = 1";
-        if (!empty($courseoperatorsql)) {
-            $sql .= " WHERE c.id = $courseoperatorsql";
+        if (!empty($courseid)) {
+            $sql .= " WHERE c.id = $courseid";
         }
-        if (!empty($useroperatorsql)) {
-            $sql .= " WHERE ra.userid = $useroperatorsql";
+        if (!empty($userid)) {
+            $sql .= " WHERE ra.userid = $userid";
         }
         return $sql;
     }

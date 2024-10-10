@@ -44,9 +44,6 @@ class report extends reportbase implements \block_learnerscript\report {
     /** @var array $orderable  */
     public $orderable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
 
@@ -70,7 +67,6 @@ class report extends reportbase implements \block_learnerscript\report {
                 'completedscorms', 'completedactivities', 'marks', 'grade', 'badgesissued',
                 'totaltimespent', 'attemptedgradepercent', ];
         $this->defaultcolumn = 'u.id';
-        $this->excludedroles = ["'student'"];
     }
 
     /**

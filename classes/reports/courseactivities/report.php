@@ -35,11 +35,20 @@ class report extends reportbase implements \block_learnerscript\report {
     /** @var array $orderable  */
     public $orderable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
+
+    /** @var array $aliases */
+    private $aliases;
+
+    /** @var array $activities */
+    private $activities;
+
+    /** @var array $activityfields */
+    private $activityfields;
+
+    /** @var string $aliases */
+    private $activitynames;
 
     /**
      * Report constructor
@@ -59,14 +68,26 @@ class report extends reportbase implements \block_learnerscript\report {
         $this->orderable = ['activityname', 'learnerscompleted', 'grademax', 'gradepass', 'averagegrade', 'highestgrade',
                             'lowestgrade', 'totaltimespent', ];
         $this->defaultcolumn = 'main.id';
-        $this->excludedroles = ["'student'"];
     }
 
+    /**
+     * Report initialization
+     */
+    public function init() {
+        $this->aliases = [];
+        $this->activities = [];
+        $this->activityfields = [];
+        foreach ($this->moduleslist as $modulename) {
+            $this->aliases[] = $modulename;
+            $this->activities[] = "'$modulename'";
+            $this->activityfields[] = "COALESCE($modulename.name,'')";
+        }
+        $this->activitynames = implode(',', $this->activityfields);
+    }
     /**
      * Count SQL
      */
     public function count() {
-        global $DB;
         $this->sql = "SELECT COUNT(DISTINCT main.id) ";
     }
 
@@ -74,15 +95,9 @@ class report extends reportbase implements \block_learnerscript\report {
      * Select SQL
      */
     public function select() {
-        global $DB;
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        foreach ($modules as $modulename) {
-            $fields1[] = "COALESCE($modulename.name,'')";
-        }
-        $activitynames = implode(',', $fields1);
         $this->sql = " SELECT DISTINCT(main.id) , m.id AS moduleid, main.instance,
                                 main.course";
-        $this->sql .= ", CONCAT($activitynames) AS activityname";
+        $this->sql .= ", CONCAT($this->activitynames) AS activityname";
         if (!empty($this->selectedcolumns)) {
             if (in_array('grades', $this->selectedcolumns)) {
                 $this->sql .= ", 'Grades'";
@@ -103,13 +118,8 @@ class report extends reportbase implements \block_learnerscript\report {
      * SQL JOINS
      */
     public function joins() {
-        global $DB;
         parent::joins();
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        foreach ($modules as $modulename) {
-            $aliases[] = $modulename;
-        }
-        foreach ($aliases as $alias) {
+        foreach ($this->aliases as $alias) {
             $this->sql .= " LEFT JOIN {".$alias."} $alias ON $alias.id = main.instance AND m.name = '$alias'";
         }
          $this->sql .= " LEFT JOIN {grade_items} gi ON gi.itemmodule = m.name
@@ -121,12 +131,7 @@ class report extends reportbase implements \block_learnerscript\report {
      * Adding conditions to the query
      */
     public function where() {
-        global $DB;
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        foreach ($modules as $modulename) {
-            $activities[] = "'$modulename'";
-        }
-        $activitynames = implode(',', $activities);
+        $activitynames = implode(',', $this->activities);
         $this->sql .= " WHERE m.visible = 1 AND m.name IN ($activitynames) AND main.visible = 1
                         AND main.deletioninprogress = 0";
         if ($this->lsstartdate > 0 && $this->lsenddate) {
@@ -143,12 +148,8 @@ class report extends reportbase implements \block_learnerscript\report {
     public function search() {
         global $DB;
         if (isset($this->search) && $this->search) {
-            $modules = $DB->get_fieldset_select('modules',  'name', '', ['visible' => 1]);
-            foreach ($modules as $modulename) {
-                $fields1[] = "COALESCE($modulename.name,'')";
-            }
-            $fields2 = ['m.name'];
-            $this->searchable = array_merge($fields1, $fields2);
+            $searchfields = ['m.name'];
+            $this->searchable = array_merge($this->activityfields, $searchfields);
             $statsql = [];
             foreach ($this->searchable as $value) {
                 $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
@@ -203,7 +204,6 @@ class report extends reportbase implements \block_learnerscript\report {
      * @return string
      */
     public function column_queries($column, $activityid, $courses = null) {
-        global $CFG;
         if ($courses) {
             $learnersql  = (new querylib)->get_learners('', $courses);
         } else {
@@ -278,9 +278,9 @@ class report extends reportbase implements \block_learnerscript\report {
                            WHERE cm1.course = $courseid AND m.name = gi.itemmodule $where ";
                 break;
             case 'progress':
-                 $identity = 'cm.id';
-                 $courses = 'cm.course';
-                  $query = "SELECT CASE WHEN total = 0 THEN 0 ELSE ((completed / total )* 100) END AS progress
+                $identity = 'cm.id';
+                $courses = 'cm.course';
+                $query = "SELECT CASE WHEN total = 0 THEN 0 ELSE ((completed / total )* 100) END AS progress
                             FROM (SELECT COUNT(cmc.id) as completed
                             FROM {course_modules_completion} cmc
                             JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
@@ -291,7 +291,7 @@ class report extends reportbase implements \block_learnerscript\report {
                             JOIN {course} c ON c.id = ctx.instanceid
                             JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
                             JOIN {course_modules} cm ON cm.course = c.id
-                           WHERE ra.userid IN ($learnersql) $where ) as total";
+                           WHERE 1 = 1 $where ) as total";
                 break;
             case 'totaltimespent':
                 $identity = 'mt.activityid';
@@ -309,14 +309,14 @@ class report extends reportbase implements \block_learnerscript\report {
                                                 JOIN {user} u ON u.id = lsl.userid
                                                WHERE lsl.crud = 'r' AND lsl.contextlevel = 70
                                                  AND lsl.courseid = $courseid AND lsl.anonymous = 0
-                                                 AND u.confirmed = 1 AND u.deleted = 0 AND lsl.target = 'course_module'
+                                                 AND u.confirmed = 1 AND u.deleted = 0
                                                  AND lsl.userid IN ($learnersql) $where ";
                 } else {
                     $query = "SELECT COUNT('X') AS numviews
                                 FROM {logstore_standard_log} lsl JOIN {user} u ON u.id = lsl.userid
                                WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND lsl.courseid = $courseid
                                  AND lsl.anonymous = 0 AND lsl.userid IN ($learnersql) AND u.confirmed = 1
-                                 AND u.deleted = 0 AND lsl.target = 'course_module' $where";
+                                 AND u.deleted = 0 $where";
                 }
             break;
         }

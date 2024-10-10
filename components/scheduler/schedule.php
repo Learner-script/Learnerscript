@@ -66,7 +66,7 @@ if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
 }
 
 $PAGE->navbar->add(get_string('managereports', 'block_learnerscript'),
-new moodle_url('/blocks/learnerscript/managereport.php'));
+                    new moodle_url('/blocks/learnerscript/managereport.php'));
 $PAGE->navbar->add($report->name, new moodle_url('/blocks/learnerscript/viewreport.php',
                     ['id' => $reportid, 'courseid' => $courseid]));
 $PAGE->navbar->add(get_string('schedulereport', 'block_learnerscript'));

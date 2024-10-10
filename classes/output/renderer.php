@@ -22,7 +22,6 @@ use html_table;
 use html_writer;
 use moodle_url;
 use plugin_renderer_base;
-use tabobject;
 
 /**
  * A Moodle block to create customizable reports.

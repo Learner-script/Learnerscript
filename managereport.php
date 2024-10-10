@@ -90,18 +90,6 @@ if ($importurl) {
     }
 }
 
-$mform = new import_form(null, $course->id);
-
-if ($data = $mform->get_data()) {
-    if ($xml = $mform->get_file_content('userfile')) {
-        if ((new ls)->cr_import_xml($xml, $course)) {
-            redirect(new moodle_url('/blocks/learnerscript/managereport.php'), get_string('reportcreated', 'block_learnerscript'));
-        } else {
-            throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
-        }
-    }
-}
-
 $reports = (new block_learnerscript\local\ls)->cr_get_my_reports($course->id, $USER->id);
 
 $title = get_string('reports', 'block_learnerscript');
@@ -118,21 +106,12 @@ if ($reports) {
     $table->width = "100%";
     $table->head = [get_string('name'),  get_string('type', 'block_learnerscript'),
                     get_string('actions'), ];
-    $table->align = ['left', 'left', 'left', 'center', 'center'];
-    $table->size = ['20%', '20%', '10%', '20%', '20%'];
-    $strhide = get_string('hide');
-    $strshow = get_string('show');
-    $strcopy = get_string('duplicate');
-    $strexport = get_string('exportreport', 'block_learnerscript');
+    $table->align = ['left', 'left', 'center'];
+    $table->size = ['40%', '40%', '20%'];
     $strschedule = get_string('schedulereport', 'block_learnerscript');
 
     foreach ($reports as $r) {
         $editcell = '';
-        $editcell .= html_writer::link(new moodle_url('export.php',
-        ['id' => $r->id, 'sesskey' => $USER->sesskey]),
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/backup'), 'class' => "iconsmall",
-        'alt' => $strexport, ]),
-        ['class' => 'iconsmall', 'title' => $strexport]);
         $properties = new stdClass();
         $properties->courseid = $courseid;
         $reportclass = (new ls)->create_reportclass($r->id, $properties);
@@ -142,6 +121,8 @@ if ($reports) {
             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/i/calendar'), 'class' => "iconsmall",
             'alt' => $strschedule, ]),
             ['class' => 'iconsmall', 'title' => $strschedule]);;
+        } else {
+            $editcell .= '--';
         }
 
         $table->data[] = [html_writer::link(new moodle_url('viewreport.php', ['id' => $r->id]), $r->name),
@@ -154,5 +135,4 @@ if ($reports) {
     echo $OUTPUT->heading(get_string('noreportsavailable', 'block_learnerscript'));
 }
 
-$mform->display();
 echo $OUTPUT->footer();

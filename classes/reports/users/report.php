@@ -35,9 +35,6 @@ class report extends reportbase {
     /** @var array $orderable  */
     public $orderable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
 
@@ -56,7 +53,6 @@ class report extends reportbase {
                             'badges', ];
         $this->filters = ['users'];
         $this->defaultcolumn = 'u.id';
-        $this->excludedroles = ["'student'"];
 
     }
     /**

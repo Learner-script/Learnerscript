@@ -37,9 +37,6 @@ class report extends reportbase implements \block_learnerscript\report {
     /** @var array $searchable  */
     public $searchable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
 
@@ -61,7 +58,6 @@ class report extends reportbase implements \block_learnerscript\report {
         $this->parent = false;
         $this->exports = false;
         $this->defaultcolumn = 'main.id';
-        $this->excludedroles = ["'student'"];
     }
 
     /**

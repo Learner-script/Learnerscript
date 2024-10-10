@@ -50,11 +50,6 @@ class permissionslib {
     private $userid;
 
     /**
-     * @var $moodleroles
-     */
-    public $moodleroles;
-
-    /**
      * Construct
      * @param  int $contextlevel   User contextlevel
      * @param  int $roleid         User role ID

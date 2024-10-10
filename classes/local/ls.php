@@ -957,14 +957,17 @@ class ls {
         JOIN {role_assignments} ra ON ra.roleid = r.id
         JOIN {context} ctx ON ctx.id = ra.contextid
         WHERE ra.userid = :userid";
+        $contextparam = '';
         if ($contextlevel || !empty($SESSION->ls_contextlevel)) {
             if ($SESSION->ls_contextlevel) {
-                $rolesql .= " AND ctx.contextlevel= " .$SESSION->ls_contextlevel;
+                $contextparam = $SESSION->ls_contextlevel;
+                $rolesql .= " AND ctx.contextlevel = :contextparam";
             } else {
-                $rolesql .= " AND ctx.contextlevel=$contextlevel";
+                $contextparam = $contextlevel;
+                $rolesql .= " AND ctx.contextlevel=:contextparam";
             }
         }
-        $roles = $DB->get_records_sql_menu($rolesql, ['userid' => $userid]);
+        $roles = $DB->get_records_sql_menu($rolesql, ['userid' => $userid, 'contextparam' => $contextparam]);
         ksort($roles);
         return $roles;
     }
@@ -1215,6 +1218,7 @@ class ls {
      */
     public function switchrole_options() {
         global $DB, $USER, $SESSION;
+        $systemcontext = context_system::instance();
         $data = [];
         if (!empty($SESSION->role)) {
             $data['currentrole'] = $SESSION->role;
@@ -1225,7 +1229,7 @@ class ls {
             $data['dashboardrole'] = '';
         }
         if (!is_siteadmin()) {
-            $rolesql = "SELECT DISTINCT concat(r.id, '-',ctx.contextlevel) as roleid, r.shortname
+            $rolesql = "SELECT DISTINCT concat(r.id, '-',ctx.contextlevel) as roleid, r.id, r.shortname
                         FROM {role} r
                         JOIN {role_assignments} ra ON ra.roleid = r.id
                         JOIN {context} ctx ON ctx.id = ra.contextid
@@ -1233,10 +1237,10 @@ class ls {
                 $roles = $DB->get_records_sql($rolesql, ['userid' => $USER->id]);
                 ksort($roles);
         } else {
-            $rolesql = "SELECT DISTINCT concat(r.id, '-',rcl.contextlevel)  as roleid, r.shortname
-                   FROM {role} r
-                   JOIN {role_context_levels} rcl ON rcl.roleid = r.id
-                   WHERE 1 = 1 AND rcl.contextlevel != " . CONTEXT_MODULE;
+            $rolesql = "SELECT DISTINCT concat(r.id, '-',rcl.contextlevel)  as roleid, r.id, r.shortname, r.name
+                    FROM {role} r
+                    JOIN {role_context_levels} rcl ON rcl.roleid = r.id
+                    WHERE 1 = 1 AND rcl.contextlevel != " . CONTEXT_MODULE;
             $roles = $DB->get_records_sql($rolesql);
             ksort($roles);
         }
@@ -1246,44 +1250,13 @@ class ls {
         $unusedroles = ['user', 'guest', 'frontpage'];
         foreach ($roles as $key => $value) {
             $rolecontext = explode("-", $key);
-            $roleshortname = $DB->get_field('role', 'shortname', ['id' => $rolecontext[0]]);
-            if (in_array($roleshortname, $unusedroles)) {
+            if (in_array($value->shortname, $unusedroles)) {
                 continue;
             }
             $active = '';
 
-            if ($roleshortname == $SESSION->role && $rolecontext[1] == $SESSION->ls_contextlevel) {
+            if ($value->shortname == $SESSION->role && $rolecontext[1] == $SESSION->ls_contextlevel) {
                 $active = 'active';
-            }
-            switch ($roleshortname) {
-                case 'manager':
-                    $value1 = get_string('manager' , 'role');
-                    break;
-                case 'coursecreator':
-                    $value1 = get_string('coursecreators');
-                    break;
-                case 'editingteacher':
-                    $value1 = get_string('defaultcourseteacher');
-                    break;
-                case 'teacher':
-                    $value1 = get_string('noneditingteacher');
-                    break;
-                case 'student':
-                    $value1 = get_string('defaultcoursestudent');
-                    break;
-                case 'guest':
-                    $value1 = get_string('guest');
-                    break;
-                case 'user':
-                    $value1 = get_string('authenticateduser');
-                    break;
-                case 'frontpage':
-                    $value1 = get_string('frontpageuser', 'role');
-                    break;
-                // We should not get here, the role UI should require the name for custom roles!
-                default:
-                    $value1 = $value->shortname;
-                break;
             }
             $contexttext = '';
             if ($rolecontext[1] == CONTEXT_SYSTEM) {
@@ -1293,7 +1266,9 @@ class ls {
             } else if ($rolecontext[1] == CONTEXT_COURSE) {
                 $contexttext = get_string('course');
             }
-            $data['roles'][] = ['roleshortname' => $roleshortname, 'rolename' => $contexttext." ".$value1,
+            $roles = role_fix_names(get_all_roles(), $systemcontext, ROLENAME_ORIGINAL);
+            $rolename = $roles[$value->id]->localname;
+            $data['roles'][] = ['roleshortname' => $value->shortname, 'rolename' => $contexttext." ".$rolename,
                                 'active' => $active, 'contextlevel' => $rolecontext[1], ];
         }
         return $data;
@@ -1392,7 +1367,7 @@ class ls {
                 $DB->update_record('block_ls_userlmsaccess', $insertdata);
             }
         }
-        echo get_string('taskcomplete', 'block_learnerscript');
+        mtrace(get_string('taskcomplete', 'block_learnerscript'));
     }
 
     /**

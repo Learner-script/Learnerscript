@@ -30,15 +30,15 @@ use context_course;
  */
 class report extends reportbase implements \block_learnerscript\report {
     /**
-     * @var $aliases
+     * @var array $aliases
      */
     private $aliases;
     /**
-     * @var $activitynames
+     * @var string $activitynames
      */
     private $activitynames;
     /**
-     * @var $activities
+     * @var array $activities
      */
     private $activities;
 
@@ -48,11 +48,11 @@ class report extends reportbase implements \block_learnerscript\report {
     /** @var array $orderable  */
     public $orderable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
+
+    /** @var array $activityfields  */
+    public $activityfields;
 
     /**
      * Report construct function
@@ -124,14 +124,15 @@ class report extends reportbase implements \block_learnerscript\report {
             }
         }
 
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
         $this->aliases = [];
-        foreach ($modules as $modulename) {
+        $this->activities = [];
+        $this->activityfields = [];
+        foreach ($this->moduleslist as $modulename) {
             $this->aliases[] = $modulename;
             $this->activities[] = "'$modulename'";
-            $fields1[] = "COALESCE($modulename.name,'')";
+            $this->activityfields[] = "COALESCE($modulename.name,'')";
         }
-        $this->activitynames = implode(',', $fields1);
+        $this->activitynames = implode(',', $this->activityfields);
     }
 
     /**
@@ -145,17 +146,8 @@ class report extends reportbase implements \block_learnerscript\report {
      * Select SQL
      */
     public function select() {
-        global $DB;
         $userid = isset($this->params['filter_users']) && $this->params['filter_users'] > 0
                     ? $this->params['filter_users'] : $this->userid;
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        $this->aliases = [];
-        foreach ($modules as $modulename) {
-            $this->aliases[] = $modulename;
-            $this->activities[] = "'$modulename'";
-            $fields1[] = "COALESCE($modulename.name,'')";
-        }
-        $this->activitynames = implode(',', $fields1);
         $this->sql  = "SELECT DISTINCT main.id, m.id AS module, main.instance, main.section,
                     c.id AS courseid, u.id AS userid, c.category AS categoryid ";
         if (!empty($this->selectedcolumns)) {
@@ -213,14 +205,7 @@ class report extends reportbase implements \block_learnerscript\report {
      * Adding condition to the Query
      */
     public function where() {
-        global $DB, $USER;
         $userid = !empty($this->params['filter_users']) ? $this->params['filter_users'] : $this->userid;
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        $this->aliases = [];
-        foreach ($modules as $modulename) {
-            $this->aliases[] = $modulename;
-            $this->activities[] = "'$modulename'";
-        }
         $status = isset($this->params['filter_status']) ? $this->params['filter_status'] : '';
         $this->params['subuserid'] = $this->params['filter_users'];
         $activitieslist = implode(',', $this->activities);
@@ -254,12 +239,8 @@ class report extends reportbase implements \block_learnerscript\report {
     public function search() {
         global $DB;
         if (isset($this->search) && $this->search) {
-            $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-            foreach ($modules as $modulename) {
-                $fields1[] = "COALESCE($modulename.name,'')";
-            }
-            $fields2 = ['m.name', 'c.fullname'];
-            $this->searchable = array_merge($fields1, $fields2);
+            $searchfields = ['m.name', 'c.fullname'];
+            $this->searchable = array_merge($this->activityfields, $searchfields);
             $statsql = [];
             foreach ($this->searchable as $value) {
                 $statsql[] = $DB->sql_like($value, "'%" . $this->search . "%'", false,
@@ -358,7 +339,7 @@ class report extends reportbase implements \block_learnerscript\report {
                 $query = "SELECT COUNT(lsl.id) AS numviews
                               FROM {logstore_standard_log} lsl
                          WHERE lsl.crud = 'r' AND lsl.contextlevel = 70 AND
-                           lsl.userid = $filteruserid AND lsl.target = 'course_module' $where";
+                           lsl.userid = $filteruserid $where";
             break;
         }
         $query = str_replace('%placeholder%', $identity, $query);

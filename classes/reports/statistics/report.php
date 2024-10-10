@@ -48,7 +48,7 @@ class report extends reportbase {
      * @param object $reportproperties Report properties
      */
     public function __construct($report, $reportproperties) {
-        parent::__construct($report);
+        parent::__construct($report, $reportproperties);
         $this->components = ['filters', 'permissions', 'plot'];
         $this->parent = true;
     }
@@ -102,8 +102,7 @@ class report extends reportbase {
 
         // Activities list.
         $activitiesquery = "";
-        $modules = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
-        foreach ($modules as $modulename) {
+        foreach ($this->moduleslist as $modulename) {
             $aliases[] = $modulename;
             $activitylist[] = $modulename.'.name';
             $fields1[] = "COALESCE($modulename.name,'')";

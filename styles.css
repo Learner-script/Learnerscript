@@ -3827,7 +3827,7 @@ body.path-blocks-learnerscript .ui-dialog .ui-dialog-content {
     position: static;
 }
 
-sup#communicate {
+#page-blocks-learnerscript-viewreport sup#communicate {
     float: right;
     cursor: pointer;
 }

@@ -263,11 +263,6 @@ class reportbase {
     public $lsenddate;
 
     /**
-     * @var array $moodleroles
-     */
-    public $moodleroles;
-
-    /**
      * @var string $contextrole
      */
     public $contextrole;
@@ -310,10 +305,6 @@ class reportbase {
      */
     public $searchable;
     /**
-     * @var array $excludedroles
-     */
-    public $excludedroles;
-    /**
      * @var array $basicparamdata Basic params list
      */
     public $basicparamdata;
@@ -325,6 +316,10 @@ class reportbase {
      * @var string $currentrole Current loggedin user role
      */
     public $currentrole = '';
+    /**
+     * @var array $moduleslist List of modules
+     */
+    public $moduleslist = [];
 
     /**
      * Construct
@@ -374,7 +369,6 @@ class reportbase {
             }
             $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
-        $this->moodleroles = isset($SESSION->rolecontextlist) ? $SESSION->rolecontextlist : $rcontext;
         $this->contextrole = isset($SESSION->role) && isset($SESSION->ls_contextlevel)
         ? $SESSION->role . '_' . $SESSION->ls_contextlevel
         : $this->role .'_'.$this->contextlevel;
@@ -382,6 +376,9 @@ class reportbase {
         if (!empty($capabilityrole)) {
             $this->currentrole = current($capabilityrole)->shortname;
         }
+
+        $this->moduleslist = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
+
     }
 
     /**
@@ -1003,7 +1000,6 @@ class reportbase {
                         }
                         $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
                     }
-                    $permissionslib->moodleroles = $rcontext;
                     if (has_capability('block/learnerscript:reportsaccess', $context)) {
                         return implode(',', $permissionslib->get_rolewise_courses());
                     }

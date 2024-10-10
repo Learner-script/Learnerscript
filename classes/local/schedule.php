@@ -112,11 +112,11 @@ class schedule {
      * @return array
      */
     public static function get_options() {
-
         return [0 => get_string('select', 'block_learnerscript'),
             self::DAILY => get_string('daily', 'block_learnerscript'),
             self::WEEKLY => get_string('weekly', 'block_learnerscript'),
-            self::MONTHLY => get_string('monthly', 'block_learnerscript'), ];
+            self::MONTHLY => get_string('monthly', 'block_learnerscript'),
+        ];
     }
 
     /**
@@ -426,7 +426,6 @@ class schedule {
         $properties->role = $role;
         $properties->contextlevel = $contextlevel;
         $properties->contextrole = get_string('rolecontexts', 'block_learnerscript', $contextroles);
-        $properties->moodleroles = $rcontext;
         $reportclass = new $reportclassname($report, $properties);
         $reportclass->courseid = $report->courseid;
         $reportclass->start = 0;
@@ -502,10 +501,10 @@ class schedule {
         $rolewiseuserssql = "SELECT DISTINCT u.id, CONCAT(u.firstname, ' ' , u.lastname) AS fullname
                                FROM {user} u
                                JOIN {role_assignments} ra ON u.id = ra.userid
-                               JOIN {context} as ctx on ctx.id = ra.contextid AND ctx.contextlevel= $contextlevel
+                               JOIN {context} as ctx on ctx.id = ra.contextid AND ctx.contextlevel= :contextlevel
                                WHERE  ra.roleid = :roleid $searchsql AND u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0";
 
-        $rolewiseusers = $DB->get_records_sql($rolewiseuserssql, ['roleid' => $roleid, 'search' => '%' . $search . '%']);
+        $rolewiseusers = $DB->get_records_sql($rolewiseuserssql, ['contextlevel' => $contextlevel, 'roleid' => $roleid, 'search' => '%' . $search . '%']);
         $reportclass = (new ls)->create_reportclass($reportid);
         $reportclass->role = $DB->get_field('role', 'shortname', ['id' => $roleid]);
         $reportclass->courseid = $reportclass->config->courseid;
@@ -535,10 +534,6 @@ class schedule {
      */
     public function schedulereports($reportid, $table = true, $start = 0, $length = 5, $search = '') {
         global $DB;
-
-        if (!$reportid) {
-            throw new moodle_exception(get_string('reportnotavailable', 'block_learnerscript'));
-        }
 
         if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
             throw new moodle_exception(get_string('reportnotavailable', 'block_learnerscript'));
@@ -629,43 +624,11 @@ class schedule {
                 $selected = '';
             }
             $rolecontext = explode("-", $value);
-            switch ($rolecontext[0]) {
-                case 'admin':
-                    $original = $value;
-                    break;
-                case 'manager':
-                    $original = get_string('manager', 'role');
-                    break;
-                case 'coursecreator':
-                    $original = get_string('coursecreators');
-                    break;
-                case 'editingteacher':
-                    $original = get_string('defaultcourseteacher');
-                    break;
-                case 'teacher':
-                    $original = get_string('noneditingteacher');
-                    break;
-                case 'student':
-                    $original = get_string('defaultcoursestudent');
-                    break;
-                case 'guest':
-                    $original = get_string('guest');
-                    break;
-                case 'user':
-                    $original = get_string('authenticateduser');
-                    break;
-                case 'frontpage':
-                    $original = get_string('frontpageuser', 'role');
-                    break;
-                default:
-                    $original = $rolecontext[0];
-                    break;
-            }
             if (isset($rolecontext[1])) {
-                $contextroles = ['shortname' => $original, 'contextlevel' => $rolecontext[1]];
+                $contextroles = ['shortname' => $rolecontext[0], 'contextlevel' => $rolecontext[1]];
                 $rolecontextname = get_string('rolecontexts', 'block_learnerscript', $contextroles);
             } else {
-                $rolecontextname = $original;
+                $rolecontextname = $rolecontext[0];
             }
             $roleslist[] = ['key' => $key, 'value' => $rolecontextname, 'selected' => $selected];
         }
@@ -699,38 +662,17 @@ class schedule {
         }
 
         if ($scheduledreportid > 0) {
-            $schuserscountsql = "SELECT COUNT(u.id) as count
-                                          FROM {user} u
-                                              JOIN {block_ls_schedule} bcs ON u.id = :userid
-                                              WHERE u.confirmed = 1 AND u.suspended = 0
-                                              AND u.deleted = 0 AND bcs.reportid = :reportid
-                                          AND bcs.id = :scheduledreportid";
-            $schuserscount = $DB->count_records_sql($schuserscountsql, ['userid' => $userslist,
-                                'reportid' => $reportid,
-                                'scheduledreportid' => $scheduledreportid, ]);
-
             $schuserssql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) as fullname
                                           FROM {user} u
-                                          JOIN {block_ls_schedule} bcs ON u.id = :userid
+                                          JOIN {block_ls_schedule} bcs ON u.id = bcs.sendinguserid
                                           WHERE u.confirmed = 1 AND u.suspended = 0
-                                          AND u.deleted = 0 AND bcs.reportid = :reportid
+                                          AND u.deleted = 0 AND u.id = :userid
+                                          AND bcs.reportid = :reportid
                                           AND bcs.id = :scheduledreportid";
             $schusers = $DB->get_records_sql_menu($schuserssql, ['userid' => $userslist,
                                 'reportid' => $reportid,
-                                'scheduledreportid' => $scheduledreportid, ], 0, 10);
-            if ($schuserscount > 10) {
-                $schusers = $schusers + [-1 => get_string('viewmore', 'block_learnerscript')];
-            }
-            $schusersidssql = "SELECT u.id
-                                    FROM {user} u
-                                  JOIN {block_ls_schedule} bcs ON u.id = :userid
-                                 WHERE u.confirmed = 1 AND u.suspended = 0 AND u.deleted = 0
-                                 AND bcs.reportid = :reportid AND bcs.id = :scheduledreportid ";
-            $schusersids = $DB->get_fieldset_sql($schusersidssql, ['userid' => $userslist,
-                                    'reportid' => $reportid,
-                                    'scheduledreportid' => $scheduledreportid, ]);
-            $schusersids = implode(',', $schusersids);
-
+                                'scheduledreportid' => $scheduledreportid, ]);
+            $schusersids = implode(',', array_keys($schusers));
         } else {
             $schusers = [];
             $schusersids = '';

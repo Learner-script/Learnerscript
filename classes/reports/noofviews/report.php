@@ -36,9 +36,6 @@ class report extends reportbase implements \block_learnerscript\report {
     /** @var array $orderable  */
     public $orderable;
 
-    /** @var array $excludedroles  */
-    public $excludedroles;
-
     /** @var array $basicparamdata  */
     public $basicparamdata;
 
@@ -56,7 +53,6 @@ class report extends reportbase implements \block_learnerscript\report {
         $this->parent = false;
         $this->orderable = [];
         $this->defaultcolumn = 'lsl.userid';
-        $this->excludedroles = ["'student'"];
     }
 
     /**
@@ -150,7 +146,7 @@ class report extends reportbase implements \block_learnerscript\report {
     public function filters() {
         if (!empty($this->params['filter_activities'])) {
             $this->sql .= " AND lsl.contextinstanceid IN (:filter_activities) AND lsl.contextlevel = 70
-            AND lsl.target = 'course_module'";
+            ";
         }
         if (!empty($this->params['filter_courses']) && $this->params['filter_courses'] <> SITEID  && !$this->scheduling) {
             $this->sql .= " AND lsl.courseid IN (:filter_courses) ";
