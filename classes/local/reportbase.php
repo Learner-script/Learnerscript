@@ -228,7 +228,7 @@ class reportbase {
     public $componentdata;
 
     /**
-     * @var array $graphcolumns
+     * @var object $graphcolumns
      */
     private $graphcolumns;
 
@@ -261,11 +261,6 @@ class reportbase {
      * @var string $lsenddate
      */
     public $lsenddate;
-
-    /**
-     * @var array $moodleroles
-     */
-    public $moodleroles;
 
     /**
      * @var string $contextrole
@@ -310,10 +305,6 @@ class reportbase {
      */
     public $searchable;
     /**
-     * @var array $excludedroles
-     */
-    public $excludedroles;
-    /**
      * @var array $basicparamdata Basic params list
      */
     public $basicparamdata;
@@ -321,6 +312,14 @@ class reportbase {
      * @var bool $downloading downloadfile
      */
     public $downloading = false;
+    /**
+     * @var string $currentrole Current loggedin user role
+     */
+    public $currentrole = '';
+    /**
+     * @var array $moduleslist List of modules
+     */
+    public $moduleslist = [];
 
     /**
      * Construct
@@ -363,16 +362,23 @@ class reportbase {
         JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN (70)
         WHERE 1 = 1
         ORDER BY rcl.contextlevel ASC");
+        $rcontext = [];
         foreach ($rolecontexts as $rc) {
-            if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+            if (has_capability('block/learnerscript:managereports', context_system::instance())) {
                 continue;
             }
-            $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+            $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
-        $this->moodleroles = isset($SESSION->rolecontextlist) ? $SESSION->rolecontextlist : $rcontext;
         $this->contextrole = isset($SESSION->role) && isset($SESSION->ls_contextlevel)
         ? $SESSION->role . '_' . $SESSION->ls_contextlevel
         : $this->role .'_'.$this->contextlevel;
+        $capabilityrole = get_roles_with_capability('block/learnerscript:learnerreportaccess');
+        if (!empty($capabilityrole)) {
+            $this->currentrole = current($capabilityrole)->shortname;
+        }
+
+        $this->moduleslist = $DB->get_fieldset_select('modules', 'name', '', ['visible' => 1]);
+
     }
 
     /**
@@ -395,11 +401,7 @@ class reportbase {
             $userid = $USER->id;
         }
 
-        if (is_siteadmin($userid) || (new ls)->is_manager($userid, $this->contextlevel, $this->role)) {
-            return true;
-        }
-
-        if (has_capability('block/learnerscript:managereports', $context, $userid)) {
+        if (is_siteadmin($userid) || has_capability('block/learnerscript:managereports', $context, $userid)) {
             return true;
         }
 
@@ -413,9 +415,7 @@ class reportbase {
             $i = 1;
             $cond = [];
             foreach ($permissions->elements as $p) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/permissions/' .
-                    $p->pluginname . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_' . $p->pluginname;
+                $classname = 'block_learnerscript\components\permissions\\' . $p->pluginname . '\plugin';
                 $class = new $classname($this->config);
                 $class->role = $this->role;
                 $class->userroles = isset($this->userroles) ? $this->userroles : '';
@@ -461,14 +461,11 @@ class reportbase {
      * @param  object $mform Filter form
      */
     public function add_filter_elements(&$mform) {
-        global $CFG;
         $filters = (isset($this->componentdata->filters)) ? $this->componentdata->filters : [];
         if (!empty($filters->elements)) {
             foreach ($filters->elements as $f) {
                 if ($f->formdata->value) {
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                        $f->pluginname . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $f->pluginname;
+                    $classname = 'block_learnerscript\components\filters\\' . $f->pluginname;
                     $class = new $classname($this->config);
                     $class->singleselection = true;
                     $this->finalelements = $class->print_filter($mform);
@@ -483,10 +480,7 @@ class reportbase {
      * @param  string $pluginname Mandatory filter plugin name
      */
     public function initial_basicparams($pluginname) {
-        global $CFG;
-         require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-            $pluginname . '/plugin.class.php');
-        $classname = 'block_learnerscript\lsreports\plugin_' . $pluginname;
+        $classname = 'block_learnerscript\components\filters\\' . $pluginname;
         $class = new $classname($this->config);
         $class->singleselection = false;
         $selectoption = false;
@@ -522,9 +516,7 @@ class reportbase {
                     $this->finalelements = $mform->addElement('select', 'filter_status', '',
                     $statuslist, ['data-select2' => true]);
                 } else {
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' .
-                        $f['name'] . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $f['name'];
+                    $classname = 'block_learnerscript\components\filters\\' . $f['name'];
                     $class = new $classname($this->config);
                     $class->singleselection = isset($f['singleselection']) ? $f['singleselection'] : true;
                     $class->placeholder = isset($f['placeholder']) ? $f['placeholder'] : true;
@@ -583,7 +575,6 @@ class reportbase {
                     redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' =>
                         $this->config->id, 'courseid' => $this->config->courseid]));
                 }
-                die;
             }
             $this->filterform = $filterform;
         }
@@ -700,13 +691,11 @@ class reportbase {
      * @param  int $blockinstanceid Report block instance id
      */
     public function create_report($blockinstanceid = null) {
-        global $DB, $CFG;
+        global $DB;
         $context = context_system::instance();
         $this->check_permissions($context, $this->userid);
         $columns = (isset($this->componentdata->columns->elements))
         ? $this->componentdata->columns->elements : [];
-        $ordering = (isset($this->componentdata->ordering->elements))
-        ? $this->componentdata->ordering->elements : [];
         $plot = (isset($this->componentdata->plot->elements))
         ? $this->componentdata->plot->elements : [];
 
@@ -748,7 +737,6 @@ class reportbase {
         }
         $finalelements = [];
         $sqlorder = '';
-        $orderingdata = [];
         if (!empty($this->ordercolumn)) {
             $this->sqlorder['column'] = $this->selectedcolumns[$this->ordercolumn['column']];
             $this->sqlorder['dir'] = $this->ordercolumn['dir'];
@@ -757,7 +745,7 @@ class reportbase {
         $this->build_query(true);
 
         if ($this->reporttype == 'table') {
-            if (is_siteadmin($this->userid) || (new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+            if (is_siteadmin($this->userid) || has_capability('block/learnerscript:managereports', $context)) {
                 try {
                     $this->totalrecords = $DB->count_records_sql($this->sql, $this->params);
                 } catch (\dml_exception $e) {
@@ -786,8 +774,7 @@ class reportbase {
             }
         }
         if (is_siteadmin($this->userid)
-        || (new ls)->is_manager($this->userid, $this->contextlevel, $this->role)
-        || $this->role == 'manager') {
+        || has_capability('block/learnerscript:managereports', $context)) {
             $finalelements = $this->get_all_elements();
             $rows = $this->get_rows($finalelements);
         } else {
@@ -813,10 +800,7 @@ class reportbase {
                     if (empty($c)) {
                         continue;
                     }
-                    require_once($CFG->dirroot . '/blocks/learnerscript/components/columns/' .
-                    $c->pluginname . '/plugin.class.php');
-                    $classname = 'block_learnerscript\lsreports\plugin_' . $c->pluginname;
-
+                    $classname = 'block_learnerscript\components\columns\\' . $c->pluginname . '\plugin';
                     if (!isset($pluginscache[$classname])) {
                         $class = new $classname($this->config, $c);
                         $pluginscache[$classname] = $class;
@@ -830,8 +814,7 @@ class reportbase {
                     $class->downloading = $this->downloading;
                     $rid = isset($r->id) ? $r->id : 0;
                     if (isset($c->formdata->column) &&
-                        (($this->config->type == "topic_wise_performance" || $this->config->type == 'cohortusers')
-                        || (!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
+                        ((!empty($this->selectedcolumns) && in_array($c->formdata->column, $this->selectedcolumns)))) {
                         if (!empty($this->params['filter_users'])) {
                             $this->currentuser = $this->params['filter_users'];
                         }
@@ -982,7 +965,10 @@ class reportbase {
      */
     public function rolewisecourses() {
         global $DB;
-        if (!is_siteadmin($this->userid) && !(new ls)->is_manager($this->userid, $this->contextlevel, $this->role)) {
+
+        $context = context_system::instance();
+
+        if (!is_siteadmin($this->userid) && !has_capability('block/learnerscript:managereports', $context)) {
             if (!empty($this->componentdata->permissions->elements)) {
                 $roleincourse = array_filter($this->componentdata->permissions->elements, function($permission) {
                     // Role in course permission.
@@ -1009,14 +995,13 @@ class reportbase {
                     WHERE 1 = 1
                     ORDER BY rcl.contextlevel ASC");
                     foreach ($rolecontexts as $rc) {
-                        if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+                        if (has_capability('block/learnerscript:managereports', $context)) {
                             continue;
                         }
-                        $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+                        $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
                     }
-                    $permissionslib->moodleroles = $rcontext;
-                    if ($permissionslib->has_permission()) {
-                          return implode(',', $permissionslib->get_rolewise_courses());
+                    if (has_capability('block/learnerscript:reportsaccess', $context)) {
+                        return implode(',', $permissionslib->get_rolewise_courses());
                     }
                 }
             }

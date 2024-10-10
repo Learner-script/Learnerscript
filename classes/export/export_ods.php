@@ -16,14 +16,12 @@
 
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
-ini_set("memory_limit", "-1");
-ini_set('max_execution_time', 6000);
-
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Writer\Common\Creator\WriterFactory;
-
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->dirroot . '/lib/excellib.class.php');
+require_once("$CFG->libdir/odslib.class.php");
+use MoodleODSWorkbook;
+use MoodleODSWriter;
 
 /**
  * Class export_ods
@@ -34,48 +32,67 @@ require_once($CFG->libdir . '/adminlib.php');
  */
 class export_ods {
     /**
-     * Export data in ODS format.
-     * @package block_learnerscript
-     * @param object $reportclass
-     * @return mixed
+     * This function export report in ODS format
+     * @param object $reportclass Report class
+     * @param int $id Report id
      */
-    public function export_report($reportclass) {
-        global $CFG;
+    public function export_report($reportclass, $id) {
+        global $DB;
         $reportdata = $reportclass->finalreport;
-        require_once($CFG->dirroot . '/lib/excellib.class.php');
         $table = $reportdata->table;
         $filename = $reportdata->name . "_" . date('d M Y H:i:s', time()) . '.ods';
-        $writer = WriterFactory::createFromFile($filename);
-        $writer->openToBrowser($filename); // Stream data directly to the browser.
-        $filter = ['Filters'];
-        $filterrow = Row::fromValues($filter);
-        $writer->addRow($filterrow);
+        // Create a new Excel workbook.
+        $workbook = new MoodleODSWorkbook("-");
+        // Sending HTTP headers.
+        $workbook->send($filename);
+        // Creating the first worksheet.
+        $sheettitle = get_string('report', 'scorm');
+        $worksheet = $workbook->add_worksheet($filename);
+
+        // Add filters to the worksheet.
+        $row = 0;
+        $col = 0;
+
         if (!empty($reportclass->selectedfilters)) {
+            // Write 'Filters' title.
+            $worksheet->write($row, $col, 'Filters');
+            $row++;
             foreach ($reportclass->selectedfilters as $k => $filter) {
-                $filterrow = Row::fromValues([$k, $filter]);
-                $writer->addRow($filterrow);
-            }
-        }
-        $head = [];
-        if (!empty($table->head)) {
-            foreach ($table->head as $key => $heading) {
-                $head[] = $heading;
-            }
-            $headrow = Row::fromValues($head);
-            $writer->addRow($headrow);
-        }
-        $datarow = [];
-        if (!empty($table->data)) {
-            foreach ($table->data as $key => $value) {
-                $data = array_map(function($v) {
-                    return trim(strip_tags($v));
-                }, $value);
-                $datarow[] = Row::fromValues($data);
+                $worksheet->write($row, $col, $k);
+                $worksheet->write($row, $col + 1, $filter);
+                $row++;
             }
         }
 
-        $writer->addRows($datarow);
-        $writer->close();
+        // Add column headers if applicable.
+        $reporttype = $DB->get_field('block_learnerscript', 'type', ['id' => $id]);
+        if ($reporttype != 'courseprofile' && $reporttype != 'userprofile') {
+            if (!empty($table->head)) {
+                $col = 0;
+                foreach ($table->head as $heading) {
+                    // Ensure $key is an integer index for the column.
+                    $worksheet->write($row, $col, $heading);
+                    $col++;
+                }
+                $row++;
+            }
+        }
+
+        // Add data rows.
+        if (!empty($table->data)) {
+            foreach ($table->data as $data) {
+                $col = 0;
+                foreach ($data as $value) {
+                    $worksheet->write($row, $col, trim(strip_tags($value)));
+                    $col++;
+                }
+                $row++;
+            }
+        }
+
+        // Send the Excel file to the browser.
+        $workbook->send($filename);
+        $workbook->close();
     }
 
     /**
@@ -106,7 +123,7 @@ class export_ods {
                 }
             }
         }
-        $workbook = new \MoodleODSWorkbook($filename);
+        $workbook = new MoodleODSWorkbook($filename);
 
         $myxls = [];
 
@@ -116,7 +133,7 @@ class export_ods {
                 $myxls[0]->write($ri, $ci, $cv);
             }
         }
-        $writer = new \MoodleODSWriter($myxls);
+        $writer = new MoodleODSWriter($myxls);
         $contents = $writer->get_file_content();
         $handle = fopen($filename, 'w');
         fwrite($handle, $contents);

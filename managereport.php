@@ -22,7 +22,6 @@
  */
 
 require_once("../../config.php");
-use block_learnerscript\form\import_form;
 use block_learnerscript\local\ls as ls;
 global $SESSION;
 
@@ -56,22 +55,22 @@ $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus'
 
 if (!$lsreportconfigstatus) {
     redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
-    exit;
 }
 $PAGE->requires->jquery_plugin('ui-css');
 
 $SESSION->ls_contextlevel = $contextlevel;
 $rolecontexts = $DB->get_records_sql("SELECT DISTINCT CONCAT(r.id, '@', rcl.id),
-r.shortname, rcl.contextlevel
-FROM {role} r
-JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN (70)
-WHERE 1 = 1
-ORDER BY rcl.contextlevel ASC");
+                r.shortname, rcl.contextlevel
+                FROM {role} r
+                JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN (70)
+                WHERE 1 = 1
+                ORDER BY rcl.contextlevel ASC");
+$rcontext = [];
 foreach ($rolecontexts as $rc) {
-    if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+    if (has_capability('block/learnerscript:managereports', $context)) {
         continue;
     }
-    $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+    $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
 }
 $SESSION->rolecontextlist = $rcontext;
 
@@ -87,18 +86,6 @@ if ($importurl) {
         redirect(new moodle_url('/blocks/learnerscript/managereport.php'), get_string('reportcreated', 'block_learnerscript'));
     } else {
         throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
-    }
-}
-
-$mform = new import_form(null, $course->id);
-
-if ($data = $mform->get_data()) {
-    if ($xml = $mform->get_file_content('userfile')) {
-        if ((new ls)->cr_import_xml($xml, $course)) {
-            redirect(new moodle_url('/blocks/learnerscript/managereport.php'), get_string('reportcreated', 'block_learnerscript'));
-        } else {
-            throw new moodle_exception(get_string('errorimporting',  'block_learnerscript'));
-        }
     }
 }
 
@@ -118,42 +105,12 @@ if ($reports) {
     $table->width = "100%";
     $table->head = [get_string('name'),  get_string('type', 'block_learnerscript'),
                     get_string('actions'), ];
-    $table->align = ['left', 'left', 'left', 'center', 'center'];
-    $table->size = ['20%', '20%', '10%', '20%', '20%'];
-    $stredit = get_string('edit');
-    $strhide = get_string('hide');
-    $strshow = get_string('show');
-    $strcopy = get_string('duplicate');
-    $strexport = get_string('exportreport', 'block_learnerscript');
+    $table->align = ['left', 'left', 'center'];
+    $table->size = ['40%', '40%', '20%'];
     $strschedule = get_string('schedulereport', 'block_learnerscript');
 
     foreach ($reports as $r) {
         $editcell = '';
-        $editcell .= html_writer::link(new \moodle_url('/blocks/learnerscript/editreport.php', ['id' => $r->id]),
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/edit'), 'class' => "iconsmall",
-        'alt' => $stredit, ]), ['title' => $stredit]);
-
-        if (!empty($r->visible)) {
-            $editcell .= html_writer::link(new \moodle_url('editreport.php',
-            ['id' => $r->id, 'hide' => 1, 'sesskey' => $USER->sesskey]),
-            html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/hide'), 'class' => "iconsmall",
-            'alt' => $strhide, ]), ['title' => $strhide]);
-        } else {
-            $editcell .= html_writer::link(new moodle_url('editreport.php',
-            ['id' => $r->id, 'show' => 1, 'sesskey' => $USER->sesskey]),
-            html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/show'), 'class' => "iconsmall",
-            'alt' => $strshow, ]), ['class' => 'iconsmall', 'title' => $strshow]);
-        }
-        $editcell .= html_writer::link(new moodle_url('editreport.php',
-        ['id' => $r->id, 'sesskey' => $USER->sesskey]),
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/copy'), 'class' => "iconsmall",
-        'alt' => $strcopy, ]),
-        ['class' => 'iconsmall', 'title' => $strcopy]);
-        $editcell .= html_writer::link(new moodle_url('export.php',
-        ['id' => $r->id, 'sesskey' => $USER->sesskey]),
-        html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/t/backup'), 'class' => "iconsmall",
-        'alt' => $strexport, ]),
-        ['class' => 'iconsmall', 'title' => $strexport]);
         $properties = new stdClass();
         $properties->courseid = $courseid;
         $reportclass = (new ls)->create_reportclass($r->id, $properties);
@@ -163,6 +120,8 @@ if ($reports) {
             html_writer::empty_tag('img', ['src' => $OUTPUT->image_url('/i/calendar'), 'class' => "iconsmall",
             'alt' => $strschedule, ]),
             ['class' => 'iconsmall', 'title' => $strschedule]);;
+        } else {
+            $editcell .= '--';
         }
 
         $table->data[] = [html_writer::link(new moodle_url('viewreport.php', ['id' => $r->id]), $r->name),
@@ -175,5 +134,4 @@ if ($reports) {
     echo $OUTPUT->heading(get_string('noreportsavailable', 'block_learnerscript'));
 }
 
-$mform->display();
 echo $OUTPUT->footer();

@@ -22,14 +22,13 @@ require_once($CFG->dirroot . "/course/lib.php");
 use block_learnerscript\highcharts\graphicalreport;
 use stdclass;
 use DateTime;
-use DateTimeZone;
 use core_date;
 use context_system;
 use context_course;
 use core_course_category;
+use DateInterval;
 
 use block_learnerscript\local\schedule;
-use moodle_url;
 
 define('DAILY', 1);
 define('WEEKLY', 2);
@@ -48,92 +47,12 @@ define('PTSANS', 2);
  */
 class ls {
     /**
-     * Add new report
-     * @param object $data    New report data
-     * @param object $context Report context
-     * @return int Report ID
-     */
-    public function add_report($data, $context) {
-        global $DB;
-        if (!$lastid = $DB->insert_record('block_learnerscript', $data)) {
-            throw new \moodle_exception('errorsavingreport', 'block_learnerscript');
-        } else {
-            $event = \block_learnerscript\event\create_report::create([
-                'objectid' => $lastid,
-                'context' => $context,
-            ]);
-            $event->trigger();
-            $data->id = $lastid;
-            if (in_array($data->type, ['sql', 'statistics'])) {
-                self::update_report_sql($data);
-            }
-        }
-        return $lastid;
-    }
-    /**
-     * Update existing report
-     * @param  object $data    Updated report data
-     * @param  object $context Report context
-     */
-    public function update_report($data, $context) {
-        global $DB;
-        $data->global = 1;
-        $data->disabletable = isset($data->disabletable) ? $data->disabletable : 0;
-        $data->summary = isset($data->description['text']) ? $data->description['text'] : '';
-        if (!$DB->update_record('block_learnerscript', $data)) {
-            throw new \moodle_exception('errorsavingreport', 'block_learnerscript');
-        } else {
-            $event = \block_learnerscript\event\update_report::create([
-                    'objectid' => $data->id,
-                    'context' => $context,
-                ]);
-            $event->trigger();
-            if (in_array($data->type, ['sql', 'statistics'])) {
-                self::update_report_sql($data);
-            }
-        }
-    }
-    /**
-     * Delete report
-     * @param  object $report  Report data to delete
-     * @param  object $context Report context
-     */
-    public function delete_report($report, $context) {
-        global $DB;
-        if ($DB->delete_records('block_learnerscript', ['id' => $report->id])) {
-            if ($DB->delete_records('block_ls_schedule', ['reportid' => $report->id])) {
-                $event = \block_learnerscript\event\delete_report::create([
-                    'objectid' => $report->id,
-                    'context' => $context,
-                ]);
-                $event->add_record_snapshot('role_assignments', $report);
-                $event->trigger();
-            }
-        }
-    }
-    /**
-     * Update report sql
-     * @param  object $report Report data
-     */
-    public function update_report_sql($report) {
-        global $CFG, $DB;
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
-        $reportproperties = new stdClass();
-        $reportclass = new $reportclassname($report->id, $reportproperties);
-        $components = self::cr_unserialize($reportclass->config->components);
-        $components->customsql->config = $report;
-        $reportclass->config->components = (new ls)->cr_serialize($components);
-        $DB->update_record('block_learnerscript', $reportclass->config);
-    }
-    /**
      * Generate report plot
      * @param  object $reportclass Report class
      * @param  object $graphdata   Report graph data
      * @param  array $blockinstanceid Report block instance Id
      */
     public function generate_report_plot($reportclass, $graphdata, $blockinstanceid = null) {
-        global $CFG;
         $components = (new ls)->cr_unserialize($reportclass->config->components);
         $seriesvalues = (isset($components->plot->elements)) ? $components->plot->elements : [];
         $highcharts = new graphicalreport();
@@ -157,48 +76,6 @@ class ls {
             }
         }
         return true;
-    }
-    /**
-     * Get components data
-     * @param  int $reportid  Report Id
-     * @param  string $component Report component
-     * @return array
-     */
-    public function get_components_data($reportid, $component) {
-        global $CFG, $DB;
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new \moodle_exception(get_string('noreportexists', 'block_learnerscript'));
-        }
-        $elements = (new ls)->cr_unserialize($report->components);
-        $elements = isset($elements->$component->elements) ? $elements->$component->elements : [];
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/component.class.php');
-        $componentclassname = 'component_' . $component;
-        $compclass = new $componentclassname($report->id);
-        $optionsplugins = [];
-        if (!empty($compclass->plugins)) {
-            $currentplugins = [];
-            if ($elements) {
-                foreach ($elements as $e) {
-                    $currentplugins[] = $e->pluginname;
-                }
-            }
-            $plugins = get_list_of_plugins('blocks/learnerscript/components/' . $component);
-            foreach ($plugins as $p) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/' . $p . '/plugin.class.php');
-                $pluginclassname = 'block_learnerscript\lsreports\plugin_' . $p;
-                $pluginclass = new $pluginclassname($report);
-                if (in_array($report->type, $pluginclass->reporttypes)) {
-                    if ($pluginclass->unique && in_array($p, $currentplugins)) {
-                        continue;
-                    }
-                    $optionsplugins[] = ['shortname' => $p, 'fullname' => ucfirst($p)];
-                }
-            }
-            asort($optionsplugins);
-        }
-        return $optionsplugins;
     }
     /**
      * Report table data
@@ -285,7 +162,7 @@ class ls {
      * @param  string $var Recursive variable
      * @return string
      */
-    public function urlencode_recursive($var) {
+    private function urlencode_recursive($var) {
         if (is_object($var)) {
             $newvar = new stdClass();
             $properties = get_object_vars($var);
@@ -310,7 +187,7 @@ class ls {
      * @param  string $var Recursive variable
      * @return string
      */
-    public function urldecode_recursive($var) {
+    private function urldecode_recursive($var) {
         if (is_object($var)) {
             $newvar = new stdClass();
             $properties = get_object_vars($var);
@@ -384,9 +261,6 @@ class ls {
      * @return object
      */
     public function cr_check_report_permissions($report, $userid, $context) {
-        global $CFG;
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
         $properties = new stdClass();
         $properties->courseid = $report->id;
         $properties->start = 0;
@@ -395,7 +269,7 @@ class ls {
         $properties->lsstartdate = 0;
         $properties->lsenddate = time();
         $properties->filters = [];
-        $classn = 'block_learnerscript\lsreports\report_' . $report->type;
+        $classn = 'block_learnerscript\reports\\' . $report->type . '\report';
         $classi = new $classn($report->id, $properties);
         return $classi->check_permissions($context, $userid);
     }
@@ -487,7 +361,6 @@ class ls {
         }
 
         $workbook->close();
-        exit;
     }
     /**
      * Report categories list
@@ -495,11 +368,9 @@ class ls {
      * @param  array  $parents  Report parent
      * @param  string  $requiredcapability Required capability to access report
      * @param  integer $excludeid         Excluded ID
-     * @param  object  $category     Category
-     * @param  string  $path         Report path
      */
     public function cr_make_categories_list(&$list, &$parents, $requiredcapability = '',
-    $excludeid = 0, $category = null, $path = "") {
+    $excludeid = 0) {
         global $DB;
         // For categories list use just this one public function.
         if (empty($list)) {
@@ -555,12 +426,15 @@ class ls {
                 $newreport->name .= " (" . userdate(time()) . ")";
             }
             try {
-                $reportid = $DB->insert_record('block_learnerscript', $newreport);
-                $event = \block_learnerscript\event\create_report::create([
-                    'objectid' => $reportid,
-                    'context' => $context,
-                ]);
-                $event->trigger();
+                $existreport = $DB->get_field('block_learnerscript', 'id', ['name' => $newreport->name]);
+                if (!$existreport) {
+                    $reportid = $DB->insert_record('block_learnerscript', $newreport);
+                    $event = \block_learnerscript\event\create_report::create([
+                        'objectid' => $reportid,
+                        'context' => $context,
+                    ]);
+                    $event->trigger();
+                }
                 if ($config && $reportid) {
                     $PAGE->set_context($context);
                     $regions = ['side-db-first', 'side-db-second', 'side-db-third',
@@ -648,10 +522,8 @@ class ls {
      * @return object
      */
     public function create_reportclass($reportid, $reportproperties = null) {
-        global $CFG;
         $report = (new self)->cr_get_reportinstance($reportid);
-        require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
-        $reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+        $reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
         $reportclass = new $reportclassname($report, $reportproperties);
         if ($reportproperties) {
             isset($reportproperties->courseid) ? $reportclass->courseid = $reportproperties->courseid : null;
@@ -700,28 +572,11 @@ class ls {
         return $reportcontenttypes;
     }
     /**
-     * Add custom reports sql
-     * @param array $reports Reports list
-     */
-    public function add_customreports_sql($reports) {
-        global $DB;
-        foreach ($reports as $report) {
-            $importurl = urldecode(new moodle_url('/blocks/learnerscript/reports/sql/customreports/' . $report . '.xml'));
-            $fcontents = file_get_contents($importurl);
-            $course = $DB->get_record("course", ["id" => SITEID]);
-            if ($this->cr_import_xml($fcontents, $course, false)) {
-                echo '';
-            } else {
-                throw new \moodle_exception(get_string('errorimporting', 'block_learnerscript'));
-            }
-        }
-    }
-    /**
      * List of scheduled reports data
      * @param  boolean $frequency
      * @return array List of scheduled reports
      */
-    public function schedulereportsquery($frequency = false) {
+    private function schedulereportsquery($frequency = false) {
         global $DB;
         core_date::set_default_server_timezone();
         $now = new DateTime("now", core_date::get_server_timezone_object());
@@ -785,47 +640,6 @@ class ls {
         }
         return true;
     }
-
-    /**
-     * Report components list
-     * @param  object $report Report data
-     * @param  string $comp   Components
-     * @return array Report components list
-     */
-    public function report_componentslist($report, $comp) {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/learnerscript/reports/'.$report->type.'/report.class.php');
-
-        $elements = (new self)->cr_unserialize($report->components);
-        $elements = isset($elements->$comp->elements) ? $elements->$comp->elements : [];
-
-        require_once($CFG->dirroot.'/blocks/learnerscript/components/'.$comp.'/component.class.php');
-        $componentclassname = 'component_'.$comp;
-        $compclass = new $componentclassname($report->id);
-        if ($compclass->plugins) {
-            $currentplugins = [];
-            if ($elements) {
-                foreach ($elements as $e) {
-                    $currentplugins[] = $e->pluginname;
-                }
-            }
-            $plugins = get_list_of_plugins('blocks/learnerscript/components/'.$comp);
-            $optionsplugins = [];
-            foreach ($plugins as $p) {
-                require_once($CFG->dirroot.'/blocks/learnerscript/components/'.$comp.'/'.$p.'/plugin.class.php');
-                $pluginclassname = 'block_learnerscript\lsreports\plugin_'.$p;
-                $pluginclass = new $pluginclassname($report);
-                if (in_array($report->type, $pluginclass->reporttypes)) {
-                    if ($pluginclass->unique && in_array($p, $currentplugins)) {
-                        continue;
-                    }
-                    $optionsplugins[$p] = get_string($p, 'block_learnerscript');
-                }
-            }
-            asort($optionsplugins);
-        }
-        return $optionsplugins;
-    }
     /**
      * Column definations
      * @param  object $reportclass Report data
@@ -870,12 +684,11 @@ class ls {
      * @param  string $role   Loggedin user role
      * @return boolean
      */
-    public function check_rolewise_permission($reportid, $role) {
+    private function check_rolewise_permission($reportid, $role) {
         global $DB, $USER, $SESSION;
         $context = context_system::instance();
         $roleid = $DB->get_field('role', 'id', ['shortname' => $role]);
-        if ((!is_siteadmin() && has_capability('block/learnerscript:managereports', $context, $USER->id))
-        || ($role == 'manager' && $SESSION->ls_contextlevel == CONTEXT_SYSTEM)) {
+        if (!is_siteadmin() && has_capability('block/learnerscript:managereports', $context, $USER->id)) {
             return true;
         }
         $reportcomponents = $DB->get_field('block_learnerscript', 'components', ['id' => $reportid]);
@@ -985,6 +798,7 @@ class ls {
                 $rolereports[] = ['id' => $key, 'name' => $value];
             }
         }
+
         return $rolereports;
     }
 
@@ -993,9 +807,9 @@ class ls {
      * @param  string $role   Role
      * @return array List of statistic reports
      */
-    public function rolewise_statisticsreports($role) {
+    private function rolewise_statisticsreports($role) {
         global $DB, $SESSION;
-        if (empty($role) || ($role == 'manager' && $SESSION->ls_contextlevel == CONTEXT_SYSTEM)) {
+        if (empty($role) || (has_capability('block/learnerscript:managereports', \context_system::instance()))) {
             return [];
         }
         $params['global'] = 1;
@@ -1029,18 +843,21 @@ class ls {
         $reporttitle = $reporttype;
         if (array_key_exists('filter_courses', $reportclassparams) && $reporttitle != 'Course profile') {
             $coursename = $DB->get_field('course', 'fullname', ['id' => $reportclassparams['filter_courses']]);
-            $reporttitle = str_replace('Course', '<b>'.$coursename.'</b> Course', $reporttype);
+            $reporttitledata = ['coursename' => $coursename, 'reportname' => $reporttype];
+            $reporttitle = get_string('coursereporttitle', 'block_learnerscript', $reporttitledata);
         }
         if (array_key_exists('filter_status', $reportclassparams) && $reportclassparams['filter_status'] != 'all') {
-            $reporttitle = $reporttitle . ' - ' . '<b>' . $reportclassparams['filter_status'] . '</b>';
+            $reporttitledata = ['reporttitle' => $reporttitle, 'reportclass' => $reportclassparams['filter_status']];
+            $reporttitle = get_string('reportenrolstatus', 'block_learnerscript', $reporttitledata);
         }
         if (array_key_exists('filter_users', $reportclassparams)) {
             if (is_int($reportclassparams['filter_users'])) {
                 $learnername = $DB->get_field_sql("SELECT firstname AS fullname FROM {user}
                                                     WHERE id = (:filterusers) ",
                                                     ['filterusers' => $reportclassparams['filter_users']]);
-                $reporttitle = str_replace(get_string('learner', 'block_learnerscript'), '<b>'.$learnername.'</b>', $reporttitle);
-                $reporttitle = str_replace(get_string('my', 'block_learnerscript'), '<b>'.$learnername.'\'s</b>', $reporttitle);
+                $reporttitledata = ['learnername' => $learnername, 'reporttitle' => $reporttitle];
+                $reporttitle = get_string('learnerreporttitle', 'block_learnerscript', $reporttitledata);
+                $reporttitle = get_string('myreporttitle', 'block_learnerscript', $reporttitledata);
             }
         }
         return $reporttitle;
@@ -1063,7 +880,7 @@ class ls {
                 $tourconfig = json_decode($data);
                 $tourexists = $DB->record_exists('tool_usertours_tours', ['name' => $tourconfig->name]);
                 if (!$tourexists) {
-                    $tour = $pluginmanager->import_tour_from_json($data);
+                    $pluginmanager->import_tour_from_json($data);
                 }
             }
         }
@@ -1079,6 +896,7 @@ class ls {
         $lsreportscount = $DB->count_records('block_learnerscript');
         $lsimportlogs = [];
         $lastreport = 0;
+        $lastreportposition = 0;
         foreach ($lsimportlogs as $lsimportlog) {
             $lslog = json_decode($lsimportlog);
             if ($lslog['status'] == false) {
@@ -1136,14 +954,17 @@ class ls {
         JOIN {role_assignments} ra ON ra.roleid = r.id
         JOIN {context} ctx ON ctx.id = ra.contextid
         WHERE ra.userid = :userid";
+        $contextparam = '';
         if ($contextlevel || !empty($SESSION->ls_contextlevel)) {
             if ($SESSION->ls_contextlevel) {
-                $rolesql .= " AND ctx.contextlevel= " .$SESSION->ls_contextlevel;
+                $contextparam = $SESSION->ls_contextlevel;
+                $rolesql .= " AND ctx.contextlevel = :contextparam";
             } else {
-                $rolesql .= " AND ctx.contextlevel=$contextlevel";
+                $contextparam = $contextlevel;
+                $rolesql .= " AND ctx.contextlevel=:contextparam";
             }
         }
-        $roles = $DB->get_records_sql_menu($rolesql, ['userid' => $userid]);
+        $roles = $DB->get_records_sql_menu($rolesql, ['userid' => $userid, 'contextparam' => $contextparam]);
         ksort($roles);
         return $roles;
     }
@@ -1255,8 +1076,7 @@ class ls {
             SUM(qa.timefinish - qa.timestart) AS time1, qa.quiz AS quizid, q.course AS courseid
             FROM {user} u
             JOIN {quiz_attempts} qa ON qa.userid = u.id
-            JOIN {user_enrolments} ue ON ue.userid = u.id AND ue.status = 0
-            JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0
+            JOIN {role_assignments} ra ON ra.userid = qa.userid
             JOIN {quiz} q ON q.id = qa.quiz
             WHERE qa.preview = 0 AND q.course = e.courseid AND qa.state = (:finished) AND qa.userid > 2
             GROUP BY qa.userid, qa.quiz, q.course, qa.id", ['finished' => 'finished']);
@@ -1267,8 +1087,7 @@ class ls {
             SUM(qa.timefinish - qa.timestart) AS time1, qa.quiz AS quizid, q.course AS courseid
             FROM {user} u
             JOIN {quiz_attempts} qa ON qa.userid = u.id
-            JOIN {user_enrolments} ue ON ue.userid = u.id AND ue.status = 0
-            JOIN {enrol} e ON e.id = ue.enrolid AND e.status = 0
+            JOIN {role_assignments} ra ON ra.userid = qa.userid
             JOIN {quiz} q ON q.id = qa.quiz
             WHERE qa.preview = 0 AND q.course = e.courseid AND qa.state = (:finished)
             AND qa.timemodified > :quizcrontime AND qa.userid > 2
@@ -1392,6 +1211,7 @@ class ls {
      */
     public function switchrole_options() {
         global $DB, $USER, $SESSION;
+        $systemcontext = context_system::instance();
         $data = [];
         if (!empty($SESSION->role)) {
             $data['currentrole'] = $SESSION->role;
@@ -1402,7 +1222,7 @@ class ls {
             $data['dashboardrole'] = '';
         }
         if (!is_siteadmin()) {
-            $rolesql = "SELECT DISTINCT concat(r.id, '-',ctx.contextlevel) as roleid, r.shortname
+            $rolesql = "SELECT DISTINCT concat(r.id, '-',ctx.contextlevel) as roleid, r.id, r.shortname
                         FROM {role} r
                         JOIN {role_assignments} ra ON ra.roleid = r.id
                         JOIN {context} ctx ON ctx.id = ra.contextid
@@ -1410,10 +1230,10 @@ class ls {
                 $roles = $DB->get_records_sql($rolesql, ['userid' => $USER->id]);
                 ksort($roles);
         } else {
-            $rolesql = "SELECT DISTINCT concat(r.id, '-',rcl.contextlevel)  as roleid, r.shortname
-                   FROM {role} r
-                   JOIN {role_context_levels} rcl ON rcl.roleid = r.id
-                   WHERE 1 = 1 AND rcl.contextlevel != " . CONTEXT_MODULE;
+            $rolesql = "SELECT DISTINCT concat(r.id, '-',rcl.contextlevel)  as roleid, r.id, r.shortname, r.name
+                    FROM {role} r
+                    JOIN {role_context_levels} rcl ON rcl.roleid = r.id
+                    WHERE 1 = 1 AND rcl.contextlevel != " . CONTEXT_MODULE;
             $roles = $DB->get_records_sql($rolesql);
             ksort($roles);
         }
@@ -1423,44 +1243,13 @@ class ls {
         $unusedroles = ['user', 'guest', 'frontpage'];
         foreach ($roles as $key => $value) {
             $rolecontext = explode("-", $key);
-            $roleshortname = $DB->get_field('role', 'shortname', ['id' => $rolecontext[0]]);
-            if (in_array($roleshortname, $unusedroles)) {
+            if (in_array($value->shortname, $unusedroles)) {
                 continue;
             }
             $active = '';
 
-            if ($roleshortname == $SESSION->role && $rolecontext[1] == $SESSION->ls_contextlevel) {
+            if ($value->shortname == $SESSION->role && $rolecontext[1] == $SESSION->ls_contextlevel) {
                 $active = 'active';
-            }
-            switch ($roleshortname) {
-                case 'manager':
-                    $value1 = get_string('manager' , 'role');
-                    break;
-                case 'coursecreator':
-                    $value1 = get_string('coursecreators');
-                    break;
-                case 'editingteacher':
-                    $value1 = get_string('defaultcourseteacher');
-                    break;
-                case 'teacher':
-                    $value1 = get_string('noneditingteacher');
-                    break;
-                case 'student':
-                    $value1 = get_string('defaultcoursestudent');
-                    break;
-                case 'guest':
-                    $value1 = get_string('guest');
-                    break;
-                case 'user':
-                    $value1 = get_string('authenticateduser');
-                    break;
-                case 'frontpage':
-                    $value1 = get_string('frontpageuser', 'role');
-                    break;
-                // We should not get here, the role UI should require the name for custom roles!
-                default:
-                    $value1 = $value->shortname;
-                break;
             }
             $contexttext = '';
             if ($rolecontext[1] == CONTEXT_SYSTEM) {
@@ -1470,36 +1259,12 @@ class ls {
             } else if ($rolecontext[1] == CONTEXT_COURSE) {
                 $contexttext = get_string('course');
             }
-            $data['roles'][] = ['roleshortname' => $roleshortname, 'rolename' => $contexttext." ".$value1,
+            $roles = role_fix_names(get_all_roles(), $systemcontext, ROLENAME_ORIGINAL);
+            $rolename = $roles[$value->id]->localname;
+            $data['roles'][] = ['roleshortname' => $value->shortname, 'rolename' => $contexttext." ".$rolename,
                                 'active' => $active, 'contextlevel' => $rolecontext[1], ];
         }
         return $data;
-    }
-
-    /**
-     * Checking loggedin user role is manager
-     *
-     * @param  int $userid       User ID
-     * @param  int $contextlevel User contextlevel
-     * @param  string $role      User role
-     */
-    public function is_manager($userid = null, $contextlevel = null, $role = null) {
-        global $USER, $DB, $SESSION;
-        $SESSION->role = isset($SESSION->role) ? $SESSION->role : $role;
-        $SESSION->ls_contextlevel = isset($SESSION->ls_contextlevel) ? $SESSION->ls_contextlevel : $contextlevel;
-        if (isset($SESSION->role) && ($SESSION->role != 'manager' && $SESSION->ls_contextlevel != CONTEXT_SYSTEM)) {
-            return false;
-        }
-        if ($userid == null) {
-            $userid = $USER->id;
-        }
-        $context = context_system::instance();
-        if ($SESSION->ls_contextlevel == CONTEXT_SYSTEM) {
-            $roleid = $DB->get_field('role', 'id', ['shortname' => 'manager']);
-            if (user_has_role_assignment($userid, $roleid, $context->id)) {
-                return true;
-            }
-        }
     }
 
     /**
@@ -1527,6 +1292,82 @@ class ls {
      */
     public function userlmsaccess() {
         global $DB;
+
+        $daystimedata = $this->get_daystimesslot();
+        $sessionsdata = [];
+        $accesscount = $DB->get_records_sql("SELECT DISTINCT lsl.id, lsl.userid, lsl.timecreated
+                            FROM {logstore_standard_log} lsl
+                            JOIN {user} u ON u.id = lsl.userid
+                            WHERE lsl.action = :action AND lsl.userid IN (17, 18)
+                            AND lsl.timecreated BETWEEN :starttime AND :endtime
+                            ORDER BY lsl.userid ASC",
+                                ['action' => 'loggedin', 'starttime' => $daystimedata['starttimestamp'],
+                                'endtime' => $daystimedata['endtimestamp'], ]);
+        $dateaccesscount = [];
+        $eachdaycount = new stdclass;
+        $weekarray = [];
+        $i = 1;
+        foreach ($accesscount as $access) {
+            if (!array_key_exists($access->userid, $sessionsdata)) {
+                $i = 1;
+            }
+            if (in_array(date('H', $access->timecreated), $daystimedata['timingslist'])) {
+                $starthr = date('H', $access->timecreated);
+                if (!array_key_exists($starthr, $dateaccesscount)) {
+                    $eachdaycount = new stdclass;
+                }
+                $endhr = date('H', strtotime('+1 hour', $access->timecreated));
+                $hourarray = $starthr - $daystimedata['stime']->format('H');
+                if (in_array(date('l', $access->timecreated), $daystimedata['weekdayslist'])) {
+                    $week = date('w', $access->timecreated);
+                    $concatval = $access->userid . $starthr . $week;
+                    $val = $week - 1;
+                    if (!array_key_exists($concatval, $weekarray)) {
+                        $weekarray = [];
+                        $weekarray[$concatval] = $i;
+                        $eachdaycount->$val = $i;
+                    } else {
+                        $i++;
+                        $test[$concatval] = $i;
+                        $eachdaycount->$val = $i;
+                    }
+                }
+                $dateaccesscount[$hourarray] = ['label' => $starthr . '-' . $endhr, 'data' => $eachdaycount];
+            }
+            $options = ["type" => "radar",
+                            "title" => get_string('lmsaccess', 'block_learnerscript'),
+                            "xAxis" => $daystimedata['weekdayslist'],
+                            "yAxis" => $daystimedata['timeslots'],
+                            "data" => $dateaccesscount,
+                            ];
+            $logindata = json_encode($options, JSON_NUMERIC_CHECK);
+            $sessionsdata[$access->userid] = $logindata;
+
+            $insertdata = new stdClass();
+            $record = $DB->get_field_sql("SELECT id FROM {block_ls_userlmsaccess} WHERE userid = :userid",
+                                        ['userid' => $access->userid]);
+            if (empty($record)) {
+                $insertdata->userid = $access->userid;
+                $insertdata->logindata = $sessionsdata[$access->userid];
+                $insertdata->timecreated = time();
+                $insertdata->timemodified = 0;
+                $DB->insert_record('block_ls_userlmsaccess', $insertdata);
+            } else {
+                $insertdata->id = $record;
+                $insertdata->userid = $access->userid;
+                $insertdata->logindata = $sessionsdata[$access->userid];
+                $insertdata->timemodified = time();
+                $DB->update_record('block_ls_userlmsaccess', $insertdata);
+            }
+        }
+        mtrace(get_string('taskcomplete', 'block_learnerscript'));
+    }
+
+    /**
+     * Funtion to display week days and time slots.
+     * @return array
+     */
+    public function get_daystimesslot() {
         $start    = new DateTime('monday last week');
         $end      = new DateTime('sunday last week');
         $interval = new \DateInterval('P1D');
@@ -1536,77 +1377,47 @@ class ls {
             $weekdaysql = $dt->format('m/d/Y');
             $weekdaysdate[] = $weekdaysql;
             $weekdayslist[] = $weekdays;
-            strtotime($weekdaysql . ' 09:00:00');
         }
-        $timingslist = [get_string('firsthr', 'block_learnerscript'),
-                        get_string('secondhr', 'block_learnerscript'),
-                        get_string('thirdhr', 'block_learnerscript'),
-                        get_string('fourthhr', 'block_learnerscript'),
-                        get_string('fifthhr', 'block_learnerscript'),
-                        get_string('sixthhr', 'block_learnerscript'),
-                        get_string('seventhhr', 'block_learnerscript'),
-                        get_string('eighthr', 'block_learnerscript')];
-        $timings = ['09-10', '10:00:01-11', '11:00:01-12', '14:00:01-15', '15:00:01-16',
-                        '16:00:01-17', '17:00:01-18', '18:00:01-19', ];
-        $users = $DB->get_records_sql("SELECT DISTINCT ue.userid AS id
-                        FROM {course} c
-                        JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                        JOIN {user_enrolments} ue on ue.enrolid = e.id AND ue.status = 0
-                        JOIN {role_assignments}  ra ON ra.userid = ue.userid
-                        JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
-                        JOIN {context} ctx ON ctx.instanceid = c.id
-                        JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
-                        WHERE ra.contextid = ctx.id AND ctx.contextlevel = 50 AND c.visible = 1");
+        $time = new DateTime("now", core_date::get_user_timezone_object());
+        $time->add(new DateInterval("P1D"));
+        $time->setTime(9, 0, 0);
 
-        foreach ($users as $user) {
-            $j = 0;
-            $sessionsdata = [];
-            foreach ($timings as $sessiontime) {
-                $timestampdiff = [];
-                for ($i = 0; $i <= count($weekdaysdate) - 1; $i++) {
-                    $currenttime = explode('-', $sessiontime);
-                    if (is_numeric($currenttime[0])) {
-                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0] . ':00:00');
-                    } else {
-                        $starttime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[0]);
-                    }
-                    $endtime = strtotime($weekdaysdate[$i] . ' ' . $currenttime[1] . ':00:00');
-                    $accesscount = $DB->get_records_sql("SELECT id FROM {logstore_standard_log} WHERE action = :action
-                                AND userid = :userid AND timecreated BETWEEN :starttime AND :endtime",
-                                    ['action' => 'loggedin', 'userid' => $user->id, 'starttime' => $starttime,
-                                    'endtime' => $endtime, ]);
-                    $timestampdiff[] = count($accesscount);
-                }
-                $sessionsdata[] = ['label' => $timingslist[$j], 'data' => $timestampdiff];
-                $j++;
-            }
-            $options = ["type" => "radar",
-                            "title" => get_string('lmsaccess', 'block_learnerscript'),
-                            "xAxis" => $weekdayslist,
-                            "yAxis" => $timingslist,
-                            "data" => $sessionsdata,
-                            ];
-            $logindata = json_encode($options, JSON_NUMERIC_CHECK);
-            $insertdata = new stdClass();
-            $record = $DB->get_field_sql("SELECT id FROM {block_ls_userlmsaccess} WHERE userid = :userid",
-                                        ['userid' => $user->id]);
-            if (empty($record)) {
-                $insertdata->userid = $user->id;
-                $insertdata->logindata = $logindata;
-                $insertdata->timecreated = time();
-                $insertdata->timemodified = 0;
-                $DB->insert_record('block_ls_userlmsaccess', $insertdata);
+        $stime = new DateTime();
+        $stime->setTime(9, 0, 0);
+        $starttimestamp = strtotime($start->format('m/d/Y') . ' ' . $stime->format('H:i:s'));
+
+        $etime = new DateTime();
+        $etime->setTime(19, 0, 0);
+        $endtimestamp = strtotime($end->format('m/d/Y') . ' ' . $etime->format('H:i:s'));
+
+        // Calculate the difference between the two times.
+        $interval = $stime->diff($etime);
+
+        // Get the difference in hours.
+        $hours = $interval->h;
+        $starttime = $time->getTimestamp();
+        $timeslots = [];
+        for ($i = 0; $i < $hours; $i++) {
+            $starthour = date('H', $starttime);
+            $endhour = date('H', strtotime('+1 hour', $starttime));
+            $endhr = date('Ha', strtotime('+1 hour', $starttime));
+            $endtime = strtotime('+1 hour', $starttime);
+            if ($starthour < $starthour) {
+                $timeslots[] = date('H', $starttime) . '-' . $endhour;
+                $endtimesec = strtotime('+1 second', $endtime);
             } else {
-                $insertdata->id = $record;
-                $insertdata->userid = $user->id;
-                $insertdata->logindata = $logindata;
-                $insertdata->timemodified = time();
-                $DB->update_record('block_ls_userlmsaccess', $insertdata);
+                $timeslots[] = date('H', $starttime) . '-' . $endhour;
+                $endtimesec = $endtime;
             }
+            $timingslist[] = $starthour;
+            $timings[] = $starthour . '-' . $endhr;
+            $starttime = $endtimesec;
         }
-        echo get_string('taskcomplete', 'block_learnerscript');
-    }
 
+        return ['starttimestamp' => $starttimestamp, 'endtimestamp' => $endtimestamp,
+                'timingslist' => $timingslist, 'stime' => $stime, 'weekdayslist' => $weekdayslist,
+                'timeslots' => $timeslots, 'timings' => $timings, ];
+    }
 
     /**
      * Learnerscript report view data
@@ -1643,21 +1454,5 @@ class ls {
         $data->exportparams = $exportparams;
         $arraydata = (array)$data + $reportdata->tableproperties;
         return $arraydata;
-    }
-
-    /**
-     * Get sub directories
-     *
-     * @param string $dir
-     * @return array
-     */
-    public function getsubdirectories($dir = null) {
-        $subdir = [];
-        $directories = array_filter(glob($dir), 'is_dir');
-        $subdir = array_merge($subdir, $directories);
-        foreach ($directories as $directory) {
-            $subdir = array_merge($subdir, $this->getsubdirectories($directory.'/*'));
-        }
-         return $subdir;
     }
 }

@@ -130,7 +130,7 @@ define(['jquery',
             /**
              * Add schedule form role for widget
              */
-            $(document).on('change', ".schuserroleslist", function(e) {
+            $(document).on('change', ".schuserroleslist", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.rolewiseusers({reportid: reportid, reportinstance: reportinstance});
@@ -140,14 +140,13 @@ define(['jquery',
              * Add schedule form users for widget
              */
 
-            $(document).on('change', ".schusers_data", function(e) {
+            $(document).on('change', ".schusers_data", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.addschusers({reportid: reportid, reportinstance: reportinstance});
             });
-            
 
-            $(document).on('change', "select[name='frequency']", function(e) {
+            $(document).on('change', "select[name='frequency']", function() {
                 var reportid = $(this).data('reportid');
                 var reportinstance = $(this).data('reportinstance');
                 schedule.frequency_schedule({reportid: reportid, reportinstance: reportinstance});
@@ -186,7 +185,7 @@ define(['jquery',
         schformvalidation: function(args) {
             document.getElementById(args.form).addEventListener('submit', function(ev) {
                 try {
-                    var myValidator = report.validate_scheduled_reports_form(args);
+                    var myValidator = report.validate_schedule_form(args);
                 } catch (e) {
                     return true;
                 }
@@ -204,7 +203,7 @@ define(['jquery',
          * @param  {object} args Formname and required classname
          * @return Returns list of error messages from validation
          */
-        validate_scheduled_reports_form: function(args) {
+        validate_schedule_form: function(args) {
             var self = this;
             var skipClientValidation = false;
             if (skipClientValidation) {
@@ -214,7 +213,7 @@ define(['jquery',
             var first_focus = false;
             $("[data-class='" + args.reqclass + "']").each(function(index, value) {
                 var element = $(value).data('element');
-                ret = self.validate_scheduled_reports_form_element(value, element, args) && ret;
+                ret = self.validate_schedule_form_element(value, element, args) && ret;
                 if (!ret && !first_focus) {
                     first_focus = true;
                     Y.use('moodle-core-event', function() {
@@ -235,7 +234,7 @@ define(['jquery',
          * @param  {object} args Element object
          * @return Formatted error messages for each element
          */
-        validate_scheduled_reports_form_element: function(element, escapedName, args) {
+        validate_schedule_form_element: function(element, escapedName, args) {
             if (undefined == element) {
                 //required element was not found, then let form be submitted without client side validation
                 return true;
@@ -451,7 +450,7 @@ define(['jquery',
         },
         rolewiseusers: function(args) {
             $('#id_users_data' + args.reportinstance).val(null).trigger('change');
-        }
+        },
     };
     return schedule;
 });

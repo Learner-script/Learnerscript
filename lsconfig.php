@@ -78,7 +78,6 @@ if ($import) {
 
 $renderer = $PAGE->get_renderer('block_learnerscript');
 echo $OUTPUT->header();
-$error = false;
 if ($error) {
     foreach ($errordata as $errormsg) {
         \core\notification::add(
@@ -117,11 +116,11 @@ if ($import) {
 
 $PAGE->requires->js_call_amd('block_learnerscript/lsreportconfig', 'init',
                                 [['total' => $total,
-                                            'current' => $current,
-                                            'errorreportspositiondata' =>
-                                            $errorreportspositiondata,
-                                            'lastreportposition' => $lastreportposition,
-                                        ], $status,
+                                        'current' => $current,
+                                        'errorreportspositiondata' =>
+                                        $errorreportspositiondata,
+                                        'lastreportposition' => $lastreportposition,
+                                    ], $status,
                                 ]);
 
 echo $OUTPUT->footer();

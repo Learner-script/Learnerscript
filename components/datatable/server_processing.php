@@ -88,4 +88,3 @@ echo json_encode(
         "data" => $data,
     ]
 );
-exit;

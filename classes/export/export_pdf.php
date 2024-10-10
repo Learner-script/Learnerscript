@@ -16,10 +16,8 @@
 
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
-ini_set("memory_limit", "-1");
-ini_set('max_execution_time', 6000);
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
-use block_learnerscript\local\ls;
+require_once($CFG->libdir . '/pdflib.php');
 use html_writer;
 
 /**
@@ -36,14 +34,13 @@ class export_pdf {
      * @param int $id Report id
      */
     public function export_report($reportclass, $id) {
-        global $DB, $CFG;
+        global $DB;
         $reportdata = $reportclass->finalreport;
         if (!empty($reportclass->basicparams)) {
             $requestdata = array_merge($reportclass->params, $reportclass->basicparams);
         } else {
             $requestdata = $reportclass->params;
         }
-        require_once($CFG->libdir . '/pdflib.php');
         $reportname = $DB->get_record('block_learnerscript', ['id' => $id]);
         $table = $reportdata->table;
         $matrix = [];
@@ -140,22 +137,22 @@ class export_pdf {
         $header = $this->pdf_reportheader();
 
         $filename = $reportname->name;
-        $doc->writeHTMLCell($w = 0, $h = 10, $x = '10', $y = '10', $header, $border = 0,
+        $doc->writeHTMLCell($w = 0, $h = 10, $x = '230', $y = '30', $header, $border = 0,
          $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
         $doc->writeHTMLCell($w = 100, $h = 10, $x = '120', $y = '20',
         html_writer::tag('h1', html_writer::tag('b', $reportname->name)), $border = 0,
         $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25',
-        html_writer::tag('h4', get_string('filters', 'block_learnerscript')), $border = 0, $ln = 1, $fill = 0, $reseth =
-        true, $align = '', $autopadding = true);
-        $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '30',
-        $finalfilterdata, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '',
-         $autopadding = true);
         if (!empty($reportclass->selectedfilters) && count($reportclass->selectedfilters) <= 4) {
+            $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '25',
+            html_writer::tag('h4', get_string('filters', 'block_learnerscript')), $border = 0, $ln = 1, $fill = 0, $reseth =
+            true, $align = '', $autopadding = true);
+            $doc->writeHTMLCell($w = 100, $h = 10, $x = '10', $y = '30',
+            $finalfilterdata, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '',
+            $autopadding = true);
             $doc->writeHTMLCell($w = 0, $h = 0, $x = '10', $y = '70', $table, $border = 0,
             $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
         } else {
-            $doc->writeHTMLCell($w = 0, $h = 0, $x = '10', $y = '70', $table, $border = 0,
+            $doc->writeHTMLCell($w = 0, $h = 0, $x = '10', $y = '40', $table, $border = 0,
             $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
         }
         $doc->Output($filename, 'I');
@@ -165,15 +162,18 @@ class export_pdf {
      * PDF Report Export Header
      * @return string Report Header
      */
-    public function pdf_reportheader() {
+    private function pdf_reportheader() {
         $headerimagepath = block_learnerscript_get_reportheader_imagepath();
         $headerimgpath = "";
-        if (isset($headerimagepath) && @getimagesize($headerimagepath)) {
+        if (isset($headerimagepath) && !empty($headerimagepath) && @getimagesize($headerimagepath)) {
             $headerimgpath = $headerimagepath;
         }
         if ($headerimgpath) {
-            $reportlogoimage =
-            '<img src="' . $headerimgpath . '" alt=' . get_string("altreportimage", "block_learnerscript") . ' height="80px">';
+            $reportlogoimage = html_writer::empty_tag('img', [
+                'src' => $headerimgpath,
+                'alt' => get_string("altreportimage", "block_learnerscript"),
+                'height' => '80px',
+            ]);
         } else {
             $reportlogoimage = "";
         }

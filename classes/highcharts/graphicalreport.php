@@ -213,7 +213,7 @@ class graphicalreport {
      * @param object $report
      * @return array
      */
-    public function get_lbchartdata($data, $series, $type, $head, $report) {
+    private function get_lbchartdata($data, $series, $type, $head, $report) {
         global $CFG;
         $i = 0;
         $error = [];

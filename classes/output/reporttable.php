@@ -31,7 +31,7 @@ use stdClass;
 class reporttable implements renderable, templatable {
 
     /**
-     * @var $reportclass
+     * @var object $reportclass
      */
     public $reportclass;
     /**

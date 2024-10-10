@@ -22,7 +22,6 @@ use html_table;
 use html_writer;
 use moodle_url;
 use plugin_renderer_base;
-use tabobject;
 
 /**
  * A Moodle block to create customizable reports.
@@ -78,20 +77,12 @@ class renderer extends plugin_renderer_base {
      */
     public function viewreport($report, $context, $reportclass) {
         global $USER;
-        $calcbutton = false;
         $reportid = $report->id;
-        $ls = new ls();
 
         if ($report->type !== 'statistics') {
-            $plots = $ls->get_components_data($report->id, 'plot');
-            $components = $ls->cr_unserialize($reportclass->config->components);
-            $calcbutton = false;
-            if (!empty($components->calculations->elements)) {
-                $calcbutton = true;
-            }
             if (has_capability('block/learnerscript:managereports', $context) ||
                 (has_capability('block/learnerscript:manageownreports', $context)) && $report->ownerid == $USER->id) {
-                $plotoptions = new \block_learnerscript\output\plotoption($plots, $report->id, $calcbutton, 'viewreport');
+                $plotoptions = new \block_learnerscript\output\plotoption(false, $report->id, false, 'viewreport');
                 echo $this->render($plotoptions);
             }
             $debug = optional_param('debug', false, PARAM_BOOL);
@@ -135,9 +126,7 @@ class renderer extends plugin_renderer_base {
         if (!empty($plotdata)) {
             echo '';
         }
-        if (!empty($reportclass->config->export)) {
-            $export = explode(',', $reportclass->config->export);
-        }
+
         if ($report->disabletable == 0) {
             echo html_writer::start_div('', ['id' => "reportcontainer". $report->id]);
             echo html_writer::end_div();
@@ -169,8 +158,7 @@ class renderer extends plugin_renderer_base {
                     get_string('exportformat', 'block_learnerscript'),
                     get_string('schedule', 'block_learnerscript'),
                     get_string('action'), ];
-                $table->size = ['40%', '15%', '35%', '10%'];
-                $table->align = ['left', 'center', 'left', 'center'];
+                $table->size = ['25%', '20%', '40%', '15%'];
                 $table->id = 'scheduledtimings';
                 $table->attributes['data-reportid'] = $reportid;
                 $table->attributes['data-courseid'] = $courseid;
@@ -180,42 +168,7 @@ class renderer extends plugin_renderer_base {
             $data = [];
             foreach ($scheduledreports['schreports'] as $sreport) {
                 $line = [];
-
-                switch ($sreport->role) {
-                    case 'admin':
-                        $originalrole = get_string('admin');
-                        break;
-                    case 'manager':
-                        $originalrole = get_string('manager', 'role');
-                        break;
-                    case 'coursecreator':
-                        $originalrole = get_string('coursecreators');
-                        break;
-                    case 'editingteacher':
-                        $originalrole = get_string('defaultcourseteacher');
-                        break;
-                    case 'teacher':
-                        $originalrole = get_string('noneditingteacher');
-                        break;
-                    case 'student':
-                        $originalrole = get_string('defaultcoursestudent');
-                        break;
-                    case 'guest':
-                        $originalrole = get_string('guest');
-                        break;
-                    case 'user':
-                        $originalrole = get_string('authenticateduser');
-                        break;
-                    case 'frontpage':
-                        $originalrole = get_string('frontpageuser', 'role');
-                        break;
-                    // We should not get here, the role UI should require the name for custom roles!
-                    default:
-                        $originalrole = $sreport->role;
-                        break;
-                }
-
-                $line[] = $originalrole;
+                $line[] = $sreport->role;
                 $line[] = strtoupper($sreport->exportformat);
                 $line[] = (new schedule)->get_formatted($sreport->frequency, $sreport->schedule);
                 $buttons = [];
@@ -238,136 +191,6 @@ class renderer extends plugin_renderer_base {
             ];
         }
         return $return;
-    }
-
-    /**
-     * View schedule users
-     * @param  int    $reportid
-     * @param  int    $scheduleid
-     * @param  string $schuserslist
-     * @param  object $stable Schedule table list
-     * @return array
-     */
-    public function viewschusers($reportid, $scheduleid, $schuserslist, $stable) {
-        if ($stable->table) {
-            $viewschuserscount = (new schedule)->viewschusers($reportid, $scheduleid, $schuserslist, $stable);
-            if ($viewschuserscount > 0) {
-                $table = new html_table();
-                $table->head = [get_string('name'),
-                    get_string('email'), ];
-                $table->size = ['50%', '50%'];
-                $table->id = 'scheduledusers';
-                $table->attributes['data-reportid'] = $reportid;
-                $table->attributes['data-courseid'] = isset($courseid) ? $courseid : SITEID;
-                $return = html_writer::table($table);
-            } else {
-                $return = html_writer::div(get_string('usersnotfound', 'block_learnerscript'), "alert alert-info");
-            }
-        } else {
-            $schedulingdata = (new schedule)->viewschusers($reportid, $scheduleid, $schuserslist, $stable);
-            $data = [];
-            foreach ($schedulingdata['schedulingdata'] as $sdata) {
-                $line = [];
-                $line[] = $sdata->fullname;
-                $line[] = $sdata->email;
-                $data[] = $line;
-            }
-            $return = [
-                "recordsTotal" => $schedulingdata['viewschuserscount'],
-                "recordsFiltered" => $schedulingdata['viewschuserscount'],
-                "data" => $data,
-            ];
-
-        }
-
-        return $return;
-    }
-    /**
-     * This function displays the report tabs
-     * @param  object $reportclass Current report class object
-     * @param  string $currenttab Selected tab
-     * @return array|null
-     */
-    public function print_tabs($reportclass, $currenttab) {
-        global $COURSE;
-        $top = [];
-        $top[] = new tabobject('viewreport', new moodle_url('/blocks/learnerscript/viewreport.php',
-            ['id' => $reportclass->config->id, 'courseid' => $COURSE->id]),
-            get_string('viewreport', 'block_learnerscript'));
-        $components = ['permissions'];
-        foreach ($reportclass->components as $comptab) {
-            if (!in_array($comptab, $components)) {
-                continue;
-            }
-            $top[] = new tabobject($comptab, new moodle_url('/blocks/learnerscript/editcomp.php',
-                ['id' => $reportclass->config->id,
-                    'comp' => $comptab,
-                    'courseid' => $COURSE->id, ]),
-                get_string($comptab, 'block_learnerscript'));
-        }
-        $top[] = new tabobject('report', new moodle_url('/blocks/learnerscript/editreport.php',
-            ['id' => $reportclass->config->id,
-                'courseid' => $COURSE->id, ]),
-            get_string('report', 'block_learnerscript'));
-        $top[] = new tabobject('schedulereport', new moodle_url('/blocks/learnerscript/components/scheduler/schedule.php',
-            ['id' => $reportclass->config->id,
-                'courseid' => $COURSE->id, ]),
-            get_string('schedulereport', 'block_learnerscript'));
-
-        $top[] = new tabobject('managereports', new moodle_url('/blocks/learnerscript/managereport.php'),
-            get_string('managereports', 'block_learnerscript'));
-
-        $tabs = [$top];
-        print_tabs($tabs, $currenttab);
-    }
-
-    /**
-     * This function render the report component form
-     * @param  int $reportid Report id
-     * @param  string $component Report components
-     * @param  string $pname Plugin name
-     * @return array
-     */
-    public function render_component_form($reportid, $component, $pname) {
-        global $CFG, $DB;
-
-        if (!$report = $DB->get_record('block_learnerscript', ['id' => $reportid])) {
-            throw new \moodle_exception(get_string('noreportexists', 'block_learnerscript'));
-        }
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/' . $pname . '/plugin.class.php');
-        $pluginclassname = 'block_learnerscript\lsreports\plugin_' . $pname;
-        $pluginclass = new $pluginclassname($report);
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/component.class.php');
-        $componentclassname = 'component_' . $component;
-        $compclass = new $componentclassname($report->id);
-
-        require_once($CFG->dirroot . '/blocks/learnerscript/components/' . $component . '/' . $pname . '/form.php');
-        $classname = $pname . '_form';
-
-        $formurlparams = ['id' => $reportid, 'comp' => $component, 'pname' => $pname];
-        if ($cid) {
-            $formurlparams['cid'] = $cid;
-        }
-        $formurl = new moodle_url('/blocks/learnerscript/editplugin.php', $formurlparams);
-        $editform = new $classname($formurl, compact('comp', 'cid', 'id', 'pluginclass', 'compclass', 'report', 'reportclass'));
-        $html = $editform->render();
-        $headcode = $this->page->start_collecting_javascript_requirements();
-
-        $loadpos = strpos($headcode, 'M.yui.loader');
-        $cfgpos = strpos($headcode, 'M.cfg');
-        $script .= substr($headcode, $loadpos, $cfgpos - $loadpos);
-        // And finally the initalisation calls for those libraries.
-        $endcode = $this->page->requires->get_end_code();
-        $script .= preg_replace_callback(
-                    '/<\/?(script|link)[^>]*>/',
-                    function($matches) {
-                        return '';
-                    },
-                    $endcode
-                );
-
-        return ['html' => $html, 'script' => $script];
     }
 
     /**

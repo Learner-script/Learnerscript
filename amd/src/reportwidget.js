@@ -183,7 +183,7 @@ define(['jquery',
             args.filters = args.filters || smartfilter.FilterData(reportinstance);
             args.columnDefs = '';
             args.filters['lsfstartdate'] = $('#lsfstartdate' + args.instanceid).val() || $('#lsfstartdate').val();
-            args.filters['lsfenddate'] = $('#lsfenddate' + args.instanceid).val() || $('#lsfstartdate').val();
+            args.filters['lsfenddate'] = $('#lsfenddate' + args.instanceid).val() || $('#lsfenddate').val();
             if (typeof args.filters['filter_courses'] == 'undefined') {
                 var filter_courses = $('.report_courses').val();
                 if (filter_courses != 1) {

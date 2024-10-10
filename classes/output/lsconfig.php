@@ -54,7 +54,7 @@ class lsconfig implements renderable, templatable {
      * @return stdClass
      */
     public function export_for_template(renderer_base $output) {
-        global $PAGE, $CFG;
+        global $PAGE;
         $data = new stdClass();
         $lsconfigslideshowimages = $this->lsconfigslideshowimages();
         $data->slideshowimages = $lsconfigslideshowimages['slideshowimages'];
@@ -71,8 +71,7 @@ class lsconfig implements renderable, templatable {
         $data->redirecturl = $redirecturl;
         $data->importstatus = $this->importstatus;
         $data->lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
-        $data->configurestatus = (($this->status == 'import' && !$data->lsreportconfigstatus)
-                                    || $this->status == 'reset') ? true : false;
+        $data->configurestatus = ($this->status == 'import' && !$data->lsreportconfigstatus) ? true : false;
         return $data;
     }
 

@@ -51,7 +51,6 @@ $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus'
 
 if (!$lsreportconfigstatus) {
     redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
-    exit;
 }
 if (empty($SESSION->role)) {
     $rolelist = (new ls)->get_currentuser_roles();
@@ -76,10 +75,10 @@ JOIN {role_context_levels} rcl ON rcl.roleid = r.id AND rcl.contextlevel NOT IN 
 WHERE 1 = 1
 ORDER BY rcl.contextlevel ASC");
 foreach ($rolecontexts as $rc) {
-    if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+    if (has_capability('block/learnerscript:managereports', $context)) {
         continue;
     }
-    $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+    $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
 }
 $SESSION->rolecontextlist = $rcontext;
 

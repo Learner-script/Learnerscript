@@ -32,17 +32,66 @@ $status = optional_param('status', '', PARAM_TEXT);
 $cmid = optional_param('cmid', 0, PARAM_INT);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $drillid = optional_param('_drillid', 0, PARAM_INT);
-$delete = optional_param('delete', 0, PARAM_INT);
 $cid = optional_param('cid', '', PARAM_ALPHANUM);
 $comp = optional_param('comp', '', PARAM_ALPHA);
 $pname = optional_param('pname', '', PARAM_ALPHA);
+$paramcourses = optional_param('filter_courses', 0, PARAM_INT);
+$paramcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
+$paramusers = optional_param('filter_users', 0, PARAM_INT);
+$parammodules = optional_param('filter_modules', 0, PARAM_INT);
+$paramactivities = optional_param('filter_activities', 0, PARAM_INT);
+$paramstatus = optional_param('filter_status', '', PARAM_TEXT);
+$paramstartdate = optional_param('lsfstartdate', 0, PARAM_INT);
+$paramenddate = optional_param('lsfenddate', 0, PARAM_INT);
 global $USER, $CFG, $SESSION;
 
 $lsreportconfigstatus = get_config('block_learnerscript', 'lsreportconfigstatus');
 
 if (!$lsreportconfigstatus) {
     redirect(new moodle_url('/blocks/learnerscript/lsconfig.php', ['import' => 1]));
-    exit;
+}
+if (!$report = $DB->get_record('block_learnerscript', ['id' => $id])) {
+    throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
+}
+
+if ($courseid && $report->global) {
+    $report->courseid = $courseid;
+} else {
+    $courseid = $report->courseid;
+}
+if ($userid > 0) {
+    $report->userid = $userid;
+}
+if (!$course = $DB->get_record('course', ['id' => $courseid])) {
+    throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
+}
+
+$filterrequests = [];
+$datefilterrequests = [];
+$datefilterrequests['lsfstartdate'] = 0;
+$datefilterrequests['lsfenddate'] = time();
+
+$urlfilterparams = ['filter_courses' => $paramcourses,
+                        'filter_coursecategories' => $paramcoursecategories,
+                        'filter_users' => $paramusers,
+                        'filter_modules' => $parammodules,
+                        'filter_activities' => $paramactivities,
+                        'filter_status' => $paramstatus,
+                        'lsfstartdate' => $paramstartdate,
+                        'lsfenddate' => $paramenddate
+                    ];
+$urlrequests = array_filter($urlfilterparams);
+foreach ($urlrequests as $key => $val) {
+    if (strpos($key, 'filter_') !== false) {
+        if ($key == 'filter_status') {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
+        } else {
+            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
+        }
+    }
+    if (strpos($key, 'date') !== false) {
+        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
+    }
 }
 
 if (!is_siteadmin() && empty($SESSION->role)) {
@@ -63,10 +112,10 @@ if (!is_siteadmin()) {
         WHERE 1 = 1
         ORDER BY rcl.contextlevel ASC");
         foreach ($rolecontexts as $rc) {
-            if ($rc->contextlevel == 10 && ($rc->shortname == 'manager')) {
+            if (has_capability('block/learnerscript:managereports', $context)) {
                 continue;
             }
-            $rcontext[] = $rc->shortname .'_'.$rc->contextlevel;
+            $rcontext[] = get_string('rolecontexts', 'block_learnerscript', $rc);
         }
         $querysql = "SELECT DISTINCT ctx.contextlevel, r.shortname
                            FROM {role} r
@@ -78,52 +127,6 @@ if (!is_siteadmin()) {
         $SESSION->ls_contextlevel = $contextlevels->contextlevel;
         $SESSION->rolecontext = $SESSION->role . '_' . $SESSION->ls_contextlevel;
     }
-}
-$filterrequests = [];
-$datefilterrequests = [];
-$datefilterrequests['lsfstartdate'] = 0;
-$datefilterrequests['lsfenddate'] = time();
-
-$paramcourses = optional_param('filter_courses', 0, PARAM_INT);
-$paramcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
-$paramusers = optional_param('filter_users', 0, PARAM_INT);
-$parammodules = optional_param('filter_modules', 0, PARAM_INT);
-$paramactivities = optional_param('filter_activities', 0, PARAM_INT);
-$paramstatus = optional_param('filter_status', '', PARAM_TEXT);
-$paramstartdate = optional_param('lsfstartdate', 0, PARAM_INT);
-$paramenddate = optional_param('lsfenddate', 0, PARAM_INT);
-$urlfilterparams = ['filter_courses' => $paramcourses,
-            'filter_coursecategories' => $paramcoursecategories,
-            'filter_users' => $paramusers, 'filter_modules' => $parammodules,
-            'filter_activities' => $paramactivities, 'filter_status' => $paramstatus,
-            'lsfstartdate' => $paramstartdate, 'lsfenddate' => $paramenddate, ];
-$urlrequests = array_filter($urlfilterparams);
-foreach ($urlrequests as $key => $val) {
-    if (strpos($key, 'filter_') !== false) {
-        if ($key == 'filter_status') {
-            $filterrequests[$key] = optional_param($key, $val, PARAM_TEXT);
-        } else {
-            $filterrequests[$key] = optional_param($key, $val, PARAM_INT);
-        }
-    }
-    if (strpos($key, 'date') !== false) {
-        $datefilterrequests[$key] = optional_param($key, $val, PARAM_INT);
-    }
-}
-if (!$report = $DB->get_record('block_learnerscript', ['id' => $id])) {
-    throw new moodle_exception('reportdoesnotexists', 'block_learnerscript');
-}
-
-if ($courseid && $report->global) {
-    $report->courseid = $courseid;
-} else {
-    $courseid = $report->courseid;
-}
-if ($userid > 0) {
-    $report->userid = $userid;
-}
-if (!$course = $DB->get_record('course', ['id' => $courseid])) {
-    throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
 }
 
 // Force user login in course (SITE or Course).
@@ -138,32 +141,8 @@ $PAGE->set_context($context);
 $PAGE->set_title($report->name);
 $PAGE->set_pagelayout('report');
 
-if ($delete && confirm_sesskey()) {
-    $components = (new block_learnerscript\local\ls)->cr_unserialize($report->components);
-    $elements = isset($components->$comp->elements) ? $components->$comp->elements : [];
-    foreach ($elements as $index => $e) {
-        if ($e->id == $cid) {
-            if ($delete) {
-                unset($elements[$index]);
-                break;
-            }
-            $newindex = ($moveup) ? $index - 1 : $index + 1;
-            $tmp = $elements[$newindex];
-            $elements[$newindex] = $e;
-            $elements[$index] = $tmp;
-            break;
-        }
-    }
-    $components->$comp->elements = $elements;
-    $report->components = (new block_learnerscript\local\ls)->cr_serialize($components);
-    $DB->update_record('block_learnerscript', $report);
-    redirect(new moodle_url('/blocks/learnerscript/viewreport.php', ['id' => $id, 'courseid' => $courseid]));
-    exit;
-}
-
-require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $report->type . '/report.class.php');
 $properties = new stdClass();
-$reportclassname = 'block_learnerscript\lsreports\report_' . $report->type;
+$reportclassname = 'block_learnerscript\reports\\' . $report->type . '\report';
 $reportclass = new $reportclassname($report, $properties);
 $reportclass->courseid = $courseid;
 if (!$download) {
@@ -185,28 +164,20 @@ if (!is_siteadmin() && !$reportclass->check_permissions($context, $USER->id)) {
     throw new moodle_exception("badpermissions", 'block_learnerscript');
 }
 $basicparamdata = new stdclass;
-$ftcourses = optional_param('filter_courses', 0, PARAM_INT);
-$ftcoursecategories = optional_param('filter_coursecategories', 0, PARAM_INT);
-$ftusers = optional_param('filter_users', 0, PARAM_INT);
-$ftmodules = optional_param('filter_modules', 0, PARAM_INT);
-$ftactivities = optional_param('filter_activities', 0, PARAM_INT);
-$ftstatus = optional_param('filter_status', '', PARAM_TEXT);
-$urlparams = ['filter_courses' => $ftcourses, 'filter_coursecategories' => $ftcoursecategories,
-            'filter_users' => $ftusers, 'filter_modules' => $ftmodules,
-            'filter_activities' => $ftactivities, 'filter_status' => $ftstatus, ];
-$request = array_filter($urlparams);
+$request = $urlrequests;
 if ($request) {
     foreach ($request as $key => $val) {
         if (strpos($key, 'filter_') !== false) {
             $plugin = str_replace('filter_', '', $key);
             $basicparamdata->{$key} = $val;
-            if (file_exists($CFG->dirroot . '/blocks/learnerscript/components/filters/' . $plugin . '/plugin.class.php')
-            && !empty($val)) {
-                require_once($CFG->dirroot . '/blocks/learnerscript/components/filters/' . $plugin . '/plugin.class.php');
-                $classname = 'block_learnerscript\lsreports\plugin_' . $plugin;
-                $class = new $classname($reportclass->config);
-                $selected = get_string('selectedfilter', 'block_learnerscript', ucfirst($plugin));
-                $reportclass->selectedfilters[$selected] = $class->selected_filter($val, $request);
+            if (!empty($val)) {
+                $classname = 'block_learnerscript\components\filters\\' . $plugin;
+                if (class_exists($classname)) {
+                    $class = new $classname($reportclass->config);
+                    $selected = get_string('selectedfilter', 'block_learnerscript', ucfirst($plugin));
+                    $reportclass->selectedfilters[$selected] = $class->selected_filter($val, $request);
+                }
+                
             }
         }
     }
@@ -315,5 +286,4 @@ if (!$download) {
         $reportclass->finalreport->name = $reportclass->config->name;
         (new $exportclass)->export_report($reportclass, $id);
     }
-    die;
 }

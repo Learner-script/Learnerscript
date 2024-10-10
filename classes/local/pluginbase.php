@@ -38,7 +38,7 @@ class pluginbase {
     public $type = '';
 
     /**
-     * @var $report
+     * @var object $report
      */
     public $report = null;
 
@@ -73,7 +73,7 @@ class pluginbase {
     public $colformat = false;
 
     /**
-     * @var $reportclass
+     * @var object $reportclass
      */
     public $reportclass;
 
@@ -112,8 +112,7 @@ class pluginbase {
             $this->report = $report;
         }
         if (!empty($this->report->type) && $this->report->type) {
-            require_once($CFG->dirroot . '/blocks/learnerscript/reports/' . $this->report->type . '/report.class.php');
-            $reportclassname = 'block_learnerscript\lsreports\report_' . $this->report->type;
+            $reportclassname = 'block_learnerscript\reports\\' . $this->report->type . '\report';
             $properties = new stdClass;
             $this->reportclass = new $reportclassname($this->report, $properties);
         }

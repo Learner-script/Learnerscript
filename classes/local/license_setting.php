@@ -37,7 +37,7 @@ class license_setting extends \admin_setting_configtext {
      * @param string $data
      */
     public function write_setting($data) {
-        GLOBAL $CFG, $PAGE;
+        GLOBAL $PAGE;
 
         if (empty($data)) {
             set_config('ls_'.$this->name, $data, 'block_learnerscript');
@@ -56,7 +56,6 @@ class license_setting extends \admin_setting_configtext {
                 redirect(new moodle_url('/blocks/learnerscript/managereport.php'));
             }
         }
-        exit;
     }
 
     /**

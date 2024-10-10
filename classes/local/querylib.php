@@ -18,6 +18,8 @@ namespace block_learnerscript\local;
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/enrol/locallib.php");
 
+use context_system;
+
 /**
  * A Moodle block to create customizable reports.
  *
@@ -60,19 +62,15 @@ class querylib {
             $coursessql = "SELECT DISTINCT c.id, c.fullname, c.timecreated AS timecreated
             FROM {course} c";
         }
-        $enroljoin = " JOIN (SELECT DISTINCT e.courseid
-                               FROM {enrol} e
-                               JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid1)
-                               WHERE ue.status = :active AND e.status = :enabled AND ue.timestart < :now1 AND
-                                (ue.timeend = 0 OR ue.timeend > :now2)) en ON (en.courseid = c.id)";
+
         if ($SESSION->ls_contextlevel == CONTEXT_SYSTEM || $contextlevel == CONTEXT_SYSTEM) {
-            $coursessql .= " $enroljoin LEFT JOIN {context} AS ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
+            $coursessql .= " LEFT JOIN {context} ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
         } else if ($SESSION->ls_contextlevel == CONTEXT_COURSECAT
          || $contextlevel == CONTEXT_COURSECAT) {
-            $coursessql .= " $enroljoin JOIN {course_categories} cc ON cc.id = c.category
+            $coursessql .= " JOIN {course_categories} cc ON cc.id = c.category
                 LEFT JOIN {context} ctx ON ctx.instanceid = cc.id AND ctx.contextlevel = :contextlevel";
         } else {
-            $coursessql .= " $enroljoin LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+            $coursessql .= " LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
         }
         $coursessql .= " JOIN {role_assignments} ra ON ra.contextid = ctx.id
                  JOIN {role} r ON r.id = ra.roleid
@@ -112,6 +110,7 @@ class querylib {
     public function filter_get_courses($pluginclass, $filtercourses, $selectoption = true,
     $search = false, $filterdata = [], $type = false, $userid = null) {
         global $DB, $USER, $SESSION;
+        $context = context_system::instance();
         $limitnum = 1;
         $searchvalue = '';
         $concatsql = "";
@@ -130,8 +129,9 @@ class querylib {
         }
         if (!empty($filterdata)
         && !empty($filterdata['filter_users'])
-        && $filterdata['filter_users_type'] == 'basic'
-        && $filterdata['filter_courses_type'] == 'custom') {
+        && (($filterdata['filter_users_type'] == 'basic'
+            && $filterdata['filter_courses_type'] == 'custom')
+            || $pluginclass->reportclass->basicparams[0]['name'] == 'users')) {
             $userid = $filterdata['filter_users'];
         }
         if (!empty($filterdata) && !empty($filterdata['filter_coursecategories'])) {
@@ -152,8 +152,7 @@ class querylib {
             $pluginclass->reportclass->userid = $USER->id;
         }
         if (is_siteadmin($pluginclass->reportclass->userid)
-        || (new ls)->is_manager($pluginclass->reportclass->userid,
-        $pluginclass->reportclass->contextlevel, $pluginclass->reportclass->role)) {
+        || has_capability('block/learnerscript:managereports', $context)) {
             if ($userid > 0) {
                 $courselist = array_keys(enrol_get_users_courses($userid));
                 if (!empty($courselist)) {
@@ -222,6 +221,7 @@ class querylib {
     public function filter_get_users($pluginclass, $selectoption = true,
     $search = false, $filterdata = [], $type = false, $filterusers='', $courses = null) {
         global $DB, $USER, $SESSION;
+        $context = context_system::instance();
         $searchsql = "";
         $concatsql = "";
         $concatsql1 = "";
@@ -235,96 +235,75 @@ class querylib {
         }
         if ($pluginclass->report->type != 'sql') {
             $pluginclass->report->components = isset($pluginclass->report->components) ? $pluginclass->report->components : '';
-            $components = (new \block_learnerscript\local\ls)->cr_unserialize($pluginclass->report->components);
-            if (!empty($components->conditions->elements)) {
-                $conditions = $components['conditions'];
-                $reportclassname = 'block_learnerscript\lsreports\report_' . $pluginclass->report->type;
-                $properties = new \stdClass();
-                $reportclass = new $reportclassname($pluginclass->report, $properties);
-                $userslist = $reportclass->elements_by_conditions($conditions);
+            if (!empty($filterdata) && !empty($filterdata['filter_users'])
+            && ((isset($filterdata['filter_courses_type'])
+            && $filterdata['filter_courses_type'] != 'basic'
+            && $filterdata['filter_users_type'] != 'basic') || !$type)) {
+                $userid = $filterdata['filter_users'];
+                $concatsql .= " AND u.id = $userid";
+            }
+            if (!empty($filterdata) && !empty($filterdata['filter_courses'])
+            && $filterdata['filter_courses_type'] == 'basic'
+            && $filterdata['filter_users_type'] == 'custom') {
+                $courseid = $filterdata['filter_courses'];
+                $concatsql1 .= " AND c.id = $courseid ";
+            }
+            if (!empty($filterusers) && !$search) {
+                $concatsql .= " AND u.id = $filterusers";
+            }
+            if (empty($pluginclass->reportclass)) {
+                $pluginclass->reportclass = new \stdClass;
+                $pluginclass->reportclass->userid = $USER->id;
+            }
+            if (is_siteadmin($pluginclass->reportclass->userid) || has_capability('block/learnerscript:managereports', $context)) {
+                $sql = "SELECT DISTINCT u.*
+                            FROM {course} c
+                            JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+                            JOIN {role_assignments} ra ON ra.contextid = ctx.id
+                            JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
+                            JOIN {user} u ON u.id = ra.userid AND u.deleted = 0
+                            WHERE 1 = 1 $concatsql $concatsql1";
+                $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
             } else {
-                $role = isset($SESSION->role) ? $SESSION->role : '';
-                if (!empty($filterdata) && !empty($filterdata['filter_users'])
-                && ((isset($filterdata['filter_courses_type'])
-                && $filterdata['filter_courses_type'] != 'basic'
-                && $filterdata['filter_users_type'] != 'basic') || !$type)) {
-                    $userid = $filterdata['filter_users'];
-                    $concatsql .= " AND u.id = $userid";
-                }
-                if (!empty($filterdata) && !empty($filterdata['filter_courses'])
-                && $filterdata['filter_courses_type'] == 'basic'
-                && $filterdata['filter_users_type'] == 'custom') {
-                    $courseid = $filterdata['filter_courses'];
-                    $role = 'student';
-                    $concatsql1 .= " AND c.id = $courseid ";
-                }
-                if (!empty($filterusers) && !$search) {
-                    $concatsql .= " AND u.id = $filterusers";
-                }
-                if (empty($pluginclass->reportclass)) {
-                    $pluginclass->reportclass = new \stdClass;
-                    $pluginclass->reportclass->userid = $USER->id;
-                }
-                if (is_siteadmin($pluginclass->reportclass->userid) || (new ls)->is_manager($pluginclass->reportclass->userid,
-                $pluginclass->reportclass->contextlevel, $pluginclass->reportclass->role)) {
-                    $sql = "SELECT DISTINCT u.*
-                               FROM {course} c
-                              JOIN {enrol} e ON c.id = e.courseid
-                              JOIN {user_enrolments} ue ON ue.enrolid = e.id
-                              JOIN {role_assignments} ra ON ra.userid = ue.userid
-                              JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
-                              JOIN {context} ctx ON ctx.instanceid = c.id
-                              JOIN {user} u ON u.id = ue.userid AND u.deleted = 0
-                              WHERE 1 = 1 $concatsql $concatsql1";
-                    $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
-                } else {
-                    if (empty($pluginclass->reportclass->rolewisecourses)) {
-                        if ($SESSION->role == 'coursecreator'
-                        && ($SESSION->ls_contextlevel == CONTEXT_SYSTEM
-                        || $SESSION->ls_contextlevel == CONTEXT_COURSECAT)) {
-                            $courses = $this->get_rolecourses($USER->id, $SESSION->role,
-                            $SESSION->ls_contextlevel, SITEID, '', '');
-                                $courselists = [];
-                            foreach ($courses as $key => $course) {
-                                $courselists[] = $course->id;
-                            }
-                            list($ccsql, $params) = $DB->get_in_or_equal($courselists);
-                            $courselist = join(',', $courselists);
-                            if (!empty($courselist)) {
-                                $sql = "SELECT DISTINCT u.*
-                                            FROM {course} AS c
-                                            JOIN {enrol} AS e ON c.id = e.courseid
-                                            JOIN {user_enrolments} AS ue ON ue.enrolid = e.id
-                                            JOIN {role_assignments} AS ra ON ra.userid = ue.userid
-                                            JOIN {role} AS r ON r.id = ra.roleid AND r.shortname = 'student'
-                                            JOIN {context} ctx ON ctx.instanceid = c.id
-                                            JOIN {user} AS u ON u.id = ue.userid
-                                            WHERE 1 = 1 AND c.id $ccsql AND u.deleted = 0
-                                            AND ra.contextid = ctx.id  $concatsql $concatsql1";
-                                            $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
-                            } else {
-                                $userslist = [];
-                            }
+                if (empty($pluginclass->reportclass->rolewisecourses)) {
+                    if ($SESSION->role == 'coursecreator'
+                    && ($SESSION->ls_contextlevel == CONTEXT_SYSTEM
+                    || $SESSION->ls_contextlevel == CONTEXT_COURSECAT)) {
+                        $courses = $this->get_rolecourses($USER->id, $SESSION->role,
+                        $SESSION->ls_contextlevel, SITEID, '', '');
+                            $courselists = [];
+                        foreach ($courses as $key => $course) {
+                            $courselists[] = $course->id;
+                        }
+                        list($ccsql, $params) = $DB->get_in_or_equal($courselists);
+                        $courselist = join(',', $courselists);
+                        if (!empty($courselist)) {
+                            $sql = "SELECT DISTINCT u.*
+                                        FROM {course} AS c
+                                        JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+                                        JOIN {role_assignments} ra ON ra.contextid = ctx.id
+                                        JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
+                                        JOIN {user} u ON u.id = ra.userid AND u.deleted = 0
+                                        WHERE 1 = 1 AND c.id $ccsql AND u.deleted = 0
+                                        $concatsql $concatsql1";
+                                        $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
                         } else {
-                                $userslist = [];
+                            $userslist = [];
                         }
                     } else {
-                            $courselist = $pluginclass->reportclass->rolewisecourses;
-                            $sql = "SELECT DISTINCT u.*
-                                    FROM {course} AS c
-                                    JOIN {enrol} AS e ON c.id = e.courseid
-                                    JOIN {user_enrolments} AS ue ON ue.enrolid = e.id
-                                    JOIN {role_assignments} AS ra ON ra.userid = ue.userid
-                                    JOIN {role} as r ON r.id = ra.roleid AND r.shortname = 'student'
-                                    JOIN {context} ctx ON ctx.instanceid = c.id
-                                    JOIN {user} AS u ON u.id = ue.userid
-                                    WHERE c.id in ($courselist)
-                                    AND u.deleted = 0 AND ra.contextid = ctx.id
-                                    AND ctx.contextlevel = 50 $concatsql $concatsql1";
-                        $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
+                            $userslist = [];
                     }
+                } else {
+                        $courselist = $pluginclass->reportclass->rolewisecourses;
+                        $sql = "SELECT DISTINCT u.*
+                                FROM {course} AS c
+                                JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+                                JOIN {role_assignments} ra ON ra.contextid = ctx.id
+                                JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
+                                JOIN {user} u ON u.id = ra.userid AND u.deleted = 0
+                                WHERE c.id in ($courselist) $concatsql $concatsql1";
+                    $userslist = $DB->get_records_sql($sql, $params, 0, $limitnum);
                 }
-
             }
         } else {
             $sql = " SELECT * FROM {user} as u WHERE id > 2 AND u.deleted = 0 $concatsql";
@@ -355,35 +334,32 @@ class querylib {
     /**
      * Get students list
      *
-     * @param  string  $useroperatorsql   User SQL
-     * @param  string  $courseoperatorsql Course SQL
+     * @param  string  $userid  User ID
+     * @param  string  $courseid Course ID
      * @return string SQL query
      */
-    public function get_learners($useroperatorsql = '', $courseoperatorsql = '') {
+    public function get_learners($userid = '', $courseid = '') {
 
-        if (empty($courseoperatorsql) && empty($useroperatorsql)) {
+        if (empty($courseid) && empty($userid)) {
             return false;
         }
-        if (!empty($useroperatorsql)) {
+        if (!empty($userid)) {
             $sql = " SELECT DISTINCT c.id ";
         }
-        if (!empty($courseoperatorsql)) {
-            $sql = " SELECT DISTINCT ue.userid ";
+        if (!empty($courseid)) {
+            $sql = " SELECT DISTINCT u.id ";
         }
         $sql .= " FROM {course} c
-                  JOIN {enrol} e ON e.courseid = c.id AND e.status = 0
-                  JOIN {user_enrolments} ue on ue.enrolid = e.id AND ue.status = 0
-                  JOIN {role_assignments}  ra ON ra.userid = ue.userid
+                  JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+                  JOIN {role_assignments} ra ON ra.contextid = ctx.id
                   JOIN {role} r ON r.id = ra.roleid AND r.shortname = 'student'
-                  JOIN {context} ctx ON ctx.instanceid = c.id
                   JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1 AND u.deleted = 0
-                  AND u.suspended = 0
-                  AND ra.contextid = ctx.id AND ctx.contextlevel = 50 AND c.visible = 1";
-        if (!empty($courseoperatorsql)) {
-            $sql .= " WHERE c.id = $courseoperatorsql";
+                  AND u.suspended = 0 AND c.visible = 1";
+        if (!empty($courseid)) {
+            $sql .= " WHERE c.id = $courseid";
         }
-        if (!empty($useroperatorsql)) {
-            $sql .= " WHERE ra.userid = $useroperatorsql";
+        if (!empty($userid)) {
+            $sql .= " WHERE ra.userid = $userid";
         }
         return $sql;
     }

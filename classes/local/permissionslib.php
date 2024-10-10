@@ -50,11 +50,6 @@ class permissionslib {
     private $userid;
 
     /**
-     * @var $moodleroles
-     */
-    public $moodleroles;
-
-    /**
      * Construct
      * @param  int $contextlevel   User contextlevel
      * @param  int $roleid         User role ID
@@ -101,53 +96,17 @@ class permissionslib {
     }
 
     /**
-     * Check permissions
-     */
-    public function has_permission() {
-        global $DB;
-        if (is_siteadmin($this->userid)) {
-            return true;
-        }
-        switch ($this->contextlevel) {
-            case CONTEXT_SYSTEM:
-                $context = context_system::instance();
-                if (user_has_role_assignment($this->userid, $this->roleid, $context->id)) {
-                    return true;
-                }
-                break;
-            case CONTEXT_COURSECAT:
-            return $DB->record_exists_sql('SELECT ra.id
-                FROM {role_assignments} ra
-                JOIN {context} ctx ON ra.contextid = ctx.id
-                WHERE ra.userid = :userid AND ctx.contextlevel = :contextlevel
-                AND ra.roleid = :roleid',
-                ['userid' => $this->userid, 'contextlevel' => $this->contextlevel, 'roleid' => $this->roleid]);
-            break;
-            case CONTEXT_COURSE:
-                return $DB->record_exists_sql('SELECT ra.id
-                FROM {role_assignments} ra
-                JOIN {context} ctx ON ra.contextid = ctx.id
-                WHERE ra.userid = :userid AND ctx.contextlevel = :contextlevel AND ra.roleid = :roleid',
-                ['userid' => $this->userid, 'contextlevel' => $this->contextlevel, 'roleid' => $this->roleid]);
-                break;
-            default:
-                return false;
-            break;
-        }
-
-    }
-
-    /**
      * Get rolewise courses
      */
     public function get_rolewise_courses() {
         global $DB;
-        if (!$this->has_permission()) {
+        $context = context_system::instance();
+        if (!has_capability('block/learnerscript:reportsaccess', $context)) {
             return false;
         }
         switch ($this->contextlevel) {
             case CONTEXT_SYSTEM:
-                if ($this->archetype == 'manager' && $this->contextlevel == CONTEXT_SYSTEM) {
+                if (has_capability('block/learnerscript:managereports', $context)) {
                     return true;
                 } else {
                     return $this->get_rolecourses();
@@ -157,7 +116,7 @@ class permissionslib {
                 return $this->get_rolecourses();
                 break;
             case CONTEXT_COURSECAT:
-                if ($this->archetype == 'manager' && $this->contextlevel == CONTEXT_COURSECAT) {
+                if (has_capability('block/learnerscript:managereports', $context) && $this->contextlevel == CONTEXT_COURSECAT) {
                     $categories = $this->make_categories_list('moodle/category:manage');
                     list($csql, $params) = $DB->get_in_or_equal($categories, SQL_PARAMS_NAMED);
                     return  $DB->get_fieldset_sql("SELECT id
@@ -186,7 +145,7 @@ class permissionslib {
     /**
      * Get role courses
      */
-    public function get_rolecourses() {
+    private function get_rolecourses() {
         global $DB;
         $params['contextlevel'] = $this->contextlevel;
         $params['userid'] = $this->userid;
@@ -199,21 +158,16 @@ class permissionslib {
         $role = $DB->get_field_sql("SELECT shortname FROM {role} WHERE id = :roleid",
                         ['roleid' => $this->roleid]);
         $params['roleshortname'] = $role;
-        $enroljoin = " JOIN (SELECT DISTINCT e.courseid
-                               FROM {enrol} e
-                               JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid1)
-                               WHERE ue.status = :active AND e.status = :enabled AND ue.timestart < :now1 AND
-                                (ue.timeend = 0 OR ue.timeend > :now2)) en ON (en.courseid = c.id)";
+
         $sql = " SELECT c.id
         FROM {course} c";
         if ($this->contextlevel == CONTEXT_SYSTEM) {
-            $sql .= " $enroljoin LEFT JOIN {context} AS ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
+            $sql .= " LEFT JOIN {context} ctx ON ctx.instanceid = 0 AND ctx.contextlevel = :contextlevel";
         } else if ($this->contextlevel == CONTEXT_COURSECAT) {
-            $sql .= " $enroljoin
-            JOIN {course_categories} cc ON cc.id = c.category
-            LEFT JOIN {context} AS ctx ON ctx.instanceid = cc.id AND ctx.contextlevel = :contextlevel";
+            $sql .= " JOIN {course_categories} cc ON cc.id = c.category
+            LEFT JOIN {context} ctx ON ctx.instanceid = cc.id AND ctx.contextlevel = :contextlevel";
         } else {
-            $sql .= " $enroljoin LEFT JOIN {context} AS ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+            $sql .= " LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
         }
         $sql .= " JOIN {role_assignments} ra ON ra.contextid = ctx.id
                  JOIN {role} r ON r.id = ra.roleid

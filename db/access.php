@@ -84,4 +84,20 @@ $capabilities = [
             'editingteacher' => CAP_ALLOW,
         ],
     ],
+    'block/learnerscript:learnerreportaccess' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'student' => CAP_ALLOW,
+        ],
+    ],
+    'block/learnerscript:teacherreportsaccess' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
 ];

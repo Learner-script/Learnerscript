@@ -16,12 +16,6 @@
 
 namespace block_learnerscript\export;
 defined('MOODLE_INTERNAL') || die();
-ini_set("memory_limit", "-1");
-ini_set('max_execution_time', 6000);
-
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Writer\Common\Creator\WriterFactory;
-
 require_once($CFG->dirroot . '/blocks/learnerscript/lib.php');
 require_once($CFG->libdir . '/adminlib.php');
 
@@ -40,44 +34,48 @@ class export_csv {
      * @return mixed
      */
     public function export_report($reportclass) {
-        global $CFG;
+        // Retrieve report data.
         $reportdata = $reportclass->finalreport;
-        require_once($CFG->dirroot . '/lib/excellib.class.php');
         $table = $reportdata->table;
-        $filename = $reportdata->name . "_" . date('d M Y H:i:s', time()) . '.csv';
-        $writer = WriterFactory::createFromFile($filename);
-        $writer->openToBrowser($filename); // Stream data directly to the browser.
+        $filename = $reportdata->name . "_" . date('d_M_Y_H_i_s', time()) . '.csv';
+
+        // Set headers for CSV download.
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+
+        // Open output stream for writing.
+        $output = fopen('php://output', 'w');
+
+        // Add filter row.
         $filter = ['Filters'];
-        $filterrow = Row::fromValues($filter);
-        $writer->addRow($filterrow);
+
         if (isset($reportclass->selectedfilters) && !empty($reportclass->selectedfilters)) {
+            fputcsv($output, $filter);
             foreach ($reportclass->selectedfilters as $k => $filter) {
                 $k = substr($k, 0, -1);
-                $filterrow = Row::fromValues([$k, $filter]);
-                $writer->addRow($filterrow);
+                fputcsv($output, [$k, $filter]);
             }
         }
-        $head = [];
+
+        // Add header row.
         if (!empty($table->head)) {
-            foreach ($table->head as $key => $heading) {
-                $head[] = $heading;
-            }
-            $headrow = Row::fromValues($head);
-            $writer->addRow($headrow);
+            fputcsv($output, $table->head);
         }
-        $datarow = [];
+
+        // Add data rows.
         if (!empty($table->data)) {
-            foreach ($table->data as $key => $value) {
+            foreach ($table->data as $value) {
+                // Clean up data.
                 $data = array_map(function ($v) {
                     return trim(strip_tags($v));
                 }, $value);
-                $datarow[] = Row::fromValues($data);
+                fputcsv($output, $data);
             }
         }
-        $writer->addRows($datarow);
-        $writer->close();
-    }
 
+        // Close output stream.
+        fclose($output);
+    }
     /**
      * CSV report export attachment
      * @param object $reportclass Report data
@@ -119,7 +117,6 @@ class export_csv {
             fclose($fp);
         } else {
             $csvexport->download_file();
-            exit;
         }
     }
 }
