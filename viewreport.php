@@ -66,6 +66,15 @@ if (!$course = $DB->get_record('course', ['id' => $courseid])) {
     throw new moodle_exception(get_string('nocourseid', 'block_learnerscript'));
 }
 
+// Force user login in course (SITE or Course).
+if ($course->id == SITEID) {
+    require_login();
+    $context = context_system::instance();
+} else {
+    require_login($course);
+    $context = context_course::instance($course->id);
+}
+
 $filterrequests = [];
 $datefilterrequests = [];
 $datefilterrequests['lsfstartdate'] = 0;
@@ -129,14 +138,6 @@ if (!is_siteadmin()) {
     }
 }
 
-// Force user login in course (SITE or Course).
-if ($course->id == SITEID) {
-    require_login();
-    $context = context_system::instance();
-} else {
-    require_login($course);
-    $context = context_course::instance($course->id);
-}
 $PAGE->set_context($context);
 $PAGE->set_title($report->name);
 $PAGE->set_pagelayout('report');
